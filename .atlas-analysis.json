@@ -1,0 +1,189 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Svelte Atoms Core",
+  "projectDescription": "A headless, accessible Svelte 5 UI component library with composable atoms and bond-based state management.",
+  "theme": "willow",
+  "primaryColor": "#ff3e00",
+  "lightColor": "#ff6347",
+  "darkColor": "#c92a1a",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/atoms-and-bonds",
+              "concepts/composition",
+              "concepts/styling",
+              "concepts/accessibility",
+              "concepts/animations"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/using-components",
+              "guides/state-management",
+              "guides/customization",
+              "guides/typescript"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Components",
+        "groups": [
+          {
+            "group": "Layout",
+            "pages": [
+              "components/card",
+              "components/stack",
+              "components/list",
+              "components/scrollable",
+              "components/portal"
+            ]
+          },
+          {
+            "group": "Forms",
+            "pages": [
+              "components/button",
+              "components/input",
+              "components/textarea",
+              "components/checkbox",
+              "components/radio",
+              "components/form",
+              "components/label"
+            ]
+          },
+          {
+            "group": "Interactive",
+            "pages": [
+              "components/accordion",
+              "components/tabs",
+              "components/dropdown",
+              "components/combobox",
+              "components/calendar",
+              "components/date-picker",
+              "components/stepper"
+            ]
+          },
+          {
+            "group": "Overlays",
+            "pages": [
+              "components/dialog",
+              "components/drawer",
+              "components/popover",
+              "components/tooltip",
+              "components/toast"
+            ]
+          },
+          {
+            "group": "Navigation",
+            "pages": [
+              "components/menu",
+              "components/breadcrumb",
+              "components/sidebar"
+            ]
+          },
+          {
+            "group": "Display",
+            "pages": [
+              "components/alert",
+              "components/avatar",
+              "components/badge",
+              "components/chip",
+              "components/qr-code"
+            ]
+          },
+          {
+            "group": "Data",
+            "pages": [
+              "components/datagrid"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/runes",
+              "api/attachments",
+              "api/shared",
+              "api/context"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api/typescript-types"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Bond Architecture for self-contained state management",
+    "Headless components with full styling control",
+    "Built-in accessibility with ARIA attributes and keyboard navigation",
+    "Svelte 5 runes for optimized reactivity",
+    "Composable atoms with as and base props",
+    "Animation lifecycle hooks for GSAP, Motion, and anime.js",
+    "Full TypeScript support with comprehensive types",
+    "Tree-shakeable modular exports"
+  ],
+  "publicApiSurface": [
+    "Accordion",
+    "Alert",
+    "Atom",
+    "Avatar",
+    "Badge",
+    "Breadcrumb",
+    "Button",
+    "Calendar",
+    "Card",
+    "Checkbox",
+    "Chip",
+    "Combobox",
+    "DatePicker",
+    "Datagrid",
+    "Dialog",
+    "Drawer",
+    "Dropdown",
+    "Element",
+    "Form",
+    "Input",
+    "Label",
+    "List",
+    "Menu",
+    "Popover",
+    "Portal",
+    "QRCode",
+    "Radio",
+    "Scrollable",
+    "Sidebar",
+    "Stack",
+    "Stepper",
+    "Tabs",
+    "Textarea",
+    "Toast",
+    "Tooltip",
+    "defineVariants",
+    "filter",
+    "clsx",
+    "twMerge"
+  ]
+}
