@@ -19,7 +19,7 @@ The Toast is composed of multiple subcomponents:
 
 ```svelte
 <script>
-  import { Toast } from '$svelte-atoms/core/components/toast';
+  import { Toast } from '@svelte-atoms/core/components/toast';
   
   let open = $state(false);
   
@@ -118,7 +118,7 @@ Extends standard HTML paragraph attributes.
 
 ```svelte
 <script>
-  import { Toast } from '$svelte-atoms/core/components/toast';
+  import { Toast } from '@svelte-atoms/core/components/toast';
   
   let successOpen = $state(false);
 </script>
@@ -413,7 +413,7 @@ Toasts are typically positioned in a corner of the viewport:
 You can extend prop types for customization:
 
 ```typescript
-declare module '$svelte-atoms/core/components/toast' {
+declare module '@svelte-atoms/core/components/toast' {
   interface ToastRootExtendProps {
     variant?: 'success' | 'error' | 'info' | 'warning';
   }

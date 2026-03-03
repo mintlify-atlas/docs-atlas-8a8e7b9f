@@ -24,7 +24,7 @@ The Dialog is composed of multiple subcomponents:
 
 ```svelte
 <script>
-  import { Dialog } from '$svelte-atoms/core/components/dialog';
+  import { Dialog } from '@svelte-atoms/core/components/dialog';
   
   let isOpen = $state(false);
 </script>
@@ -139,7 +139,7 @@ Extends standard HTML div attributes. Typically contains action buttons.
 Animates the dialog backdrop with opacity transition.
 
 ```svelte
-import { animateDialogRoot } from '$svelte-atoms/core/components/dialog/motion.svelte';
+import { animateDialogRoot } from '@svelte-atoms/core/components/dialog/motion.svelte';
 
 <Dialog.Root animate={animateDialogRoot({ duration: 0.3, ease: 'anticipate' })}>
   <!-- content -->
@@ -156,7 +156,7 @@ import { animateDialogRoot } from '$svelte-atoms/core/components/dialog/motion.s
 Animates the dialog content with scale and opacity transitions.
 
 ```svelte
-import { animateDialogContent } from '$svelte-atoms/core/components/dialog/motion.svelte';
+import { animateDialogContent } from '@svelte-atoms/core/components/dialog/motion.svelte';
 
 <Dialog.Content animate={animateDialogContent({ duration: 0.3 })}>
   <!-- content -->
@@ -174,8 +174,8 @@ import { animateDialogContent } from '$svelte-atoms/core/components/dialog/motio
 
 ```svelte
 <script>
-  import { Dialog } from '$svelte-atoms/core/components/dialog';
-  import { Dropdown } from '$svelte-atoms/core/components/dropdown';
+  import { Dialog } from '@svelte-atoms/core/components/dialog';
+  import { Dropdown } from '@svelte-atoms/core/components/dropdown';
   
   let isDialogOpen = $state(false);
   let isDropdownOpen = $state(false);
@@ -237,7 +237,7 @@ import { animateDialogContent } from '$svelte-atoms/core/components/dialog/motio
 You can extend prop types for customization:
 
 ```typescript
-declare module '$svelte-atoms/core/components/dialog' {
+declare module '@svelte-atoms/core/components/dialog' {
   interface DialogExtendProps {
     customProp?: string;
   }

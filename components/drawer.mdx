@@ -24,7 +24,7 @@ The Drawer is composed of multiple subcomponents:
 
 ```svelte
 <script>
-  import { Drawer } from '$svelte-atoms/core/components/drawer';
+  import { Drawer } from '@svelte-atoms/core/components/drawer';
   
   let isOpen = $state(false);
 </script>
@@ -137,7 +137,7 @@ Extends standard HTML paragraph attributes. Default element is `p`.
 Animates the drawer backdrop with opacity transition.
 
 ```svelte
-import { animateDrawerRoot } from '$svelte-atoms/core/components/drawer/motion';
+import { animateDrawerRoot } from '@svelte-atoms/core/components/drawer/motion';
 
 <Drawer.Root animate={animateDrawerRoot({ duration: 0.3, ease: 'easeInOut' })}>
   <!-- content -->
@@ -154,7 +154,7 @@ import { animateDrawerRoot } from '$svelte-atoms/core/components/drawer/motion';
 Animates the drawer content sliding in from the specified side.
 
 ```svelte
-import { animateDrawerContent } from '$svelte-atoms/core/components/drawer/motion';
+import { animateDrawerContent } from '@svelte-atoms/core/components/drawer/motion';
 
 <Drawer.Content 
   animate={animateDrawerContent({ ease: 'easeOut', side: 'right', duration: 0.3 })}
@@ -175,7 +175,7 @@ import { animateDrawerContent } from '$svelte-atoms/core/components/drawer/motio
 
 ```svelte
 <script>
-  import { Drawer, animateDrawerContent, animateDrawerRoot } from '$svelte-atoms/core/components/drawer';
+  import { Drawer, animateDrawerContent, animateDrawerRoot } from '@svelte-atoms/core/components/drawer';
   
   let isOpen = $state(false);
 </script>
@@ -269,7 +269,7 @@ Drawer provides utility functions for common interactions:
 Closes the drawer when clicking outside the content area.
 
 ```svelte
-import { clickoutDrawer } from '$svelte-atoms/core/components/drawer';
+import { clickoutDrawer } from '@svelte-atoms/core/components/drawer';
 
 <Drawer.Content
   {@attach clickoutDrawer((_, bond) => {
@@ -285,7 +285,7 @@ import { clickoutDrawer } from '$svelte-atoms/core/components/drawer';
 Toggles the drawer open state.
 
 ```svelte
-import { toggleDrawer } from '$svelte-atoms/core/components/drawer';
+import { toggleDrawer } from '@svelte-atoms/core/components/drawer';
 
 <button {@attach toggleDrawer()}>Toggle Drawer</button>
 ```
@@ -295,7 +295,7 @@ import { toggleDrawer } from '$svelte-atoms/core/components/drawer';
 Opens the drawer.
 
 ```svelte
-import { openDrawer } from '$svelte-atoms/core/components/drawer';
+import { openDrawer } from '@svelte-atoms/core/components/drawer';
 
 <button {@attach openDrawer()}>Open Drawer</button>
 ```
@@ -305,7 +305,7 @@ import { openDrawer } from '$svelte-atoms/core/components/drawer';
 Closes the drawer.
 
 ```svelte
-import { closeDrawer } from '$svelte-atoms/core/components/drawer';
+import { closeDrawer } from '@svelte-atoms/core/components/drawer';
 
 <button {@attach closeDrawer()}>Close Drawer</button>
 ```
@@ -322,7 +322,7 @@ import { closeDrawer } from '$svelte-atoms/core/components/drawer';
 You can extend prop types for customization:
 
 ```typescript
-declare module '$svelte-atoms/core/components/drawer' {
+declare module '@svelte-atoms/core/components/drawer' {
   interface DrawerExtendProps {
     customProp?: string;
   }

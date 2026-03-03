@@ -20,7 +20,7 @@ The Tooltip uses Popover components under the hood:
 
 ```svelte
 <script>
-  import { Tooltip } from '$svelte-atoms/core/components/tooltip';
+  import { Tooltip } from '@svelte-atoms/core/components/tooltip';
   
   let open = $state(false);
 </script>
@@ -105,7 +105,7 @@ Inherits all props from [Popover.Arrow](/components/popover#popoverarrow-props).
 ### With Button Base
 
 ```svelte
-import { Button } from '$svelte-atoms/core/components/button';
+import { Button } from '@svelte-atoms/core/components/button';
 
 <Tooltip.Root>
   <Tooltip.Trigger base={Button}>
@@ -266,7 +266,7 @@ Tooltip inherits Popover's positioning behavior:
 Since Tooltip uses Popover internally, you can extend Popover props:
 
 ```typescript
-declare module '$svelte-atoms/core/components/popover' {
+declare module '@svelte-atoms/core/components/popover' {
   interface PopoverRootExtendProps {
     customProp?: string;
   }

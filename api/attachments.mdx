@@ -17,7 +17,7 @@ npm install @svelte-atoms/core
 ## Import
 
 ```typescript
-import { clickout, on, portal, resizeObserver } from '@svelte-atoms/core/attachments';
+import { clickout, on, resizeObserver } from '@svelte-atoms/core/attachments';
 ```
 
 ## API Reference
@@ -155,78 +155,6 @@ Returns an attachment function for use with `{@attach}`.
   Interactive element
 </div>
 ```
-
----
-
-### portal
-
-Moves an element to a different location in the DOM tree. Essential for modals, dropdowns, and overlays.
-
-#### Signature
-
-```typescript
-function portal(target?: HTMLElement): (node: HTMLElement) => () => void
-```
-
-#### Parameters
-
-<ParamField path="target" type="HTMLElement" default="document.body">
-  The target element where the node should be moved
-</ParamField>
-
-#### Returns
-
-Returns an attachment function that moves the element to the target.
-
-#### Example
-
-```svelte
-<script>
-  import { portal } from '@svelte-atoms/core/attachments';
-
-  let showModal = $state(false);
-</script>
-
-{#if showModal}
-  <div {@attach portal()}>
-    <div class="modal">
-      <h2>Modal Content</h2>
-      <p>This is rendered in document.body</p>
-    </div>
-  </div>
-{/if}
-```
-
-#### Custom Target
-
-```svelte
-<script>
-  import { portal } from '@svelte-atoms/core/attachments';
-
-  let portalTarget;
-</script>
-
-<div bind:this={portalTarget} id="portal-container"></div>
-
-<!-- This will be moved to portalTarget -->
-<div {@attach portal(portalTarget)}>
-  Portaled content
-</div>
-```
-
-#### Use Cases
-
-- Modal dialogs that need to escape overflow:hidden
-- Dropdown menus positioned relative to body
-- Toast notifications
-- Tooltips that need to overlay everything
-
-#### Implementation Details
-
-- Checks if element is already in target before moving
-- Hides element during move to prevent flicker
-- Removes element from DOM on cleanup
-- Throws error if target is undefined
 
 ---
 

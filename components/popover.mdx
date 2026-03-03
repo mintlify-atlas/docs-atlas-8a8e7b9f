@@ -21,7 +21,7 @@ The Popover is composed of multiple subcomponents:
 
 ```svelte
 <script>
-  import { Popover } from '$svelte-atoms/core/components/popover';
+  import { Popover } from '@svelte-atoms/core/components/popover';
   
   let open = $state(false);
 </script>
@@ -108,7 +108,7 @@ Extends standard HTML div attributes. Shows a visual indicator (typically a chev
 Animates the popover content with scale, opacity, and position transitions based on placement.
 
 ```svelte
-import { animatePopoverContent } from '$svelte-atoms/core/components/popover/motion';
+import { animatePopoverContent } from '@svelte-atoms/core/components/popover/motion';
 
 <Popover.Content animate={animatePopoverContent({ duration: 0.2, ease: 'easeInOut' })}>
   <!-- content -->
@@ -204,7 +204,7 @@ The animation automatically adjusts based on the popover's placement:
 ### Auto-close on Click Outside
 
 ```svelte
-import { clickoutPopover } from '$svelte-atoms/core/components/popover';
+import { clickoutPopover } from '@svelte-atoms/core/components/popover';
 
 <Popover.Content 
   autoClose
@@ -225,7 +225,7 @@ Popover provides utility functions for common interactions:
 Executes a callback when clicking outside the popover.
 
 ```svelte
-import { clickoutPopover } from '$svelte-atoms/core/components/popover';
+import { clickoutPopover } from '@svelte-atoms/core/components/popover';
 
 <Popover.Content
   {@attach clickoutPopover((node, bond) => {
@@ -241,7 +241,7 @@ import { clickoutPopover } from '$svelte-atoms/core/components/popover';
 Provides access to the popover bond instance.
 
 ```svelte
-import { popover } from '$svelte-atoms/core/components/popover';
+import { popover } from '@svelte-atoms/core/components/popover';
 
 <div {@attach popover((node, bond) => {
   console.log('Popover bond:', bond);
@@ -271,7 +271,7 @@ The Popover uses Floating UI for intelligent positioning:
 You can extend prop types for customization:
 
 ```typescript
-declare module '$svelte-atoms/core/components/popover' {
+declare module '@svelte-atoms/core/components/popover' {
   interface PopoverRootExtendProps {
     customProp?: string;
   }
