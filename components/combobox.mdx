@@ -1,0 +1,322 @@
+---
+title: "Combobox"
+description: "An input field with an autocomplete dropdown for selecting from a list of options"
+---
+
+## Overview
+
+The Combobox component combines a text input with a dropdown menu for selection. It's ideal for searchable select inputs where users can type to filter options.
+
+## Installation
+
+```bash
+import { Combobox } from '@svelte-atoms/core';
+import { filterDropdownData } from '@svelte-atoms/core';
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Combobox, filterDropdownData } from '@svelte-atoms/core';
+  import { Input } from '@svelte-atoms/core';
+  
+  const currencies = [
+    { value: 'usd', label: 'US Dollar' },
+    { value: 'eur', label: 'Euro' },
+    { value: 'gbp', label: 'British Pound' },
+    { value: 'jpy', label: 'Japanese Yen' }
+  ];
+  
+  const filtered = filterDropdownData(
+    () => currencies,
+    (query, item) => item.label.toLowerCase().includes(query.toLowerCase())
+  );
+</script>
+
+<Combobox.Root>
+  <Combobox.Trigger base={Input.Root} class="min-w-sm">
+    <Combobox.Control placeholder="Select currency" />
+  </Combobox.Trigger>
+  
+  <Combobox.Content>
+    <input
+      bind:value={filtered.query}
+      class="border-b border-border px-4 py-3"
+      placeholder="Type to filter..."
+    />
+    {#each filtered.current as item (item.value)}
+      <Combobox.Item value={item.value}>{item.label}</Combobox.Item>
+    {/each}
+  </Combobox.Content>
+</Combobox.Root>
+```
+
+## Combobox.Root Props
+
+<ParamField path="open" type="boolean" optional>
+  Controls whether the combobox dropdown is open
+</ParamField>
+
+<ParamField path="value" type="unknown" optional>
+  The selected value (single-select mode)
+</ParamField>
+
+<ParamField path="values" type="unknown[]" optional>
+  Array of selected values (multi-select mode)
+</ParamField>
+
+<ParamField path="label" type="string" optional>
+  Label for the selected item
+</ParamField>
+
+<ParamField path="labels" type="string[]" optional>
+  Labels for selected items
+</ParamField>
+
+<ParamField path="multiple" type="boolean" default="false">
+  Enable multi-select mode
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disable the combobox
+</ParamField>
+
+<ParamField path="placement" type="string" default="bottom-start">
+  Popover placement position
+</ParamField>
+
+<ParamField path="placements" type="string[]" default="['bottom-start', 'bottom-end', 'top-start', 'top-end']">
+  Allowed placement positions
+</ParamField>
+
+<ParamField path="offset" type="number" default="1">
+  Offset distance from the trigger
+</ParamField>
+
+<ParamField path="factory" type="Factory<ComboboxBond>" optional>
+  Custom factory function for creating combobox bond
+</ParamField>
+
+## Combobox.Trigger Props
+
+Extends PopoverTrigger props and all HtmlAtomProps.
+
+## Combobox.Control Props
+
+Extends InputControl props. This is the text input element within the combobox.
+
+<ParamField path="placeholder" type="string" optional>
+  Placeholder text for the input
+</ParamField>
+
+## Combobox.Item Props
+
+<ParamField path="value" type="string" required>
+  Unique identifier for this item
+</ParamField>
+
+Extends Dropdown.Item props.
+
+## Combobox.Selections Props
+
+Extends Dropdown.Selections props. Displays selected items in multi-select mode.
+
+## Combobox.Content Props
+
+Extends Dropdown.Content props. The popover content container.
+
+## Subcomponents
+
+### Combobox.Root
+
+Root container managing combobox state.
+
+### Combobox.Trigger
+
+Trigger container that includes the input field.
+
+### Combobox.Control
+
+The text input field for typing and filtering.
+
+### Combobox.Content
+
+Popover content container for combobox items.
+
+### Combobox.Item
+
+Individual selectable item in the dropdown.
+
+### Combobox.Selections
+
+Container displaying selected items (multi-select mode).
+
+### Combobox.Selection
+
+Individual selected item with remove button.
+
+### Combobox.Placeholder
+
+Placeholder text when no items are selected.
+
+### Combobox.Indicator
+
+Visual indicator for the combobox state.
+
+### Combobox.Arrow
+
+Arrow pointing to the trigger.
+
+### Combobox.List
+
+Scrollable list container for items.
+
+### Combobox.Group
+
+Group container for related items.
+
+### Combobox.Title
+
+Title for a group of items.
+
+### Combobox.Divider
+
+Visual divider between items or groups.
+
+## Examples
+
+### Multi-select with Inline Input
+
+```svelte
+<script>
+  import { Combobox, filterDropdownData } from '@svelte-atoms/core';
+  import { Input } from '@svelte-atoms/core';
+  import { Divider } from '@svelte-atoms/core';
+  
+  let selectedLabels = $state([]);
+  
+  const currencies = [
+    { value: 'usd', label: 'US Dollar' },
+    { value: 'eur', label: 'Euro' },
+    { value: 'gbp', label: 'British Pound' },
+    { value: 'jpy', label: 'Japanese Yen' },
+    { value: 'cny', label: 'Chinese Yuan' }
+  ];
+  
+  const filtered = filterDropdownData(
+    () => currencies,
+    (query, item) => item.label.toLowerCase().includes(query.toLowerCase())
+  );
+</script>
+
+<Combobox.Root bind:labels={selectedLabels} multiple>
+  <Combobox.Trigger
+    base={Input.Root}
+    class="flex h-auto min-h-10 min-w-sm flex-col items-start gap-2"
+  >
+    <div class="flex">
+      <Input.Icon class="text-foreground/50">$</Input.Icon>
+      <Divider class="mx-1" vertical />
+      <Combobox.Control class="px-1" placeholder="Select currencies" />
+    </div>
+    <Combobox.Selections />
+  </Combobox.Trigger>
+  
+  <Combobox.Content>
+    <input
+      bind:value={filtered.query}
+      class="border-b border-border px-4 py-3"
+      placeholder="Type to filter..."
+    />
+    {#each filtered.current as item (item.value)}
+      <Combobox.Item value={item.value}>{item.label}</Combobox.Item>
+    {/each}
+  </Combobox.Content>
+</Combobox.Root>
+```
+
+### Single Select with Custom Control
+
+```svelte
+<script>
+  import { Combobox } from '@svelte-atoms/core';
+  import { Input } from '@svelte-atoms/core';
+  
+  let value = $state('');
+  
+  const options = [
+    { value: 'react', label: 'React' },
+    { value: 'vue', label: 'Vue' },
+    { value: 'svelte', label: 'Svelte' },
+    { value: 'angular', label: 'Angular' }
+  ];
+</script>
+
+<Combobox.Root bind:value>
+  <Combobox.Trigger base={Input.Root}>
+    <Combobox.Control placeholder="Choose a framework" />
+  </Combobox.Trigger>
+  
+  <Combobox.Content>
+    {#each options as option (option.value)}
+      <Combobox.Item value={option.value}>{option.label}</Combobox.Item>
+    {/each}
+  </Combobox.Content>
+</Combobox.Root>
+```
+
+### With Groups
+
+```svelte
+<Combobox.Root>
+  <Combobox.Trigger base={Input.Root}>
+    <Combobox.Control placeholder="Select option" />
+  </Combobox.Trigger>
+  
+  <Combobox.Content>
+    <Combobox.Group>
+      <Combobox.Title>Fruits</Combobox.Title>
+      <Combobox.Item value="apple">Apple</Combobox.Item>
+      <Combobox.Item value="banana">Banana</Combobox.Item>
+    </Combobox.Group>
+    
+    <Combobox.Divider />
+    
+    <Combobox.Group>
+      <Combobox.Title>Vegetables</Combobox.Title>
+      <Combobox.Item value="carrot">Carrot</Combobox.Item>
+      <Combobox.Item value="lettuce">Lettuce</Combobox.Item>
+    </Combobox.Group>
+  </Combobox.Content>
+</Combobox.Root>
+```
+
+## Filtering Utility
+
+Use the `filterDropdownData` utility to create reactive filtered lists:
+
+```svelte
+<script>
+  import { filterDropdownData } from '@svelte-atoms/core';
+  
+  const data = $state([...]);
+  
+  const filtered = filterDropdownData(
+    () => data,
+    (query, item) => {
+      // Custom filter logic
+      return item.label.toLowerCase().includes(query.toLowerCase());
+    }
+  );
+</script>
+```
+
+## Accessibility
+
+- Keyboard navigation with arrow keys
+- Enter/Space to select items
+- Escape to close dropdown
+- Screen reader support with ARIA attributes
+- Focus management between input and dropdown
+- Input field is always accessible for typing

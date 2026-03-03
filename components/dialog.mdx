@@ -1,0 +1,251 @@
+---
+title: 'Dialog'
+description: 'A modal dialog component that overlays content and captures user focus'
+---
+
+## Overview
+
+The Dialog component provides a modal overlay that displays content above the main application. It captures focus and prevents interaction with the underlying content until dismissed.
+
+## Components
+
+The Dialog is composed of multiple subcomponents:
+
+- **Dialog.Root** - The main container that manages dialog state
+- **Dialog.Content** - The dialog content area
+- **Dialog.Header** - Optional header section
+- **Dialog.Body** - Main content body
+- **Dialog.Footer** - Optional footer section
+- **Dialog.Title** - Dialog title element
+- **Dialog.Description** - Dialog description element
+- **Dialog.CloseButton** - Button to close the dialog
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Dialog } from '$svelte-atoms/core/components/dialog';
+  
+  let isOpen = $state(false);
+</script>
+
+<button onclick={() => (isOpen = true)}>Open Dialog</button>
+
+<Dialog.Root bind:open={isOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Dialog Title</Dialog.Title>
+      <Dialog.CloseButton />
+    </Dialog.Header>
+    
+    <Dialog.Body>
+      <p>This is the dialog content.</p>
+    </Dialog.Body>
+    
+    <Dialog.Footer>
+      <button onclick={() => (isOpen = false)}>Cancel</button>
+      <button>Save</button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+## Dialog.Root Props
+
+<ParamField path="open" type="boolean" default="false">
+  Controls the open/closed state of the dialog. Can be bound with `bind:open`.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, disables dialog interactions.
+</ParamField>
+
+<ParamField path="portal" type="string | PortalBond" default="'root.l1'">
+  Portal destination for rendering the dialog. Uses layer 1 by default.
+</ParamField>
+
+<ParamField path="factory" type="(props: DialogBondProps) => DialogBond">
+  Optional factory function to customize dialog bond creation.
+</ParamField>
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'dialog'">
+  HTML element type for the root element.
+</ParamField>
+
+<ParamField path="animate" type="(node: HTMLElement) => void">
+  Animation function for the dialog root. Default uses `animateDialogRoot()`.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ dialog: DialogBond }]>">
+  Render function that receives the dialog bond instance.
+</ParamField>
+
+## Dialog.Content Props
+
+<ParamField path="animate" type="(node: HTMLElement) => void">
+  Animation function for the content. Default uses `animateDialogContent()`.
+</ParamField>
+
+<ParamField path="enter" type="(node: HTMLElement) => void">
+  Animation function when content enters.
+</ParamField>
+
+<ParamField path="exit" type="(node: HTMLElement) => void">
+  Animation function when content exits.
+</ParamField>
+
+<ParamField path="initial" type="(node: HTMLElement) => void">
+  Initial animation state.
+</ParamField>
+
+## Dialog.Header Props
+
+Extends standard HTML div attributes. Use for styling and layout of the header area.
+
+## Dialog.Body Props
+
+Extends standard HTML div attributes. Contains the main dialog content.
+
+## Dialog.Footer Props
+
+Extends standard HTML div attributes. Typically contains action buttons.
+
+## Dialog.Title Props
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'h3'">
+  HTML element type for the title.
+</ParamField>
+
+## Dialog.Description Props
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'p'">
+  HTML element type for the description.
+</ParamField>
+
+## Dialog.CloseButton Props
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'button'">
+  HTML element type for the close button.
+</ParamField>
+
+<ParamField path="onclick" type="(event: MouseEvent) => void">
+  Click handler. The dialog will close unless `event.preventDefault()` is called.
+</ParamField>
+
+## Animation Hooks
+
+### animateDialogRoot
+
+Animates the dialog backdrop with opacity transition.
+
+```svelte
+import { animateDialogRoot } from '$svelte-atoms/core/components/dialog/motion.svelte';
+
+<Dialog.Root animate={animateDialogRoot({ duration: 0.3, ease: 'anticipate' })}>
+  <!-- content -->
+</Dialog.Root>
+```
+
+**Parameters:**
+- `duration` (number): Animation duration in seconds. Default: `DURATION.fast / 1000`
+- `delay` (number): Animation delay in seconds. Default: `0`
+- `ease` (string): Easing function. Default: `'anticipate'`
+
+### animateDialogContent
+
+Animates the dialog content with scale and opacity transitions.
+
+```svelte
+import { animateDialogContent } from '$svelte-atoms/core/components/dialog/motion.svelte';
+
+<Dialog.Content animate={animateDialogContent({ duration: 0.3 })}>
+  <!-- content -->
+</Dialog.Content>
+```
+
+**Parameters:**
+- `duration` (number): Animation duration in seconds. Default: `DURATION.fast / 1000`
+- `delay` (number): Animation delay in seconds. Default: `0`
+- `ease` (string): Easing function. Default: `'anticipate'`
+
+## Examples
+
+### Dialog with Dropdown
+
+```svelte
+<script>
+  import { Dialog } from '$svelte-atoms/core/components/dialog';
+  import { Dropdown } from '$svelte-atoms/core/components/dropdown';
+  
+  let isDialogOpen = $state(false);
+  let isDropdownOpen = $state(false);
+</script>
+
+<button onclick={() => (isDialogOpen = true)}>Open Dialog</button>
+
+<Dialog.Root bind:open={isDialogOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <div>Select Language</div>
+      <Dialog.CloseButton class="ml-auto" />
+    </Dialog.Header>
+    
+    <Dialog.Body>
+      <p>Choose your preferred language from the dropdown below.</p>
+      
+      <Dropdown.Root open={isDialogOpen && isDropdownOpen} class="w-full">
+        <Dropdown.Trigger>Select Language</Dropdown.Trigger>
+        <Dropdown.List>
+          <Dropdown.Item id="en">English</Dropdown.Item>
+          <Dropdown.Item id="es">Spanish</Dropdown.Item>
+          <Dropdown.Item id="fr">French</Dropdown.Item>
+        </Dropdown.List>
+      </Dropdown.Root>
+    </Dialog.Body>
+    
+    <Dialog.Footer class="gap-4">
+      <button onclick={() => (isDialogOpen = false)}>Cancel</button>
+      <button>Save</button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+### Custom Backdrop
+
+```svelte
+<Dialog.Root 
+  bind:open={isOpen}
+  class="bg-neutral-900/20 backdrop-blur-sm"
+>
+  <Dialog.Content>
+    <!-- content -->
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+## Accessibility
+
+- Uses native `<dialog>` element for semantic HTML
+- Automatically manages focus when opened
+- Clicking the backdrop closes the dialog
+- Escape key closes the dialog (native browser behavior)
+- Close button includes default close icon
+
+## Extension Points
+
+You can extend prop types for customization:
+
+```typescript
+declare module '$svelte-atoms/core/components/dialog' {
+  interface DialogExtendProps {
+    customProp?: string;
+  }
+}
+```
+
+## Related Components
+
+- [Drawer](/components/drawer) - Side panel overlay
+- [Popover](/components/popover) - Contextual popup
+- [Toast](/components/toast) - Notification messages

@@ -1,0 +1,273 @@
+---
+title: Menu
+description: A dropdown menu component for displaying a list of actions or options.
+---
+
+The Menu component provides a popover-based dropdown menu system with support for custom triggers, list items, and nested content.
+
+## Structure
+
+The Menu component consists of several subcomponents:
+
+- `Menu.Root` - The root container that manages menu state
+- `Menu.Trigger` - The button or element that opens the menu
+- `Menu.Content` / `Menu.List` - The container for menu items
+- `Menu.Item` - Individual selectable menu items
+- `Menu.Divider` - Visual separator between menu items
+- `Menu.Group` - Groups related menu items
+- `Menu.Title` - Title for menu groups
+- `Menu.Arrow` - Optional arrow pointing to the trigger
+- `Menu.Indicator` - Visual indicator for the menu state
+
+## Import
+
+```svelte
+import { Menu } from '@svelte-atoms/core';
+```
+
+## Usage
+
+### Basic Menu
+
+```svelte
+<script>
+  import { Menu, Button } from '@svelte-atoms/core';
+  let open = $state(false);
+</script>
+
+<Menu.Root bind:open>
+  <Menu.Trigger base={Button}>Select a language</Menu.Trigger>
+  <Menu.Content>
+    <Menu.Item onclick={() => console.log('Arabic')}>Arabic</Menu.Item>
+    <Menu.Item onclick={() => console.log('English')}>English</Menu.Item>
+    <Menu.Item onclick={() => console.log('Spanish')}>Spanish</Menu.Item>
+    <Menu.Item onclick={() => console.log('Italian')}>Italian</Menu.Item>
+  </Menu.Content>
+</Menu.Root>
+```
+
+### Menu with Groups
+
+```svelte
+<Menu.Root>
+  <Menu.Trigger base={Button}>Options</Menu.Trigger>
+  <Menu.Content>
+    <Menu.Group>
+      <Menu.Title>Actions</Menu.Title>
+      <Menu.Item onclick={() => console.log('Edit')}>Edit</Menu.Item>
+      <Menu.Item onclick={() => console.log('Duplicate')}>Duplicate</Menu.Item>
+    </Menu.Group>
+    <Menu.Divider />
+    <Menu.Group>
+      <Menu.Title>Danger Zone</Menu.Title>
+      <Menu.Item onclick={() => console.log('Delete')}>Delete</Menu.Item>
+    </Menu.Group>
+  </Menu.Content>
+</Menu.Root>
+```
+
+### Disabled Items
+
+```svelte
+<Menu.Root>
+  <Menu.Trigger base={Button}>File</Menu.Trigger>
+  <Menu.Content>
+    <Menu.Item onclick={() => console.log('New')}>New File</Menu.Item>
+    <Menu.Item onclick={() => console.log('Open')}>Open</Menu.Item>
+    <Menu.Item disabled>Save (Unavailable)</Menu.Item>
+  </Menu.Content>
+</Menu.Root>
+```
+
+## API Reference
+
+### Menu.Root
+
+The root container component that manages the menu's open/closed state.
+
+<ParamField path="open" type="boolean" default="false">
+  Controls the open state of the menu. Use `bind:open` for two-way binding.
+</ParamField>
+
+<ParamField path="factory" type="Factory<MenuBond>">
+  Optional factory function to create a custom MenuBond instance.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The menu trigger and content components.
+</ParamField>
+
+### Menu.Trigger
+
+The element that triggers the menu to open when clicked.
+
+<ParamField path="base" type="Component">
+  Base component to use for the trigger (e.g., Button).
+</ParamField>
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'button'">
+  HTML element type to render.
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+### Menu.Content / Menu.List
+
+The container that holds the menu items. Appears as a popover when the menu is open.
+
+<Note>
+  `Menu.List` is deprecated. Use `Menu.Content` instead.
+</Note>
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'ul'">
+  HTML element type to render.
+</ParamField>
+
+<ParamField path="base" type="Component">
+  Base component to customize the content container.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'menu.content'">
+  Preset key for styling.
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+<ParamField path="onmount" type="(this: MenuBondState) => void">
+  Callback when the content is mounted.
+</ParamField>
+
+<ParamField path="ondestroy" type="(this: MenuBondState) => void">
+  Callback when the content is destroyed.
+</ParamField>
+
+<ParamField path="animate" type="(this: MenuBondState) => any">
+  Animation configuration.
+</ParamField>
+
+<ParamField path="enter" type="(this: MenuBondState) => any">
+  Enter animation configuration.
+</ParamField>
+
+<ParamField path="exit" type="(this: MenuBondState) => any">
+  Exit animation configuration.
+</ParamField>
+
+<ParamField path="initial" type="(this: MenuBondState) => any">
+  Initial state configuration.
+</ParamField>
+
+### Menu.Item
+
+An individual menu item that can be clicked to perform an action.
+
+<ParamField path="onclick" type="(event: MouseEvent) => void">
+  Click event handler. The menu automatically closes after a click unless `event.preventDefault()` is called.
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Whether the menu item is disabled.
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'menu.item'">
+  Preset key for styling.
+</ParamField>
+
+<ParamField path="onmount" type="(this: MenuItemController) => void">
+  Callback when the item is mounted.
+</ParamField>
+
+<ParamField path="ondestroy" type="(this: MenuItemController) => void">
+  Callback when the item is destroyed.
+</ParamField>
+
+<ParamField path="animate" type="(this: MenuItemController) => any">
+  Animation configuration.
+</ParamField>
+
+<ParamField path="enter" type="(this: MenuItemController) => any">
+  Enter animation configuration.
+</ParamField>
+
+<ParamField path="exit" type="(this: MenuItemController) => any">
+  Exit animation configuration.
+</ParamField>
+
+<ParamField path="initial" type="(this: MenuItemController) => any">
+  Initial state configuration.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ menuItem: MenuItemController }]>">
+  Render prop for children with access to the menu item controller.
+</ParamField>
+
+### Menu.Divider
+
+A visual separator between menu items.
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+### Menu.Group
+
+Groups related menu items together.
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The menu items and title to group.
+</ParamField>
+
+### Menu.Title
+
+A title for a group of menu items.
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The title content.
+</ParamField>
+
+### Menu.Arrow
+
+An optional arrow that points from the menu to the trigger.
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+### Menu.Indicator
+
+A visual indicator for the menu state.
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply.
+</ParamField>
+
+## Features
+
+- **Popover-based**: Built on top of the Popover component for positioning and behavior
+- **Keyboard navigation**: Support for keyboard navigation through menu items
+- **Auto-close**: Automatically closes when an item is clicked
+- **Flexible styling**: Full control over styling with presets and custom classes
+- **Animation support**: Built-in support for enter/exit animations
+- **Accessible**: Follows accessibility best practices with proper ARIA attributes
+
+## Related Components
+
+- [Popover](/components/popover) - The underlying component for menu positioning
+- [List](/components/list) - Used internally for menu item layout
+- [Button](/components/button) - Commonly used as the menu trigger

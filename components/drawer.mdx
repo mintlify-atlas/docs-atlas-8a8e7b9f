@@ -1,0 +1,336 @@
+---
+title: 'Drawer'
+description: 'A sliding panel that appears from the edge of the screen, also known as a slideover'
+---
+
+## Overview
+
+The Drawer (or Slideover) component provides a panel that slides in from any edge of the screen. It's ideal for navigation menus, filters, or additional content without disrupting the main view.
+
+## Components
+
+The Drawer is composed of multiple subcomponents:
+
+- **Drawer.Root** - The main container that manages drawer state
+- **Drawer.Content** - The drawer content area
+- **Drawer.Backdrop** - Optional backdrop overlay
+- **Drawer.Header** - Optional header section
+- **Drawer.Body** - Main content body
+- **Drawer.Footer** - Optional footer section
+- **Drawer.Title** - Drawer title element
+- **Drawer.Description** - Drawer description element
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Drawer } from '$svelte-atoms/core/components/drawer';
+  
+  let isOpen = $state(false);
+</script>
+
+<button onclick={() => (isOpen = true)}>Open Drawer</button>
+
+<Drawer.Root bind:open={isOpen}>
+  <Drawer.Backdrop />
+  <Drawer.Content>
+    <Drawer.Header>
+      <Drawer.Title>Navigation</Drawer.Title>
+      <Drawer.Description>Site navigation menu</Drawer.Description>
+    </Drawer.Header>
+    
+    <Drawer.Body>
+      <nav>
+        <a href="/home">Home</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </Drawer.Body>
+  </Drawer.Content>
+</Drawer.Root>
+```
+
+## Drawer.Root Props
+
+<ParamField path="open" type="boolean" default="false">
+  Controls the open/closed state of the drawer. Can be bound with `bind:open`.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, disables drawer interactions.
+</ParamField>
+
+<ParamField path="portal" type="string | PortalBond" default="'root.l1'">
+  Portal destination for rendering the drawer. Uses layer 1 by default.
+</ParamField>
+
+<ParamField path="onclose" type="(event: Event, bond: DrawerBond) => void">
+  Callback fired when the drawer closes.
+</ParamField>
+
+<ParamField path="factory" type="Factory<DrawerBond>">
+  Optional factory function to customize drawer bond creation.
+</ParamField>
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'div'">
+  HTML element type for the root element.
+</ParamField>
+
+<ParamField path="initial" type="(node: HTMLElement, bond: DrawerBond) => void">
+  Initial animation state. Default uses `animateDrawerRoot({ duration: 0 })`.
+</ParamField>
+
+<ParamField path="animate" type="(node: HTMLElement, bond: DrawerBond) => void">
+  Animation function for the drawer root. Default uses `animateDrawerRoot({})`.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ drawer: DrawerBond }]>">
+  Render function that receives the drawer bond instance.
+</ParamField>
+
+## Drawer.Content Props
+
+<ParamField path="animate" type="(node: HTMLElement) => void">
+  Animation function for the content. Default uses `animateDrawerContent()` with left side.
+</ParamField>
+
+<ParamField path="initial" type="(node: HTMLElement) => void">
+  Initial animation state.
+</ParamField>
+
+<ParamField path="enter" type="(node: HTMLElement) => void">
+  Animation function when content enters.
+</ParamField>
+
+<ParamField path="exit" type="(node: HTMLElement) => void">
+  Animation function when content exits.
+</ParamField>
+
+## Drawer.Backdrop Props
+
+Extends standard HTML div attributes. Renders a semi-transparent backdrop behind the drawer.
+
+## Drawer.Header Props
+
+Extends standard HTML div attributes. Use for styling and layout of the header area.
+
+## Drawer.Body Props
+
+Extends standard HTML div attributes. Contains the main drawer content.
+
+## Drawer.Footer Props
+
+Extends standard HTML div attributes. Typically contains action buttons.
+
+## Drawer.Title Props
+
+Extends standard HTML heading attributes. Default element is `h2`.
+
+## Drawer.Description Props
+
+Extends standard HTML paragraph attributes. Default element is `p`.
+
+## Animation Hooks
+
+### animateDrawerRoot
+
+Animates the drawer backdrop with opacity transition.
+
+```svelte
+import { animateDrawerRoot } from '$svelte-atoms/core/components/drawer/motion';
+
+<Drawer.Root animate={animateDrawerRoot({ duration: 0.3, ease: 'easeInOut' })}>
+  <!-- content -->
+</Drawer.Root>
+```
+
+**Parameters:**
+- `duration` (number): Animation duration in seconds. Default: `DURATION.fast / 1000`
+- `delay` (number): Animation delay in seconds. Default: `0`
+- `ease` (Easing | Easing[]): Easing function. Default: `'easeInOut'`
+
+### animateDrawerContent
+
+Animates the drawer content sliding in from the specified side.
+
+```svelte
+import { animateDrawerContent } from '$svelte-atoms/core/components/drawer/motion';
+
+<Drawer.Content 
+  animate={animateDrawerContent({ ease: 'easeOut', side: 'right', duration: 0.3 })}
+>
+  <!-- content -->
+</Drawer.Content>
+```
+
+**Parameters:**
+- `duration` (number): Animation duration in seconds. Default: `DURATION.fast / 1000`
+- `delay` (number): Animation delay in seconds. Default: `0`
+- `ease` (Easing | Easing[]): Easing function. Default: `'easeInOut'`
+- `side` (`'left' | 'right' | 'top' | 'bottom'`): Side to slide from. Default: `'left'`
+
+## Examples
+
+### Left Drawer (Default)
+
+```svelte
+<script>
+  import { Drawer, animateDrawerContent, animateDrawerRoot } from '$svelte-atoms/core/components/drawer';
+  
+  let isOpen = $state(false);
+</script>
+
+<button onclick={() => (isOpen = true)}>Open Menu</button>
+
+<Drawer.Root 
+  bind:open={isOpen}
+  animate={animateDrawerRoot({})}
+>
+  <Drawer.Content
+    class="flex min-h-full w-md flex-col border-r p-8 shadow-md"
+    animate={animateDrawerContent({ ease: 'easeOut', side: 'left' })}
+  >
+    <Drawer.Header class="flex items-center justify-between">
+      <Drawer.Title class="text-lg font-semibold">Navigation</Drawer.Title>
+      <Drawer.Description class="text-sm text-neutral-500">
+        Browse the site sections
+      </Drawer.Description>
+    </Drawer.Header>
+    
+    <div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+      </nav>
+    </div>
+  </Drawer.Content>
+</Drawer.Root>
+```
+
+### Right Drawer
+
+```svelte
+<Drawer.Root bind:open={isOpen}>
+  <Drawer.Content
+    class="inset-y-0 flex w-md flex-col border-l p-8 shadow-sm"
+    animate={animateDrawerContent({ ease: 'easeOut', side: 'right' })}
+  >
+    <div>Right side content</div>
+  </Drawer.Content>
+</Drawer.Root>
+```
+
+### Top Drawer
+
+```svelte
+<Drawer.Root bind:open={isOpen}>
+  <Drawer.Content
+    class="flex w-full min-w-full flex-col border-b p-8 shadow-md"
+    animate={animateDrawerContent({ ease: 'easeOut', side: 'top' })}
+  >
+    <div>Top content</div>
+  </Drawer.Content>
+</Drawer.Root>
+```
+
+### Bottom Drawer
+
+```svelte
+<Drawer.Root bind:open={isOpen}>
+  <Drawer.Content
+    class="flex w-full min-w-full flex-col border-t p-8 shadow-md"
+    animate={animateDrawerContent({ ease: 'easeOut', side: 'bottom' })}
+  >
+    <div>Bottom content</div>
+  </Drawer.Content>
+</Drawer.Root>
+```
+
+### With Backdrop
+
+```svelte
+<Drawer.Root 
+  bind:open={isOpen}
+  class="backdrop-blur-md"
+>
+  <Drawer.Backdrop />
+  <Drawer.Content animate={animateDrawerContent({ side: 'left' })}>
+    <!-- content -->
+  </Drawer.Content>
+</Drawer.Root>
+```
+
+## Attachment Hooks
+
+Drawer provides utility functions for common interactions:
+
+### clickoutDrawer
+
+Closes the drawer when clicking outside the content area.
+
+```svelte
+import { clickoutDrawer } from '$svelte-atoms/core/components/drawer';
+
+<Drawer.Content
+  {@attach clickoutDrawer((_, bond) => {
+    bond?.state?.close?.();
+  })}
+>
+  <!-- content -->
+</Drawer.Content>
+```
+
+### toggleDrawer
+
+Toggles the drawer open state.
+
+```svelte
+import { toggleDrawer } from '$svelte-atoms/core/components/drawer';
+
+<button {@attach toggleDrawer()}>Toggle Drawer</button>
+```
+
+### openDrawer
+
+Opens the drawer.
+
+```svelte
+import { openDrawer } from '$svelte-atoms/core/components/drawer';
+
+<button {@attach openDrawer()}>Open Drawer</button>
+```
+
+### closeDrawer
+
+Closes the drawer.
+
+```svelte
+import { closeDrawer } from '$svelte-atoms/core/components/drawer';
+
+<button {@attach closeDrawer()}>Close Drawer</button>
+```
+
+## Accessibility
+
+- Manages focus when opened
+- Can be closed by clicking outside (with `clickoutDrawer` attachment)
+- Supports keyboard navigation within content
+- Backdrop provides visual separation from main content
+
+## Extension Points
+
+You can extend prop types for customization:
+
+```typescript
+declare module '$svelte-atoms/core/components/drawer' {
+  interface DrawerExtendProps {
+    customProp?: string;
+  }
+}
+```
+
+## Related Components
+
+- [Dialog](/components/dialog) - Modal overlay
+- [Popover](/components/popover) - Contextual popup
+- [Sidebar](/components/sidebar) - Fixed side navigation

@@ -1,0 +1,398 @@
+---
+title: Checkbox
+description: A customizable checkbox component with support for indeterminate state and custom icons
+icon: check-square
+---
+
+## Overview
+
+The Checkbox component provides an accessible and customizable checkbox input with built-in support for checked, unchecked, and indeterminate states. It features smooth animations and custom content rendering.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Checkbox } from '@svelte-atoms/core/components/checkbox';
+  
+  let checked = $state(false);
+</script>
+
+<Checkbox bind:checked />
+```
+
+## Examples
+
+### Basic Checkbox
+
+```svelte
+<script>
+  let checked = $state(false);
+</script>
+
+<Checkbox bind:checked />
+<p>Checked: {checked}</p>
+```
+
+### Checkbox with Label
+
+```svelte
+<script>
+  import { Checkbox } from '@svelte-atoms/core/components/checkbox';
+  import { Label } from '@svelte-atoms/core/components/label';
+  
+  let agreed = $state(false);
+</script>
+
+<div class="flex items-center gap-2">
+  <Checkbox id="terms" bind:checked={agreed} />
+  <Label for="terms">I agree to the terms and conditions</Label>
+</div>
+```
+
+### Indeterminate State
+
+```svelte
+<script>
+  let indeterminate = $state(true);
+</script>
+
+<Checkbox bind:indeterminate />
+```
+
+### Checkbox Group
+
+```svelte
+<script>
+  let group = $state([]);
+</script>
+
+<div class="flex flex-col gap-2">
+  <Checkbox value="option1" bind:group>Option 1</Checkbox>
+  <Checkbox value="option2" bind:group>Option 2</Checkbox>
+  <Checkbox value="option3" bind:group>Option 3</Checkbox>
+</div>
+<p>Selected: {group.join(', ')}</p>
+```
+
+### Custom Checkmark
+
+```svelte
+<script>
+  import { Checkbox } from '@svelte-atoms/core/components/checkbox';
+  import CustomIcon from './CustomIcon.svelte';
+  
+  let checked = $state(false);
+</script>
+
+<Checkbox bind:checked checkedContent={CustomIcon} />
+```
+
+### Disabled State
+
+```svelte
+<Checkbox checked disabled>Disabled Checked</Checkbox>
+<Checkbox disabled>Disabled Unchecked</Checkbox>
+```
+
+### Handling State Cycle
+
+```svelte
+<script>
+  let checked = $state(false);
+  let indeterminate = $state(true);
+</script>
+
+<!-- Click cycle: indeterminate → checked → unchecked → checked → ... -->
+<Checkbox bind:checked bind:indeterminate />
+```
+
+## Props
+
+<ParamField path="checked" type="boolean" default="false">
+  The checked state of the checkbox. Bindable for two-way data binding.
+</ParamField>
+
+<ParamField path="indeterminate" type="boolean" default="false">
+  The indeterminate state. When true, shows indeterminate indicator. Bindable.
+</ParamField>
+
+<ParamField path="value" type="string">
+  The value associated with this checkbox, used when working with checkbox groups.
+</ParamField>
+
+<ParamField path="group" type="string[]" default="[]">
+  Array of selected values for checkbox groups. Bindable.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, the checkbox is disabled and cannot be interacted with.
+</ParamField>
+
+<ParamField path="id" type="string">
+  The ID attribute, used for associating with labels.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name attribute for form submission.
+</ParamField>
+
+<ParamField path="checkedContent" type="Component | Snippet">
+  Custom content to display when the checkbox is checked.
+</ParamField>
+
+<ParamField path="indeterminateContent" type="Component | Snippet">
+  Custom content to display when the checkbox is in indeterminate state.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'checkbox'">
+  The preset key used for styling.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the checkbox element.
+</ParamField>
+
+<ParamField path="enter" type="TransitionFn">
+  Custom enter transition function.
+</ParamField>
+
+<ParamField path="exit" type="TransitionFn">
+  Custom exit transition function.
+</ParamField>
+
+<ParamField path="initial" type="boolean">
+  Whether to apply the initial transition.
+</ParamField>
+
+## Event Handlers
+
+<ParamField path="onclick" type="(ev?: Event) => void">
+  Click event handler. Called before state changes. Can prevent default behavior.
+</ParamField>
+
+<ParamField path="onchange" type="(ev?: Event, options?: { checked: boolean }) => void">
+  Change event handler. Called after the checkbox state changes.
+</ParamField>
+
+<ParamField path="oninput" type="(ev?: Event, options?: { checked: boolean, value: boolean, type: 'boolean' }) => void">
+  Input event handler. Called when the checkbox value changes.
+</ParamField>
+
+<ParamField path="onfocus" type="(ev?: Event) => void">
+  Focus event handler.
+</ParamField>
+
+<ParamField path="onblur" type="(ev?: Event) => void">
+  Blur event handler.
+</ParamField>
+
+## HTML Attributes
+
+The Checkbox component accepts all standard HTML input attributes (excluding `type`), including:
+
+- `tabindex` - Tab order
+- `aria-*` - Accessibility attributes
+- `data-*` - Data attributes
+
+## Default Styling
+
+```css
+/* Root */
+border-border
+outline-primary
+bg-input
+text-foreground
+aspect-square
+h-5
+w-fit
+cursor-pointer
+rounded-sm
+border
+outline-0
+outline-offset-2
+transition-colors
+duration-100
+
+/* When checked */
+bg-foreground
+
+/* Checkmark indicator */
+text-accent
+pointer-events-none
+flex
+h-full
+content-center
+items-center
+justify-center
+overflow-hidden
+p-0.5
+
+/* Indeterminate indicator */
+pointer-events-none
+flex
+size-full
+scale-50
+items-center
+justify-center
+rounded-[inherit]
+bg-current
+```
+
+## State Behavior
+
+The checkbox follows this state cycle when clicked:
+
+1. **Indeterminate** → Click → **Checked** (indeterminate becomes false, checked becomes true)
+2. **Checked** → Click → **Unchecked** (checked toggles to false)
+3. **Unchecked** → Click → **Checked** (checked toggles to true)
+
+## TypeScript Support
+
+```typescript
+interface CheckboxProps extends HtmlAtomProps<'button'>, CheckboxExtendProps {
+  value?: string;
+  group?: string[];
+  checked?: boolean;
+  indeterminate?: boolean;
+  checkedContent?: Component | Snippet;
+  indeterminateContent?: Component | Snippet;
+  children?: Snippet<[]>;
+  onclick?: (ev?: Event) => void;
+  onchange?: (ev?: Event, options?: { checked: boolean }) => void;
+}
+```
+
+### Extending Checkbox Props
+
+```typescript
+declare module '@svelte-atoms/core/components/checkbox' {
+  interface CheckboxExtendProps {
+    size?: 'sm' | 'md' | 'lg';
+    variant?: 'default' | 'rounded';
+  }
+}
+```
+
+## Animations
+
+The checkbox includes built-in scale animation for the checkmark:
+
+```typescript
+// Default animation
+scale(node, { 
+  duration: DURATION.fast, 
+  easing: circOut, 
+  start: 0.6 
+})
+```
+
+You can customize animations using `enter` and `exit` props:
+
+```svelte
+<script>
+  import { fade } from 'svelte/transition';
+</script>
+
+<Checkbox 
+  bind:checked
+  enter={(node) => fade(node, { duration: 200 })}
+  exit={(node) => fade(node, { duration: 200 })}
+/>
+```
+
+## Integration with Forms
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Checkbox } from '@svelte-atoms/core/components/checkbox';
+  import { z } from 'zod';
+  
+  const schema = z.object({
+    isAdmin: z.boolean()
+  });
+</script>
+
+<Form.Root>
+  <Form.Field name="isAdmin" schema={schema.shape.isAdmin}>
+    <Form.Field.Label>Is Admin?</Form.Field.Label>
+    <Form.Field.Control base={Checkbox} />
+  </Form.Field>
+</Form.Root>
+```
+
+## Accessibility
+
+- Uses proper ARIA role: `role="checkbox"`
+- Supports `aria-checked` with three states: `true`, `false`, `"mixed"` (indeterminate)
+- Keyboard accessible (Space/Enter to toggle)
+- Hidden native checkbox for form compatibility
+- Supports focus management
+- Works with labels via `id` attribute
+
+## Presets
+
+The Checkbox component supports multiple preset keys:
+
+- `checkbox` - Root element
+- `checkbox.checkmark` - Checkmark indicator
+- `checkbox.indeterminate` - Indeterminate indicator
+
+```svelte
+<Checkbox preset="checkbox.large" />
+```
+
+## Best Practices
+
+1. **Always provide labels**: Use the Label component or text adjacent to checkboxes
+2. **Use indeterminate for parent selections**: In tree structures, show indeterminate when some children are selected
+3. **Handle disabled state**: Provide visual feedback for disabled checkboxes
+4. **Group related checkboxes**: Use the `group` binding for related options
+5. **Validate selections**: Use with Form.Field for validation support
+6. **Don't use for single yes/no**: Consider using a toggle or switch component instead
+
+## Common Patterns
+
+### Select All with Indeterminate
+
+```svelte
+<script>
+  let items = $state(['item1', 'item2', 'item3']);
+  let selected = $state([]);
+  
+  const allChecked = $derived(selected.length === items.length);
+  const someChecked = $derived(selected.length > 0 && selected.length < items.length);
+  
+  function toggleAll() {
+    if (allChecked) {
+      selected = [];
+    } else {
+      selected = [...items];
+    }
+  }
+</script>
+
+<Checkbox 
+  checked={allChecked}
+  indeterminate={someChecked}
+  onclick={toggleAll}
+>
+  Select All
+</Checkbox>
+
+{#each items as item}
+  <Checkbox value={item} bind:group={selected}>{item}</Checkbox>
+{/each}
+```
+
+## Related Components
+
+- [Radio](/components/radio) - For mutually exclusive selections
+- [Form](/components/form) - For form management
+- [Label](/components/label) - For checkbox labels

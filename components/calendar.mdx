@@ -1,0 +1,292 @@
+---
+title: "Calendar"
+description: "A date selection component for picking single dates or date ranges"
+---
+
+## Overview
+
+The Calendar component provides a visual calendar interface for selecting dates. It supports both single date selection and date range selection with customizable min/max dates.
+
+## Installation
+
+```bash
+import { Calendar } from '@svelte-atoms/core';
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Calendar } from '@svelte-atoms/core';
+</script>
+
+<Calendar.Root>
+  <Calendar.Header />
+  <Calendar.Body>
+    {#snippet children({ day })}
+      <Calendar.Day {day} />
+    {/snippet}
+  </Calendar.Body>
+</Calendar.Root>
+```
+
+## Calendar.Root Props
+
+<ParamField path="value" type="Date" optional>
+  The selected date (single mode)
+</ParamField>
+
+<ParamField path="range" type="[Date | undefined, Date | undefined]" optional>
+  Selected date range [start, end]
+</ParamField>
+
+<ParamField path="start" type="Date" default="today">
+  Start date of the range
+</ParamField>
+
+<ParamField path="end" type="Date" optional>
+  End date of the range
+</ParamField>
+
+<ParamField path="pivote" type="Date" default="new Date()">
+  The currently displayed month/year
+</ParamField>
+
+<ParamField path="min" type="Date" optional>
+  Minimum selectable date
+</ParamField>
+
+<ParamField path="max" type="Date" optional>
+  Maximum selectable date
+</ParamField>
+
+<ParamField path="type" type="'single' | 'range'" default="single">
+  Selection mode
+</ParamField>
+
+<ParamField path="extend" type="Record<string, unknown>" optional>
+  Additional custom properties
+</ParamField>
+
+<ParamField path="factory" type="Factory<CalendarBond>" optional>
+  Custom factory function for creating calendar bond
+</ParamField>
+
+<ParamField path="onchange" type="(ev: CustomEvent, params: { range: CalendarRange; pivote: Date }) => void" optional>
+  Callback fired when date selection changes
+</ParamField>
+
+<ParamField path="preset" type="string" default="calendar">
+  Preset key for styling
+</ParamField>
+
+## Calendar.Day Props
+
+<ParamField path="day" type="Day" required>
+  Day object containing date information
+</ParamField>
+
+<ParamField path="as" type="string" optional>
+  HTML element type to render
+</ParamField>
+
+<ParamField path="onclick" type="() => void" optional>
+  Click handler for the day
+</ParamField>
+
+<ParamField path="preset" type="string" default="calendar.day">
+  Preset key for styling
+</ParamField>
+
+## Day Object Structure
+
+The `Day` type contains the following properties:
+
+```typescript
+type Day = {
+  id: number;
+  date: Date;
+  dayOfMonth: number;
+  offmonth: boolean;          // Day belongs to previous/next month
+  today: boolean;             // Is today's date
+  week: number;               // Week number (0-5)
+  month: number;              // Month number
+  disabled: boolean;          // Is disabled (outside min/max)
+  weekend: boolean;           // Is weekend (Sunday)
+  name: string;               // Short name (e.g., "Mon")
+  fullname: string;           // Full name (e.g., "Monday")
+  fromNextMonth: boolean;     // From next month
+  fromPreviousMonth: boolean; // From previous month
+};
+```
+
+## Calendar.Header Props
+
+Extends all HtmlAtomProps. Typically contains navigation controls for month/year.
+
+## Calendar.Body Props
+
+Extends all HtmlAtomProps. Container for the calendar grid.
+
+## Calendar.WeekDay Props
+
+Extends all HtmlAtomProps. Displays weekday names.
+
+## Subcomponents
+
+### Calendar.Root
+
+Root container managing calendar state and date logic.
+
+### Calendar.Header
+
+Header section typically containing month/year navigation.
+
+### Calendar.Body
+
+Body section containing the calendar grid of days.
+
+### Calendar.Day
+
+Individual day cell in the calendar.
+
+### Calendar.WeekDay
+
+Weekday name labels (Mon, Tue, Wed, etc.).
+
+## Examples
+
+### Single Date Selection
+
+```svelte
+<script>
+  import { Calendar } from '@svelte-atoms/core';
+  
+  let selectedDate = $state<Date | undefined>(undefined);
+</script>
+
+<Calendar.Root bind:value={selectedDate} type="single">
+  <Calendar.Header />
+  <Calendar.Body>
+    {#snippet children({ day })}
+      <Calendar.Day {day} />
+    {/snippet}
+  </Calendar.Body>
+</Calendar.Root>
+
+{#if selectedDate}
+  <p>Selected: {selectedDate.toDateString()}</p>
+{/if}
+```
+
+### Date Range Selection
+
+```svelte
+<script>
+  import { Calendar } from '@svelte-atoms/core';
+  import type { CalendarRange } from '@svelte-atoms/core';
+  
+  let range = $state<CalendarRange>([undefined, undefined]);
+</script>
+
+<Calendar.Root bind:range type="range">
+  <Calendar.Header />
+  <Calendar.Body>
+    {#snippet children({ day })}
+      <Calendar.Day {day} />
+    {/snippet}
+  </Calendar.Body>
+</Calendar.Root>
+
+{#if range[0] && range[1]}
+  <p>From: {range[0].toDateString()} To: {range[1].toDateString()}</p>
+{/if}
+```
+
+### With Min/Max Dates
+
+```svelte
+<script>
+  import { Calendar } from '@svelte-atoms/core';
+  import { addDays, subDays } from 'date-fns';
+  
+  const today = new Date();
+  const minDate = subDays(today, 7);
+  const maxDate = addDays(today, 14);
+</script>
+
+<Calendar.Root min={minDate} max={maxDate}>
+  <Calendar.Header />
+  <Calendar.Body>
+    {#snippet children({ day })}
+      <Calendar.Day {day} />
+    {/snippet}
+  </Calendar.Body>
+</Calendar.Root>
+```
+
+### Custom Day Rendering
+
+```svelte
+<script>
+  import { Calendar } from '@svelte-atoms/core';
+</script>
+
+<Calendar.Root>
+  <Calendar.Header />
+  <Calendar.Body>
+    {#snippet children({ day })}
+      <button
+        class="calendar-day"
+        class:offmonth={day.offmonth}
+        class:today={day.today}
+        class:disabled={day.disabled}
+        class:weekend={day.weekend}
+      >
+        {day.dayOfMonth}
+      </button>
+    {/snippet}
+  </Calendar.Body>
+</Calendar.Root>
+```
+
+### With Custom Header
+
+```svelte
+<script>
+  import { Calendar } from '@svelte-atoms/core';
+  import { format } from 'date-fns';
+  
+  let pivote = $state(new Date());
+  
+  function previousMonth() {
+    pivote = new Date(pivote.getFullYear(), pivote.getMonth() - 1, 1);
+  }
+  
+  function nextMonth() {
+    pivote = new Date(pivote.getFullYear(), pivote.getMonth() + 1, 1);
+  }
+</script>
+
+<Calendar.Root bind:pivote>
+  <Calendar.Header class="flex items-center justify-between p-4">
+    <button onclick={previousMonth}>&lt;</button>
+    <span class="font-semibold">{format(pivote, 'MMMM yyyy')}</span>
+    <button onclick={nextMonth}>&gt;</button>
+  </Calendar.Header>
+  
+  <Calendar.Body>
+    {#snippet children({ day })}
+      <Calendar.Day {day} />
+    {/snippet}
+  </Calendar.Body>
+</Calendar.Root>
+```
+
+## Accessibility
+
+- Keyboard navigation with arrow keys
+- Enter/Space to select dates
+- Screen reader support with ARIA attributes
+- Disabled dates are not selectable
+- Visual indicators for today, selected dates, and date ranges

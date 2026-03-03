@@ -1,0 +1,461 @@
+---
+title: "Stepper"
+description: "A multi-step progress indicator with navigation controls"
+---
+
+## Overview
+
+The Stepper component guides users through a multi-step process. It displays step indicators, manages active step state, and supports both horizontal and vertical layouts.
+
+## Installation
+
+```bash
+import { Stepper, Step } from '@svelte-atoms/core';
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Stepper, Step } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core';
+  
+  let currentStep = $state(0);
+  
+  const steps = [
+    { header: 'Account', body: 'Enter your details' },
+    { header: 'Address', body: 'Shipping information' },
+    { header: 'Payment', body: 'Payment method' }
+  ];
+</script>
+
+<Stepper.Root bind:step={currentStep}>
+  {#snippet children({ stepper })}
+    <Stepper.Header class="flex justify-between">
+      {#each steps as stepData, i}
+        <Step.Root index={i}>
+          {#snippet children({ step })}
+            <Step.Header class="flex flex-col items-center">
+              <Step.Indicator />
+              <Step.Title>{stepData.header}</Step.Title>
+            </Step.Header>
+            
+            <Step.Body>
+              <h3>{stepData.header}</h3>
+              <p>{stepData.body}</p>
+            </Step.Body>
+          {/snippet}
+        </Step.Root>
+      {/each}
+    </Stepper.Header>
+    
+    <Stepper.Body>
+      <Stepper.Content />
+    </Stepper.Body>
+    
+    <Stepper.Footer class="flex justify-between">
+      <Button 
+        disabled={stepper.state.isFirstStep}
+        onclick={() => stepper.state.navigation.previous()}
+      >
+        Previous
+      </Button>
+      <Button 
+        onclick={() => stepper.state.navigation.next()}
+      >
+        {stepper.state.isLastStep ? 'Complete' : 'Next'}
+      </Button>
+    </Stepper.Footer>
+  {/snippet}
+</Stepper.Root>
+```
+
+## Stepper.Root Props
+
+<ParamField path="step" type="number" default="0">
+  The active step index (0-based)
+</ParamField>
+
+<ParamField path="linear" type="boolean" default="false">
+  Enforce linear progression (users can only navigate to adjacent steps)
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disable all stepper interactions
+</ParamField>
+
+<ParamField path="factory" type="Factory<StepperBond>" optional>
+  Custom factory function for creating stepper bond
+</ParamField>
+
+<ParamField path="preset" type="string" default="stepper">
+  Preset key for styling
+</ParamField>
+
+## Step.Root Props
+
+<ParamField path="index" type="number" required>
+  The step index (0-based)
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disable this specific step
+</ParamField>
+
+<ParamField path="completed" type="boolean" default="false">
+  Mark this step as completed
+</ParamField>
+
+<ParamField path="optional" type="boolean" default="false">
+  Mark this step as optional
+</ParamField>
+
+<ParamField path="factory" type="Factory<StepBond>" optional>
+  Custom factory function for creating step bond
+</ParamField>
+
+## Step.Indicator Props
+
+Extends all HtmlAtomProps for div elements. Visual indicator showing step number or status.
+
+## Step.Header Props
+
+Extends all HtmlAtomProps for div elements. Clickable header for the step.
+
+## Step.Title Props
+
+Extends all HtmlAtomProps for div elements. Title text for the step.
+
+## Step.Description Props
+
+Extends all HtmlAtomProps for p elements. Optional description text for the step.
+
+## Step.Body Props
+
+Extends all HtmlAtomProps for div elements. Content that displays when step is active.
+
+## Step.Separator Props
+
+Extends all HtmlAtomProps for div elements. Visual separator between steps.
+
+## Stepper.Header Props
+
+Extends all HtmlAtomProps for div elements. Container for step indicators.
+
+## Stepper.Body Props
+
+Extends all HtmlAtomProps for div elements. Container for active step content.
+
+## Stepper.Content Props
+
+Extends all HtmlAtomProps for div elements. Renders the active step's body content.
+
+## Stepper.Footer Props
+
+Extends all HtmlAtomProps for div elements. Container for navigation controls.
+
+## Stepper State API
+
+The stepper bond provides navigation methods and state:
+
+```typescript
+stepper.state.navigation.next()      // Go to next step
+stepper.state.navigation.previous()  // Go to previous step
+stepper.state.navigation.reset()     // Reset to first step
+stepper.state.navigation.goTo(index) // Go to specific step
+
+stepper.state.isFirstStep  // Boolean: is on first step
+stepper.state.isLastStep   // Boolean: is on last step
+```
+
+## Subcomponents
+
+### Stepper.Root
+
+Root container managing stepper state.
+
+### Stepper.Header
+
+Container for step indicators/headers.
+
+### Stepper.Body
+
+Container for active step content.
+
+### Stepper.Content
+
+Renders the active step's body (teleported from Step.Body).
+
+### Stepper.Footer
+
+Container for navigation buttons.
+
+### Step.Root
+
+Container for an individual step.
+
+### Step.Header
+
+Clickable header/trigger for the step.
+
+### Step.Indicator
+
+Visual indicator (number, icon, checkmark).
+
+### Step.Title
+
+Step title text.
+
+### Step.Description
+
+Optional step description.
+
+### Step.Body
+
+Step content that displays when active.
+
+### Step.Separator
+
+Line connecting step indicators.
+
+## Examples
+
+### Horizontal Stepper with Linear Navigation
+
+```svelte
+<script>
+  import { Stepper, Step } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core';
+  
+  let activeStep = $state(0);
+  
+  const steps = [
+    { header: 'Account Information', body: 'Enter your details' },
+    { header: 'Address', body: 'Shipping address' },
+    { header: 'Payment', body: 'Payment method' },
+    { header: 'Review', body: 'Review and confirm', optional: true }
+  ];
+</script>
+
+<Stepper.Root bind:step={activeStep} linear>
+  {#snippet children({ stepper })}
+    <Stepper.Header class="flex justify-between">
+      {#each steps as stepData, i}
+        <Step.Root index={i} optional={stepData.optional}>
+          {#snippet children({ step })}
+            <Step.Header class="flex flex-col gap-2 flex-1">
+              <div class="flex items-center w-full">
+                <Step.Indicator />
+                <Step.Separator />
+              </div>
+              
+              <div class="flex flex-col">
+                <Step.Title>
+                  {stepData.header}
+                  {#if stepData.optional}
+                    <span class="text-xs">(Optional)</span>
+                  {/if}
+                </Step.Title>
+                <Step.Description class="text-xs text-muted-foreground">
+                  {stepData.body}
+                </Step.Description>
+              </div>
+            </Step.Header>
+            
+            <Step.Body>
+              <h3 class="text-xl font-semibold mb-4">
+                Step {i + 1}: {stepData.header}
+              </h3>
+              <p>{stepData.body}</p>
+            </Step.Body>
+          {/snippet}
+        </Step.Root>
+      {/each}
+    </Stepper.Header>
+    
+    <Stepper.Body class="my-6">
+      <Stepper.Content class="min-h-50 p-6" />
+    </Stepper.Body>
+    
+    <Stepper.Footer class="flex justify-between">
+      <Button
+        variant="outline"
+        disabled={stepper.state.isFirstStep}
+        onclick={() => stepper.state.navigation.previous()}
+      >
+        Previous
+      </Button>
+      
+      <div class="flex gap-2">
+        <Button variant="ghost" onclick={() => stepper.state.navigation.reset()}>
+          Reset
+        </Button>
+        {#if stepper.state.isLastStep}
+          <Button onclick={() => alert('Complete!')}>Complete</Button>
+        {:else}
+          <Button onclick={() => stepper.state.navigation.next()}>Next</Button>
+        {/if}
+      </div>
+    </Stepper.Footer>
+  {/snippet}
+</Stepper.Root>
+```
+
+### Vertical Stepper
+
+```svelte
+<script>
+  import { Stepper, Step } from '@svelte-atoms/core';
+  
+  let step = $state(1);
+  
+  const steps = [
+    { header: 'Step 1', body: 'First step content' },
+    { header: 'Step 2', body: 'Second step content' },
+    { header: 'Step 3', body: 'Third step content' }
+  ];
+</script>
+
+<Stepper.Root class="flex gap-4" bind:step>
+  {#snippet children({ stepper })}
+    <div class="flex gap-4">
+      <Stepper.Header>
+        {#each steps as stepData, i}
+          <Step.Root index={i}>
+            {#snippet children({ step })}
+              <Step.Header class="flex w-full">
+                <div class="flex gap-2">
+                  <div class="flex flex-col">
+                    <Step.Indicator />
+                    <Step.Separator class="w-[2px] min-h-10 translate-x-[15px]" />
+                  </div>
+                  <div class="flex flex-col">
+                    <Step.Title>{stepData.header}</Step.Title>
+                    <Step.Description>{stepData.body}</Step.Description>
+                  </div>
+                </div>
+              </Step.Header>
+              
+              <Step.Body>
+                <h3>{stepData.header}</h3>
+                <p>{stepData.body}</p>
+              </Step.Body>
+            {/snippet}
+          </Step.Root>
+        {/each}
+      </Stepper.Header>
+      
+      <Stepper.Body>
+        <Stepper.Content class="min-w-96 p-6" />
+      </Stepper.Body>
+    </div>
+    
+    <Stepper.Footer class="flex justify-between">
+      <Button onclick={() => stepper.state.navigation.previous()}>
+        Previous
+      </Button>
+      <Button onclick={() => stepper.state.navigation.next()}>
+        Next
+      </Button>
+    </Stepper.Footer>
+  {/snippet}
+</Stepper.Root>
+```
+
+### With Animations
+
+```svelte
+<script>
+  import { Stepper, Step } from '@svelte-atoms/core';
+  import { animate } from 'motion';
+</script>
+
+<Stepper.Root>
+  {#snippet children({ stepper })}
+    <Stepper.Header>
+      {#each steps as stepData, i}
+        <Step.Root index={i}>
+          {#snippet children({ step })}
+            <Step.Header>
+              <Step.Indicator />
+              <Step.Title>{stepData.header}</Step.Title>
+            </Step.Header>
+            
+            <Step.Body
+              enter={(node) => {
+                const duration = 0.4;
+                animate(node, { opacity: [0, 1], y: [20, 0] }, { duration });
+                return { duration: duration * 1000 };
+              }}
+              exit={(node) => {
+                const duration = 0.2;
+                animate(node, { opacity: [1, 0] }, { duration });
+                return { duration: duration * 1000 };
+              }}
+            >
+              <h3>{stepData.header}</h3>
+              <p>{stepData.body}</p>
+            </Step.Body>
+          {/snippet}
+        </Step.Root>
+      {/each}
+    </Stepper.Header>
+    
+    <Stepper.Body>
+      <Stepper.Content />
+    </Stepper.Body>
+  {/snippet}
+</Stepper.Root>
+```
+
+### With Completed Steps
+
+```svelte
+<script>
+  let step = $state(1);
+  
+  const steps = $state([
+    { header: 'Account', completed: true },
+    { header: 'Address', completed: false },
+    { header: 'Payment', completed: false }
+  ]);
+  
+  function markComplete(index: number) {
+    steps[index].completed = true;
+  }
+</script>
+
+<Stepper.Root bind:step>
+  {#snippet children({ stepper })}
+    <Stepper.Header>
+      {#each steps as stepData, i}
+        <Step.Root index={i} completed={stepData.completed}>
+          {#snippet children({ step })}
+            <Step.Header>
+              <Step.Indicator />
+              <Step.Title>{stepData.header}</Step.Title>
+            </Step.Header>
+            
+            <Step.Body>
+              <h3>{stepData.header}</h3>
+              <Button onclick={() => markComplete(i)}>Mark Complete</Button>
+            </Step.Body>
+          {/snippet}
+        </Step.Root>
+      {/each}
+    </Stepper.Header>
+    
+    <Stepper.Body>
+      <Stepper.Content />
+    </Stepper.Body>
+  {/snippet}
+</Stepper.Root>
+```
+
+## Accessibility
+
+- Keyboard navigation between steps
+- ARIA attributes for screen readers
+- Visual indicators for active, completed, and disabled states
+- Focus management
+- Linear mode prevents jumping to incomplete steps

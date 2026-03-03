@@ -1,0 +1,280 @@
+---
+title: 'Tooltip'
+description: 'A hover-triggered informational popup anchored to an element'
+---
+
+## Overview
+
+The Tooltip component displays helpful information when hovering over an element. It's built on top of the Popover component with hover behavior instead of click.
+
+## Components
+
+The Tooltip uses Popover components under the hood:
+
+- **Tooltip.Root** - The main container (alias for Popover.Root)
+- **Tooltip.Trigger** - The element that triggers the tooltip on hover
+- **Tooltip.Content** - The floating content container (alias for Popover.Content)
+- **Tooltip.Arrow** - Optional arrow pointing to the trigger (alias for Popover.Arrow)
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Tooltip } from '$svelte-atoms/core/components/tooltip';
+  
+  let open = $state(false);
+</script>
+
+<Tooltip.Root bind:open offset={0}>
+  <Tooltip.Trigger>Hover me</Tooltip.Trigger>
+  
+  <Tooltip.Content>
+    <div>Helpful information</div>
+    <Tooltip.Arrow />
+  </Tooltip.Content>
+</Tooltip.Root>
+```
+
+## Tooltip.Root Props
+
+Inherits all props from [Popover.Root](/components/popover#popoverroot-props):
+
+<ParamField path="open" type="boolean" default="false">
+  Controls the open/closed state. Can be bound with `bind:open`.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, disables tooltip interactions.
+</ParamField>
+
+<ParamField path="placement" type="Placement" default="'bottom-start'">
+  Preferred placement relative to the trigger.
+</ParamField>
+
+<ParamField path="offset" type="number" default="1">
+  Distance in pixels between the tooltip and trigger.
+</ParamField>
+
+## Tooltip.Trigger Props
+
+<ParamField path="preset" type="string" default="'tooltip.trigger'">
+  Preset styling identifier.
+</ParamField>
+
+<ParamField path="onmount" type="(node: HTMLElement) => void">
+  Mount callback. The component automatically adds hover listeners.
+</ParamField>
+
+<ParamField path="onclick" type="(event: MouseEvent) => void">
+  Optional click handler.
+</ParamField>
+
+Extends standard HTML element attributes based on the `as` prop.
+
+**Behavior:**
+- Opens on `pointerenter` event
+- Closes on `pointerleave` event
+- Uses `requestAnimationFrame` for smooth transitions
+
+## Tooltip.Content Props
+
+Inherits all props from [Popover.Content](/components/popover#popovercontent-props).
+
+## Tooltip.Arrow Props
+
+Inherits all props from [Popover.Arrow](/components/popover#popoverarrow-props).
+
+## Examples
+
+### Simple Tooltip
+
+```svelte
+<Tooltip.Root offset={4}>
+  <Tooltip.Trigger>
+    <Icon name="info" />
+  </Tooltip.Trigger>
+  
+  <Tooltip.Content>
+    <div class="p-2 text-sm">
+      This is helpful information
+    </div>
+  </Tooltip.Content>
+</Tooltip.Root>
+```
+
+### With Button Base
+
+```svelte
+import { Button } from '$svelte-atoms/core/components/button';
+
+<Tooltip.Root>
+  <Tooltip.Trigger base={Button}>
+    Hover for info
+  </Tooltip.Trigger>
+  
+  <Tooltip.Content>
+    <div>Additional details appear here</div>
+    <Tooltip.Arrow />
+  </Tooltip.Content>
+</Tooltip.Root>
+```
+
+### Different Placements
+
+```svelte
+<!-- Top tooltip -->
+<Tooltip.Root placement="top">
+  <Tooltip.Trigger>Top</Tooltip.Trigger>
+  <Tooltip.Content>
+    <div>Content above</div>
+  </Tooltip.Content>
+</Tooltip.Root>
+
+<!-- Right tooltip -->
+<Tooltip.Root placement="right">
+  <Tooltip.Trigger>Right</Tooltip.Trigger>
+  <Tooltip.Content>
+    <div>Content to the right</div>
+  </Tooltip.Content>
+</Tooltip.Root>
+
+<!-- Bottom tooltip -->
+<Tooltip.Root placement="bottom">
+  <Tooltip.Trigger>Bottom</Tooltip.Trigger>
+  <Tooltip.Content>
+    <div>Content below</div>
+  </Tooltip.Content>
+</Tooltip.Root>
+
+<!-- Left tooltip -->
+<Tooltip.Root placement="left">
+  <Tooltip.Trigger>Left</Tooltip.Trigger>
+  <Tooltip.Content>
+    <div>Content to the left</div>
+  </Tooltip.Content>
+</Tooltip.Root>
+```
+
+### Rich Content Tooltip
+
+```svelte
+<Tooltip.Root placement="bottom" offset={8}>
+  <Tooltip.Trigger>
+    <span class="underline decoration-dotted">Feature Name</span>
+  </Tooltip.Trigger>
+  
+  <Tooltip.Content class="max-w-xs">
+    <div class="space-y-2 p-3">
+      <h4 class="font-semibold">Feature Name</h4>
+      <p class="text-sm">
+        This feature allows you to accomplish complex tasks
+        with a simple interface.
+      </p>
+      <div class="text-xs text-neutral-500">
+        Available in Pro plan
+      </div>
+    </div>
+    <Tooltip.Arrow />
+  </Tooltip.Content>
+</Tooltip.Root>
+```
+
+### Styled Tooltip
+
+```svelte
+<Tooltip.Root offset={6}>
+  <Tooltip.Trigger class="text-blue-600 hover:text-blue-700">
+    Help
+  </Tooltip.Trigger>
+  
+  <Tooltip.Content 
+    class="bg-neutral-900 text-white border-neutral-800 rounded-lg shadow-xl"
+  >
+    <div class="px-3 py-2 text-sm">
+      Click here for assistance
+    </div>
+    <Tooltip.Arrow class="text-neutral-900" />
+  </Tooltip.Content>
+</Tooltip.Root>
+```
+
+## Behavior
+
+The Tooltip.Trigger component automatically:
+
+1. Listens for `pointerenter` events to open the tooltip
+2. Adds a `pointerleave` listener when opened
+3. Closes the tooltip when pointer leaves
+4. Cleans up listeners on unmount
+
+Implementation:
+
+```typescript
+function tooltip(node: HTMLElement) {
+  const onpointerenter = async () => {
+    requestAnimationFrame(() => {
+      popoverBond?.state.open();
+    });
+    node.addEventListener('pointerleave', onpointerleave);
+  };
+  
+  const onpointerleave = () => {
+    popoverBond?.state.close();
+    node.removeEventListener('pointerleave', onpointerleave);
+  };
+  
+  node.addEventListener('pointerenter', onpointerenter, { passive: true });
+  
+  // ...
+}
+```
+
+## Positioning
+
+Tooltip inherits Popover's positioning behavior:
+
+- Uses Floating UI for intelligent placement
+- Automatically flips to stay visible
+- Adjusts on scroll and resize
+- Respects specified offset
+
+## Accessibility
+
+- Uses semantic HTML
+- Tooltip content is accessible to screen readers
+- Works with keyboard navigation on focusable triggers
+- Pointer-safe regions prevent flickering
+
+**Best Practices:**
+- Keep tooltip content concise
+- Don't put critical information only in tooltips
+- Ensure triggers are keyboard-accessible
+- Use appropriate contrast for readability
+
+## Comparison with Popover
+
+| Feature | Tooltip | Popover |
+|---------|---------|----------|
+| Trigger | Hover | Click |
+| Use case | Informational | Interactive |
+| Content | Brief help text | Rich content, actions |
+| Interaction | Read-only | Clickable elements |
+| Duration | While hovering | Until dismissed |
+
+## Extension Points
+
+Since Tooltip uses Popover internally, you can extend Popover props:
+
+```typescript
+declare module '$svelte-atoms/core/components/popover' {
+  interface PopoverRootExtendProps {
+    customProp?: string;
+  }
+}
+```
+
+## Related Components
+
+- [Popover](/components/popover) - Click-triggered popup
+- [Dialog](/components/dialog) - Modal overlay
+- [Toast](/components/toast) - Notification messages

@@ -1,0 +1,319 @@
+---
+title: "DatePicker"
+description: "A button that opens a calendar popover for date selection"
+---
+
+## Overview
+
+The DatePicker component combines a trigger button with a Calendar popover for intuitive date selection. It's built on top of the Calendar and Popover components.
+
+## Installation
+
+```bash
+import { DatePicker } from '@svelte-atoms/core';
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { DatePicker } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core';
+  
+  let selectedDate = $state<Date | undefined>(undefined);
+</script>
+
+<DatePicker.Root bind:value={selectedDate}>
+  <DatePicker.Trigger base={Button}>
+    {#if selectedDate}
+      {selectedDate.toDateString()}
+    {:else}
+      Select Date
+    {/if}
+    <DatePicker.Indicator class="ml-auto" />
+  </DatePicker.Trigger>
+  <DatePicker.Calendar />
+</DatePicker.Root>
+```
+
+## DatePicker.Root Props
+
+<ParamField path="open" type="boolean" optional>
+  Controls whether the popover is open
+</ParamField>
+
+<ParamField path="value" type="Date" optional>
+  The selected date (single mode)
+</ParamField>
+
+<ParamField path="range" type="[Date | undefined, Date | undefined]" optional>
+  Selected date range [start, end]
+</ParamField>
+
+<ParamField path="pivote" type="Date" default="new Date()">
+  The currently displayed month/year
+</ParamField>
+
+<ParamField path="start" type="Date" default="today">
+  Start date of the range
+</ParamField>
+
+<ParamField path="end" type="Date" optional>
+  End date of the range
+</ParamField>
+
+<ParamField path="min" type="Date" optional>
+  Minimum selectable date
+</ParamField>
+
+<ParamField path="max" type="Date" optional>
+  Maximum selectable date
+</ParamField>
+
+<ParamField path="type" type="'single' | 'range'" default="single">
+  Selection mode
+</ParamField>
+
+<ParamField path="offset" type="number" default="1">
+  Offset distance from the trigger
+</ParamField>
+
+<ParamField path="factory" type="Factory<DatePickerBond>" optional>
+  Custom factory function for creating date picker bond
+</ParamField>
+
+## DatePicker.Trigger Props
+
+Extends PopoverTrigger props and all HtmlAtomProps.
+
+<ParamField path="base" type="Component" optional>
+  Base component to use for the trigger (e.g., Button)
+</ParamField>
+
+## DatePicker.Calendar Props
+
+<ParamField path="class" type="string" optional>
+  CSS classes for styling
+</ParamField>
+
+<ParamField path="preset" type="string" default="date-picker.calendar">
+  Preset key for styling
+</ParamField>
+
+<ParamField path="Header" type="Component" optional>
+  Custom header component
+</ParamField>
+
+<ParamField path="Weekdays" type="Component" optional>
+  Custom weekdays component
+</ParamField>
+
+<ParamField path="Body" type="Component" optional>
+  Custom body component
+</ParamField>
+
+<ParamField path="Day" type="Component" optional>
+  Custom day component
+</ParamField>
+
+<ParamField path="Months" type="Component" optional>
+  Custom months selector component
+</ParamField>
+
+<ParamField path="Years" type="Component" optional>
+  Custom years selector component
+</ParamField>
+
+## DatePicker.Indicator Props
+
+Extends PopoverIndicator props. Visual indicator showing popover state.
+
+## DatePicker.Arrow Props
+
+Extends PopoverArrow props. Arrow pointing to the trigger.
+
+## Subcomponents
+
+### DatePicker.Root
+
+Root container managing date picker state. Wraps a Popover.Root.
+
+### DatePicker.Trigger
+
+Trigger button that opens the calendar popover.
+
+### DatePicker.Calendar
+
+The calendar component rendered in the popover.
+
+### DatePicker.Indicator
+
+Visual indicator (typically a chevron) showing open/closed state.
+
+### DatePicker.Arrow
+
+Arrow element pointing from popover to trigger.
+
+## Examples
+
+### Single Date Selection
+
+```svelte
+<script>
+  import { DatePicker } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core';
+  
+  let value = $state<Date | undefined>(undefined);
+</script>
+
+<DatePicker.Root bind:value>
+  <DatePicker.Trigger base={Button} class="w-64 gap-4">
+    {#if value}
+      <div>{value.toDateString()}</div>
+    {:else}
+      <div>Select a date</div>
+    {/if}
+    <DatePicker.Indicator class="ml-auto" />
+  </DatePicker.Trigger>
+  <DatePicker.Calendar />
+</DatePicker.Root>
+```
+
+### Date Range Selection
+
+```svelte
+<script>
+  import { DatePicker } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core';
+  import type { CalendarRange } from '@svelte-atoms/core';
+  
+  let range = $state<CalendarRange>([undefined, undefined]);
+</script>
+
+<DatePicker.Root bind:range type="range">
+  <DatePicker.Trigger base={Button} class="w-80">
+    {#if range[0] && range[1]}
+      <div>{range[0].toDateString()} - {range[1].toDateString()}</div>
+    {:else if range[0]}
+      <div>{range[0].toDateString()} - Select end date</div>
+    {:else}
+      <div>Select date range</div>
+    {/if}
+    <DatePicker.Indicator class="ml-auto" />
+  </DatePicker.Trigger>
+  <DatePicker.Calendar />
+</DatePicker.Root>
+```
+
+### With Min/Max Constraints
+
+```svelte
+<script>
+  import { DatePicker } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core';
+  import { addDays, subDays } from 'date-fns';
+  
+  let value = $state<Date | undefined>(undefined);
+  let min = subDays(new Date(), 5);
+  let max = addDays(new Date(), 15);
+</script>
+
+<DatePicker.Root bind:value {min} {max}>
+  <DatePicker.Trigger base={Button} class="w-64">
+    {#if value}
+      {value.toDateString()}
+    {:else}
+      Select Date (within range)
+    {/if}
+    <DatePicker.Indicator class="ml-auto" />
+  </DatePicker.Trigger>
+  <DatePicker.Calendar />
+</DatePicker.Root>
+
+<p class="text-sm text-muted-foreground mt-2">
+  Available from {min.toDateString()} to {max.toDateString()}
+</p>
+```
+
+### Controlled Open State
+
+```svelte
+<script>
+  import { DatePicker } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core';
+  
+  let open = $state(false);
+  let value = $state<Date | undefined>(undefined);
+  
+  function closeAfterSelection() {
+    if (value) {
+      open = false;
+    }
+  }
+  
+  $effect(() => {
+    if (value) closeAfterSelection();
+  });
+</script>
+
+<DatePicker.Root bind:open bind:value>
+  <DatePicker.Trigger base={Button}>
+    {value ? value.toDateString() : 'Select Date'}
+    <DatePicker.Indicator class="ml-auto" />
+  </DatePicker.Trigger>
+  <DatePicker.Calendar />
+</DatePicker.Root>
+
+<button onclick={() => open = !open}>
+  {open ? 'Close' : 'Open'} Date Picker
+</button>
+```
+
+### With Custom Format
+
+```svelte
+<script>
+  import { DatePicker } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core';
+  import { format } from 'date-fns';
+  
+  let value = $state<Date | undefined>(undefined);
+</script>
+
+<DatePicker.Root bind:value>
+  <DatePicker.Trigger base={Button} class="w-64">
+    {#if value}
+      <div>{format(value, 'PPP')}</div>
+    {:else}
+      <div>Pick a date</div>
+    {/if}
+    <DatePicker.Indicator class="ml-auto" />
+  </DatePicker.Trigger>
+  <DatePicker.Calendar />
+</DatePicker.Root>
+```
+
+## Styling
+
+The DatePicker uses preset-based styling. You can customize the appearance through your preset configuration:
+
+```typescript
+// In your preset config
+{
+  'date-picker': {
+    // Trigger styles
+  },
+  'date-picker.calendar': {
+    // Calendar popover styles
+  }
+}
+```
+
+## Accessibility
+
+- Trigger is keyboard accessible
+- Calendar supports keyboard navigation (arrow keys)
+- Enter/Space to select dates
+- Escape to close popover
+- Screen reader support with ARIA attributes
+- Focus management between trigger and calendar

@@ -1,0 +1,336 @@
+---
+title: Chip
+description: Interactive tag component with a built-in close button for removable items.
+---
+
+The Chip component is an interactive tag that includes a built-in close button, making it ideal for removable filters, selected items, or tag management interfaces.
+
+## Import
+
+```svelte
+import { Chip } from '@svelte-atoms/core';
+```
+
+## Usage
+
+### Basic Chip
+
+```svelte
+<Chip onclose={() => console.log('Closed')}>
+  Tag Name
+</Chip>
+```
+
+### Removable Tags
+
+```svelte
+<script>
+  import { Chip } from '@svelte-atoms/core';
+  
+  let tags = $state(['JavaScript', 'TypeScript', 'Svelte', 'React']);
+  
+  function removeTag(tagToRemove) {
+    tags = tags.filter(tag => tag !== tagToRemove);
+  }
+</script>
+
+<div class="flex flex-wrap gap-2">
+  {#each tags as tag}
+    <Chip onclose={() => removeTag(tag)}>
+      {tag}
+    </Chip>
+  {/each}
+</div>
+```
+
+### With Custom Close Icon
+
+```svelte
+<script>
+  import { Chip, Icon } from '@svelte-atoms/core';
+  import TrashIcon from '@svelte-atoms/core/icons/icon-trash.svelte';
+</script>
+
+<Chip onclose={() => console.log('Deleted')}>
+  {#snippet icon()}
+    <Icon src={TrashIcon} class="h-full" />
+  {/snippet}
+  Delete Me
+</Chip>
+```
+
+### Active Filters
+
+```svelte
+<script>
+  let activeFilters = $state([
+    { id: 1, label: 'In Stock', value: 'inStock' },
+    { id: 2, label: 'On Sale', value: 'onSale' },
+    { id: 3, label: 'Rating: 4+', value: 'rating' }
+  ]);
+  
+  function removeFilter(filterId) {
+    activeFilters = activeFilters.filter(f => f.id !== filterId);
+  }
+</script>
+
+<div class="space-y-2">
+  <h3 class="text-sm font-medium">Active Filters:</h3>
+  <div class="flex flex-wrap gap-2">
+    {#each activeFilters as filter}
+      <Chip onclose={() => removeFilter(filter.id)}>
+        {filter.label}
+      </Chip>
+    {/each}
+  </div>
+</div>
+```
+
+### Selected Recipients
+
+```svelte
+<script>
+  let recipients = $state([
+    { id: 1, name: 'John Doe', email: 'john@example.com' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+  ]);
+  
+  function removeRecipient(recipientId) {
+    recipients = recipients.filter(r => r.id !== recipientId);
+  }
+</script>
+
+<div>
+  <label class="block text-sm font-medium mb-2">To:</label>
+  <div class="flex flex-wrap gap-2 p-2 border rounded">
+    {#each recipients as recipient}
+      <Chip onclose={() => removeRecipient(recipient.id)}>
+        {recipient.name}
+      </Chip>
+    {/each}
+  </div>
+</div>
+```
+
+### Custom Styling
+
+```svelte
+<!-- Primary chip -->
+<Chip 
+  class="bg-blue-100 text-blue-800 border-blue-200"
+  onclose={() => console.log('Closed')}
+>
+  Primary Tag
+</Chip>
+
+<!-- Success chip -->
+<Chip 
+  class="bg-green-100 text-green-800 border-green-200"
+  onclose={() => console.log('Closed')}
+>
+  Success Tag
+</Chip>
+
+<!-- Danger chip -->
+<Chip 
+  class="bg-red-100 text-red-800 border-red-200"
+  onclose={() => console.log('Closed')}
+>
+  Danger Tag
+</Chip>
+```
+
+### Disabled State
+
+```svelte
+<Chip disabled onclose={() => console.log('This will not trigger')}>
+  Disabled Chip
+</Chip>
+```
+
+## API Reference
+
+### Chip
+
+<ParamField path="onclose" type="(event: MouseEvent) => void">
+  Callback function triggered when the close button is clicked. This is where you should handle the removal logic.
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply to the chip container.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'chip'">
+  Preset key for styling.
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  When true, the chip appears disabled and the close button is non-interactive.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The main content displayed in the chip.
+</ParamField>
+
+<ParamField path="icon" type="Snippet">
+  Optional custom icon to display in the close button instead of the default close icon.
+</ParamField>
+
+## Behavior
+
+### Close Button
+
+- The close button is automatically included in every Chip
+- Clicking the close button triggers the `onclose` callback
+- The button has hover and active states for better user feedback
+- The button has a circular shape with padding for easier clicking
+
+### Disabled State
+
+When `disabled` is true:
+- The chip has reduced opacity
+- The close button becomes non-interactive
+- Text color changes to indicate disabled state
+- Cursor changes to indicate non-interactivity
+
+## Styling
+
+The Chip component uses the `chip` preset key for styling.
+
+Default styles include:
+- Horizontal padding: `px-3`
+- Vertical padding: `py-1`
+- Rounded corners: `rounded-md`
+- Background: `bg-foreground/5`
+- Border: `border-border`
+- Hover state: `hover:bg-foreground/10`
+- Active state: `active:bg-foreground/15`
+- Disabled state: `disabled:bg-muted disabled:text-muted-foreground`
+- Width fits content
+- Cursor: pointer
+
+You can customize the appearance by:
+
+1. Using the `class` prop to add custom classes
+2. Defining custom styles for the `chip` preset in your theme
+
+## Common Patterns
+
+### Search Tags
+
+```svelte
+<script>
+  let searchTags = $state([]);
+  let inputValue = $state('');
+  
+  function addTag() {
+    if (inputValue.trim()) {
+      searchTags = [...searchTags, inputValue.trim()];
+      inputValue = '';
+    }
+  }
+  
+  function removeTag(tag) {
+    searchTags = searchTags.filter(t => t !== tag);
+  }
+</script>
+
+<div>
+  <div class="flex gap-2 mb-2">
+    <input 
+      type="text" 
+      bind:value={inputValue}
+      onkeydown={(e) => e.key === 'Enter' && addTag()}
+      placeholder="Add search term"
+    />
+    <button onclick={addTag}>Add</button>
+  </div>
+  
+  <div class="flex flex-wrap gap-2">
+    {#each searchTags as tag}
+      <Chip onclose={() => removeTag(tag)}>
+        {tag}
+      </Chip>
+    {/each}
+  </div>
+</div>
+```
+
+### Category Filter
+
+```svelte
+<script>
+  const categories = ['Electronics', 'Clothing', 'Books', 'Home', 'Sports'];
+  let selectedCategories = $state(['Electronics', 'Books']);
+  
+  function toggleCategory(category) {
+    if (selectedCategories.includes(category)) {
+      selectedCategories = selectedCategories.filter(c => c !== category);
+    } else {
+      selectedCategories = [...selectedCategories, category];
+    }
+  }
+</script>
+
+<div class="space-y-4">
+  <div>
+    <h3 class="text-sm font-medium mb-2">All Categories:</h3>
+    <div class="flex flex-wrap gap-2">
+      {#each categories as category}
+        <button 
+          onclick={() => toggleCategory(category)}
+          class="px-3 py-1 border rounded-md"
+          class:bg-primary={selectedCategories.includes(category)}
+        >
+          {category}
+        </button>
+      {/each}
+    </div>
+  </div>
+  
+  <div>
+    <h3 class="text-sm font-medium mb-2">Selected Categories:</h3>
+    <div class="flex flex-wrap gap-2">
+      {#each selectedCategories as category}
+        <Chip onclose={() => toggleCategory(category)}>
+          {category}
+        </Chip>
+      {/each}
+    </div>
+  </div>
+</div>
+```
+
+## Accessibility
+
+- The close button should have an accessible label
+- Use keyboard navigation (Enter/Space to activate)
+- Provide visual feedback for focus, hover, and active states
+- Announce chip removal to screen readers
+
+### Accessible Example
+
+```svelte
+<Chip 
+  onclose={() => removeTag(tag)}
+  aria-label={`Remove ${tag} tag`}
+>
+  {tag}
+  <span class="sr-only">Press to remove</span>
+</Chip>
+```
+
+## Differences from Badge
+
+While similar to Badge, Chip has key differences:
+
+- **Chip**: Interactive, includes close button, for removable items
+- **Badge**: Static display, no built-in interaction, for labels/status
+
+Use Chip when users need to remove or manage items. Use Badge for displaying static information.
+
+## Related Components
+
+- [Badge](/components/badge) - For static labels and status indicators
+- [Button](/components/button) - For standalone actions
+- [Checkbox](/components/checkbox) - For selecting multiple options

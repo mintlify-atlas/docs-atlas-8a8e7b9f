@@ -1,0 +1,284 @@
+---
+title: Badge
+description: Small label component for displaying status, counts, or tags.
+---
+
+The Badge component is a versatile inline element used to display status indicators, notification counts, tags, or labels.
+
+## Import
+
+```svelte
+import { Badge } from '@svelte-atoms/core';
+```
+
+## Usage
+
+### Basic Badge
+
+```svelte
+<Badge>Badge</Badge>
+```
+
+### Status Badges
+
+```svelte
+<Badge>Active</Badge>
+<Badge>Pending</Badge>
+<Badge>Inactive</Badge>
+```
+
+### Notification Count
+
+```svelte
+<div class="relative inline-block">
+  <button>Messages</button>
+  <Badge class="absolute -right-2 -top-2">3</Badge>
+</div>
+```
+
+### Tags
+
+```svelte
+<div class="flex gap-2">
+  <Badge>JavaScript</Badge>
+  <Badge>TypeScript</Badge>
+  <Badge>Svelte</Badge>
+</div>
+```
+
+### Custom Styling
+
+```svelte
+<!-- Success badge -->
+<Badge class="bg-green-100 text-green-800 border-green-200">
+  Completed
+</Badge>
+
+<!-- Error badge -->
+<Badge class="bg-red-100 text-red-800 border-red-200">
+  Failed
+</Badge>
+
+<!-- Warning badge -->
+<Badge class="bg-yellow-100 text-yellow-800 border-yellow-200">
+  Warning
+</Badge>
+
+<!-- Info badge -->
+<Badge class="bg-blue-100 text-blue-800 border-blue-200">
+  Info
+</Badge>
+```
+
+### Different Sizes
+
+```svelte
+<Badge class="text-xs px-2 py-0.5">Small</Badge>
+<Badge class="text-sm px-2.5 py-0.5">Medium (Default)</Badge>
+<Badge class="text-base px-3 py-1">Large</Badge>
+```
+
+### With Icons
+
+```svelte
+<script>
+  import { Badge, Icon } from '@svelte-atoms/core';
+  import CheckIcon from '@svelte-atoms/core/icons/icon-check.svelte';
+</script>
+
+<Badge class="flex items-center gap-1">
+  <Icon src={CheckIcon} class="h-3 w-3" />
+  Verified
+</Badge>
+```
+
+### As Different Elements
+
+```svelte
+<!-- As a link -->
+<Badge as="a" href="/tags/javascript">JavaScript</Badge>
+
+<!-- As a button -->
+<Badge as="button" onclick={() => console.log('Clicked')}>Clickable</Badge>
+
+<!-- As a div (default is span) -->
+<Badge as="div">Block Badge</Badge>
+```
+
+## API Reference
+
+### Badge
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'span'">
+  The HTML element type to render (e.g., `'span'`, `'div'`, `'a'`, `'button'`).
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply. Override default styles or add variant-specific styling.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The content to display inside the badge.
+</ParamField>
+
+## Styling
+
+The Badge component uses the `badge` preset key for styling.
+
+Default styles include:
+- Inline-flex display
+- Rounded-full shape
+- Small text size (`text-xs`)
+- Medium font weight
+- Padding: `px-2.5 py-0.5`
+- Background color from theme (`bg-foreground/10`)
+- Border styling
+- Auto width fitting content
+
+You can customize the appearance by:
+
+1. Using the `class` prop to add custom classes
+2. Defining custom styles for the `badge` preset in your theme
+3. Using utility classes for variants
+
+## Common Patterns
+
+### E-commerce Product Tags
+
+```svelte
+<div class="flex gap-2">
+  <Badge class="bg-red-100 text-red-800">Sale</Badge>
+  <Badge class="bg-green-100 text-green-800">New</Badge>
+  <Badge class="bg-blue-100 text-blue-800">Featured</Badge>
+</div>
+```
+
+### User Status
+
+```svelte
+<script>
+  function getStatusColor(status) {
+    const colors = {
+      online: 'bg-green-100 text-green-800 border-green-200',
+      away: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      busy: 'bg-red-100 text-red-800 border-red-200',
+      offline: 'bg-gray-100 text-gray-800 border-gray-200'
+    };
+    return colors[status] || colors.offline;
+  }
+</script>
+
+<Badge class={getStatusColor(user.status)}>
+  {user.status}
+</Badge>
+```
+
+### Notification Badge
+
+```svelte
+<button class="relative">
+  <Icon src={BellIcon} class="h-6 w-6" />
+  {#if unreadCount > 0}
+    <Badge class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center p-0 text-xs">
+      {unreadCount > 99 ? '99+' : unreadCount}
+    </Badge>
+  {/if}
+</button>
+```
+
+### Category Labels
+
+```svelte
+<article>
+  <div class="flex gap-2 mb-2">
+    <Badge as="a" href="/category/tech">Technology</Badge>
+    <Badge as="a" href="/category/design">Design</Badge>
+  </div>
+  <h2>Article Title</h2>
+  <p>Article content...</p>
+</article>
+```
+
+### Task Priority
+
+```svelte
+<script>
+  const priorityStyles = {
+    high: 'bg-red-100 text-red-800 border-red-200',
+    medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    low: 'bg-green-100 text-green-800 border-green-200'
+  };
+</script>
+
+<div class="flex items-center gap-2">
+  <span>Task Name</span>
+  <Badge class={priorityStyles[task.priority]}>
+    {task.priority}
+  </Badge>
+</div>
+```
+
+### Removable Tags
+
+```svelte
+<script>
+  let tags = $state(['JavaScript', 'Svelte', 'TypeScript']);
+  
+  function removeTag(tag) {
+    tags = tags.filter(t => t !== tag);
+  }
+</script>
+
+<div class="flex flex-wrap gap-2">
+  {#each tags as tag}
+    <Badge class="flex items-center gap-1.5 pr-1">
+      {tag}
+      <button 
+        onclick={() => removeTag(tag)}
+        class="hover:bg-foreground/10 rounded-full p-0.5"
+        aria-label={`Remove ${tag} tag`}
+      >
+        <Icon src={CloseIcon} class="h-3 w-3" />
+      </button>
+    </Badge>
+  {/each}
+</div>
+```
+
+## Accessibility
+
+- Use descriptive text content
+- When using badges for status, ensure color is not the only indicator
+- For interactive badges (links, buttons), ensure keyboard navigation works
+- Add appropriate ARIA attributes when needed
+
+### Accessible Examples
+
+```svelte
+<!-- Status with text and visual indicator -->
+<Badge class="bg-green-100 text-green-800">
+  <span class="sr-only">Status:</span>
+  <span class="inline-block h-2 w-2 rounded-full bg-green-600 mr-1"></span>
+  Online
+</Badge>
+
+<!-- Interactive badge with ARIA label -->
+<Badge 
+  as="button" 
+  onclick={handleClick}
+  aria-label="Filter by JavaScript tag"
+>
+  JavaScript
+</Badge>
+
+<!-- Notification count -->
+<Badge aria-label="3 unread messages">
+  3
+</Badge>
+```
+
+## Related Components
+
+- [Chip](/components/chip) - Similar component with built-in close button
+- [Button](/components/button) - For interactive actions
+- [Avatar](/components/avatar) - Often used alongside badges for user status

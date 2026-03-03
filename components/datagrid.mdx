@@ -1,0 +1,397 @@
+---
+title: 'DataGrid'
+description: 'A powerful and flexible data grid component for displaying tabular data with sorting, selection, and customization'
+icon: 'table'
+---
+
+## Overview
+
+The DataGrid component provides a complete solution for displaying and managing tabular data in Svelte applications. It supports advanced features like column sorting, row selection, responsive layouts, and full customization through the Bond system.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { DataGrid } from '@svelte-atoms/core';
+</script>
+
+<DataGrid.Root>
+  <DataGrid.Header>
+    <DataGrid.Tr header>
+      <DataGrid.Th>Name</DataGrid.Th>
+      <DataGrid.Th>Email</DataGrid.Th>
+      <DataGrid.Th>Role</DataGrid.Th>
+    </DataGrid.Tr>
+  </DataGrid.Header>
+
+  <DataGrid.Body>
+    {#each users as user}
+      <DataGrid.Tr>
+        <DataGrid.Td>{user.name}</DataGrid.Td>
+        <DataGrid.Td>{user.email}</DataGrid.Td>
+        <DataGrid.Td>{user.role}</DataGrid.Td>
+      </DataGrid.Tr>
+    {/each}
+  </DataGrid.Body>
+</DataGrid.Root>
+```
+
+## Components
+
+### DataGrid.Root
+
+The root container for the data grid. Manages the overall state and provides context to child components.
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply to the root element
+</ParamField>
+
+<ParamField path="template" type="string">
+  CSS grid template columns definition (e.g., "1fr 2fr 1fr")
+</ParamField>
+
+<ParamField path="fallbackTemplate" type="string" default="auto">
+  Fallback template when no template is provided
+</ParamField>
+
+<ParamField path="values" type="string[]" default="[]">
+  Array of values (bindable)
+</ParamField>
+
+<ParamField path="factory" type="Function">
+  Custom factory function for creating the DataGrid bond
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Child content with access to datagrid bond context
+</ParamField>
+
+### DataGrid.Header
+
+Container for the header row(s) of the data grid.
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the header
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Header content, typically DataGrid.Tr with header prop
+</ParamField>
+
+### DataGrid.Body
+
+Container for the body rows of the data grid.
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the body
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Body content, typically multiple DataGrid.Tr components
+</ParamField>
+
+### DataGrid.Footer
+
+Container for footer content.
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the footer
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Footer content
+</ParamField>
+
+### DataGrid.Tr
+
+Represents a table row in the data grid.
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the row
+</ParamField>
+
+<ParamField path="value" type="string">
+  Unique identifier for the row (auto-generated if not provided)
+</ParamField>
+
+<ParamField path="rows" type="string" default="auto">
+  CSS grid rows configuration
+</ParamField>
+
+<ParamField path="data" type="T">
+  Data associated with this row
+</ParamField>
+
+<ParamField path="header" type="boolean" default="false">
+  Whether this is a header row
+</ParamField>
+
+<ParamField path="onclick" type="Function">
+  Click handler for the row
+</ParamField>
+
+### DataGrid.Th
+
+Header cell component with sorting support.
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the header cell
+</ParamField>
+
+<ParamField path="id" type="string">
+  Unique identifier for the column (auto-generated if not provided)
+</ParamField>
+
+<ParamField path="width" type="string" default="1fr">
+  Column width in CSS units
+</ParamField>
+
+<ParamField path="direction" type="'asc' | 'desc'" default="asc">
+  Sort direction for this column
+</ParamField>
+
+<ParamField path="sortable" type="boolean | SortableType">
+  Enable sorting for this column. Can be true/false or a function to extract sort value
+</ParamField>
+
+<ParamField path="hidden" type="boolean" default="false">
+  Hide this column
+</ParamField>
+
+<ParamField path="screen" type="string">
+  Screen size breakpoint for responsive visibility
+</ParamField>
+
+<ParamField path="onsort" type="Function">
+  Callback when column is sorted
+</ParamField>
+
+### DataGrid.Td
+
+Data cell component.
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the cell
+</ParamField>
+
+<ParamField path="onclick" type="Function">
+  Click handler for the cell
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Cell content
+</ParamField>
+
+### DataGrid.Checkbox
+
+Checkbox component for row selection.
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the checkbox
+</ParamField>
+
+<ParamField path="value" type="any">
+  Checkbox value
+</ParamField>
+
+<ParamField path="checked" type="boolean">
+  Checked state (bindable)
+</ParamField>
+
+<ParamField path="onchange" type="Function">
+  Callback when checkbox state changes
+</ParamField>
+
+## Advanced Examples
+
+### With Row Selection
+
+```svelte
+<script>
+  import { DataGrid } from '@svelte-atoms/core';
+
+  let users = [
+    { id: '1', name: 'John Doe', email: 'john@example.com' },
+    { id: '2', name: 'Jane Smith', email: 'jane@example.com' }
+  ];
+</script>
+
+<DataGrid.Root>
+  <DataGrid.Header>
+    <DataGrid.Tr header>
+      <DataGrid.Th width="auto">
+        <DataGrid.Checkbox />
+      </DataGrid.Th>
+      <DataGrid.Th>Name</DataGrid.Th>
+      <DataGrid.Th>Email</DataGrid.Th>
+    </DataGrid.Tr>
+  </DataGrid.Header>
+
+  <DataGrid.Body>
+    {#each users as user (user.id)}
+      <DataGrid.Tr value={user.id} data={user}>
+        <DataGrid.Td>
+          <DataGrid.Checkbox />
+        </DataGrid.Td>
+        <DataGrid.Td>{user.name}</DataGrid.Td>
+        <DataGrid.Td>{user.email}</DataGrid.Td>
+      </DataGrid.Tr>
+    {/each}
+  </DataGrid.Body>
+</DataGrid.Root>
+```
+
+### With Sortable Columns
+
+```svelte
+<script>
+  import { DataGrid } from '@svelte-atoms/core';
+
+  let users = [
+    { name: 'John', age: 30 },
+    { name: 'Jane', age: 25 },
+    { name: 'Bob', age: 35 }
+  ];
+
+  function handleSort(event, { field, direction }) {
+    // Custom sorting logic
+    users = users.sort((a, b) => {
+      const aVal = typeof field === 'function' ? field(a) : a[field];
+      const bVal = typeof field === 'function' ? field(b) : b[field];
+      return direction === 'asc' ? aVal - bVal : bVal - aVal;
+    });
+  }
+</script>
+
+<DataGrid.Root>
+  <DataGrid.Header>
+    <DataGrid.Tr header>
+      <DataGrid.Th sortable="name" onsort={handleSort}>Name</DataGrid.Th>
+      <DataGrid.Th sortable="age" onsort={handleSort}>Age</DataGrid.Th>
+    </DataGrid.Tr>
+  </DataGrid.Header>
+
+  <DataGrid.Body>
+    {#each users as user}
+      <DataGrid.Tr>
+        <DataGrid.Td>{user.name}</DataGrid.Td>
+        <DataGrid.Td>{user.age}</DataGrid.Td>
+      </DataGrid.Tr>
+    {/each}
+  </DataGrid.Body>
+</DataGrid.Root>
+```
+
+### Responsive Columns
+
+```svelte
+<script>
+  import { DataGrid } from '@svelte-atoms/core';
+  import { container } from '@svelte-atoms/core/runes';
+
+  const gridContainer = container();
+</script>
+
+<DataGrid.Root {@attach gridContainer.attach}>
+  <DataGrid.Header>
+    <DataGrid.Tr header>
+      <DataGrid.Th>Name</DataGrid.Th>
+      <DataGrid.Th 
+        hidden={gridContainer.current?.width < 768}>
+        Email
+      </DataGrid.Th>
+      <DataGrid.Th 
+        hidden={gridContainer.current?.width < 1024}>
+        Phone
+      </DataGrid.Th>
+    </DataGrid.Tr>
+  </DataGrid.Header>
+  <!-- Body content -->
+</DataGrid.Root>
+```
+
+## Types
+
+### Direction
+
+```typescript
+type Direction = 'asc' | 'desc';
+```
+
+### SortableType
+
+```typescript
+type SortableType = string | (<T>(d: T) => string | number | boolean | Date);
+```
+
+### DatagridContext
+
+```typescript
+interface DatagridContext<T = unknown> extends DataGridBond<T> {
+  [key: string]: unknown;
+}
+```
+
+## Styling
+
+The DataGrid uses CSS Grid for layout and can be fully customized using Tailwind CSS classes or custom CSS.
+
+### Default Classes
+
+- `datagrid-root`: Root container with CSS Grid display
+- `datagrid-tr`: Table row with grid layout
+- `border-border`: Border styling
+- Hover and active states for interactive rows
+
+### Custom Styling
+
+```svelte
+<DataGrid.Root class="rounded-lg shadow-lg">
+  <DataGrid.Th class="bg-blue-100 font-bold">
+    Custom Header
+  </DataGrid.Th>
+  <DataGrid.Td class="text-gray-600 italic">
+    Custom Cell
+  </DataGrid.Td>
+</DataGrid.Root>
+```
+
+## Bond System
+
+The DataGrid component uses the Bond system for state management. You can access the bond instance through the component's context:
+
+```svelte
+<script>
+  let datagridRef;
+
+  $effect(() => {
+    if (datagridRef) {
+      const bond = datagridRef.getBond();
+      // Access bond state and methods
+      console.log(bond.state.selectedRows);
+    }
+  });
+</script>
+
+<DataGrid.Root bind:this={datagridRef}>
+  <!-- Content -->
+</DataGrid.Root>
+```
+
+## Accessibility
+
+- Keyboard navigation support
+- ARIA labels for sortable columns
+- Screen reader friendly row selection
+- Focus management for interactive elements
+
+## Related Components
+
+- [Checkbox](/components/checkbox) - Used for row selection
+- [Dropdown](/components/dropdown) - Can be used in cells for actions

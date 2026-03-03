@@ -1,0 +1,169 @@
+---
+title: Button
+description: A versatile button component with support for different types and custom styling
+icon: hand-pointer
+---
+
+## Overview
+
+The Button component is a fundamental form element built on top of the `HtmlAtom` component. It provides a consistent, accessible button interface with support for different button types and preset-based styling.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+</script>
+
+<Button>Click me</Button>
+```
+
+## Examples
+
+### Button Types
+
+```svelte
+<Button type="button">Button</Button>
+<Button type="submit">Submit Form</Button>
+<Button type="reset">Reset Form</Button>
+```
+
+### Custom Styling
+
+```svelte
+<Button class="px-6 py-3 text-lg">Large Button</Button>
+<Button class="bg-blue-500 hover:bg-blue-600">Custom Color</Button>
+```
+
+### With Preset
+
+```svelte
+<Button preset="button.primary">Primary Action</Button>
+```
+
+### Disabled State
+
+```svelte
+<Button disabled>Disabled Button</Button>
+```
+
+## Props
+
+<ParamField path="type" type="'button' | 'submit' | 'reset'" default="'button'">
+  The HTML button type attribute. Controls the button's behavior in forms.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'button'">
+  The preset key used for styling. Allows customization through the preset system.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the button element.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[]>">
+  The content to render inside the button.
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  When true, the button is disabled and cannot be interacted with.
+</ParamField>
+
+## HTML Attributes
+
+The Button component accepts all standard HTML button attributes through `HTMLAttributes<HTMLButtonElement>`, including:
+
+- `onclick` - Click event handler
+- `id` - Element ID
+- `name` - Form field name
+- `value` - Button value
+- `autofocus` - Auto-focus on mount
+- And all other standard button attributes
+
+## Default Styling
+
+The Button component comes with built-in Tailwind CSS classes:
+
+```css
+/* Base styles */
+text-primary-foreground
+bg-primary
+border-border
+hover:bg-primary/95
+active:bg-primary/90
+disabled:bg-muted
+disabled:text-muted-foreground
+w-fit
+cursor-pointer
+rounded-md
+px-3
+py-2
+transition-colors
+duration-200
+```
+
+## TypeScript Support
+
+The Button component is fully typed with TypeScript:
+
+```typescript
+interface ButtonProps extends HtmlAtomProps<'button'>, ButtonExtendProps {
+  type?: 'button' | 'submit' | 'reset';
+  children?: Snippet<[]>;
+}
+```
+
+### Extending Button Props
+
+You can extend the Button component with custom properties:
+
+```typescript
+// In your types file
+declare module '@svelte-atoms/core/components/button' {
+  interface ButtonExtendProps {
+    variant?: 'primary' | 'secondary' | 'destructive';
+    size?: 'sm' | 'md' | 'lg';
+  }
+}
+```
+
+## Accessibility
+
+- The Button component uses semantic `<button>` element
+- Supports keyboard navigation (Space/Enter to activate)
+- Properly handles disabled state
+- Works with form submission when `type="submit"`
+
+## Integration with Forms
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Button } from '@svelte-atoms/core/components/button';
+</script>
+
+<Form.Root>
+  <!-- Form fields -->
+  <Button type="submit">Submit</Button>
+  <Button type="reset">Reset</Button>
+</Form.Root>
+```
+
+## Best Practices
+
+1. **Use appropriate button types**: Use `type="submit"` for form submissions, `type="reset"` for form resets, and `type="button"` (default) for other interactions
+2. **Provide clear labels**: Button text should clearly indicate what action will be performed
+3. **Handle disabled state**: Show visual feedback when buttons are disabled
+4. **Use presets for consistency**: Define button variants in your preset configuration for consistent styling across your app
+
+## Related Components
+
+- [Form](/components/form) - For form management
+- [Dialog](/components/dialog) - Often used as dialog triggers
+- [Dropdown](/components/dropdown) - Often used as dropdown triggers

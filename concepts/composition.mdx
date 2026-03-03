@@ -1,0 +1,536 @@
+---
+title: 'Component Composition'
+description: 'Master the art of composing atoms into powerful UI components'
+---
+
+## Design Principle
+
+All atoms in Svelte Atoms Core inherit from the base `atom.svelte` component, making them **composable by default**. This means you can freely mix and match atoms to create complex interactions without custom integration code.
+
+<Note>
+  Composition over inheritance: Rather than extending base classes, you compose multiple atoms together to create the functionality you need.
+</Note>
+
+## Basic Composition
+
+### Atoms as Building Blocks
+
+Start by combining simple atoms to create more complex components:
+
+```svelte
+<script>
+  import { Card } from '@svelte-atoms/core/components/card';
+  import { Avatar } from '@svelte-atoms/core/components/avatar';
+  import { Badge } from '@svelte-atoms/core/components/badge';
+  import { Button } from '@svelte-atoms/core/components/button';
+</script>
+
+<Card.Root class="max-w-sm">
+  <Card.Header class="flex items-center gap-4">
+    <Avatar.Root src="/avatar.jpg" alt="User" class="h-12 w-12" />
+    <div>
+      <h3 class="font-bold">Jane Doe</h3>
+      <Badge.Root class="bg-blue-100 text-blue-800">Pro</Badge.Root>
+    </div>
+  </Card.Header>
+  
+  <Card.Body>
+    <p>Full-stack developer passionate about UI/UX</p>
+  </Card.Body>
+  
+  <Card.Footer class="flex gap-2">
+    <Button.Root class="flex-1">Follow</Button.Root>
+    <Button.Root class="flex-1">Message</Button.Root>
+  </Card.Footer>
+</Card.Root>
+```
+
+## Composition Patterns
+
+### 1. Dropdown Triggers
+
+Any atom can serve as a dropdown trigger:
+
+<Tabs>
+  <Tab title="Button Trigger">
+    ```svelte
+    <script>
+      import { Dropdown } from '@svelte-atoms/core/components/dropdown';
+      import { Button } from '@svelte-atoms/core/components/button';
+    </script>
+
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <Button.Root>Open Menu</Button.Root>
+      </Dropdown.Trigger>
+      
+      <Dropdown.List>
+        <Dropdown.Item value="edit">Edit</Dropdown.Item>
+        <Dropdown.Item value="delete">Delete</Dropdown.Item>
+      </Dropdown.List>
+    </Dropdown.Root>
+    ```
+  </Tab>
+  <Tab title="Avatar Trigger">
+    ```svelte
+    <script>
+      import { Dropdown } from '@svelte-atoms/core/components/dropdown';
+      import { Avatar } from '@svelte-atoms/core/components/avatar';
+    </script>
+
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <Avatar.Root src="/user.jpg" alt="User menu" />
+      </Dropdown.Trigger>
+      
+      <Dropdown.List>
+        <Dropdown.Item value="profile">Profile</Dropdown.Item>
+        <Dropdown.Item value="settings">Settings</Dropdown.Item>
+        <Dropdown.Item value="logout">Logout</Dropdown.Item>
+      </Dropdown.List>
+    </Dropdown.Root>
+    ```
+  </Tab>
+  <Tab title="Badge Trigger">
+    ```svelte
+    <script>
+      import { Dropdown } from '@svelte-atoms/core/components/dropdown';
+      import { Badge } from '@svelte-atoms/core/components/badge';
+    </script>
+
+    <Dropdown.Root>
+      <Dropdown.Trigger>
+        <Badge.Root class="cursor-pointer">
+          Status: Online ▼
+        </Badge.Root>
+      </Dropdown.Trigger>
+      
+      <Dropdown.List>
+        <Dropdown.Item value="online">Online</Dropdown.Item>
+        <Dropdown.Item value="away">Away</Dropdown.Item>
+        <Dropdown.Item value="offline">Offline</Dropdown.Item>
+      </Dropdown.List>
+    </Dropdown.Root>
+    ```
+  </Tab>
+</Tabs>
+
+### 2. Modal Triggers
+
+Compose dialogs with any clickable atom:
+
+```svelte
+<script>
+  import { Dialog } from '@svelte-atoms/core/components/dialog';
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { Link } from '@svelte-atoms/core/components/link';
+  
+  let open = $state(false);
+</script>
+
+<!-- Button trigger -->
+<Button.Root onclick={() => open = true}>
+  Open Settings
+</Button.Root>
+
+<!-- Link trigger -->
+<Link.Root onclick={() => open = true}>
+  Learn more →
+</Link.Root>
+
+<Dialog.Root bind:open>
+  <Dialog.Content>
+    <Dialog.Header>
+      <h2>Dialog Title</h2>
+    </Dialog.Header>
+    <Dialog.Body>
+      Content here
+    </Dialog.Body>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+### 3. Form Field Composition
+
+Combine atoms to create rich form controls:
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Input } from '@svelte-atoms/core/components/input';
+  import { Label } from '@svelte-atoms/core/components/label';
+  
+  let formData = $state({ email: '', password: '' });
+</script>
+
+<Form.Root bind:value={formData}>
+  <!-- Input + Label composition -->
+  <Form.Field name="email">
+    <Form.Field.Label>Email Address</Form.Field.Label>
+    <Form.Field.Control>
+      <Input.Root 
+        type="email" 
+        placeholder="you@example.com"
+        class="w-full"
+      />
+    </Form.Field.Control>
+    <Form.Field.Description>
+      We'll never share your email
+    </Form.Field.Description>
+    <Form.Field.Errors />
+  </Form.Field>
+  
+  <!-- Input + Icon composition -->
+  <Form.Field name="password">
+    <Form.Field.Label>Password</Form.Field.Label>
+    <Form.Field.Control>
+      <div class="relative">
+        <Input.Root 
+          type="password" 
+          placeholder="••••••••"
+          class="w-full pr-10"
+        />
+        <Icon.Root 
+          name="lock" 
+          class="absolute top-2 right-2"
+        />
+      </div>
+    </Form.Field.Control>
+    <Form.Field.Errors />
+  </Form.Field>
+</Form.Root>
+```
+
+## Advanced Composition
+
+### Nested Atoms
+
+Create deeply nested compositions:
+
+```svelte
+<script>
+  import { Card } from '@svelte-atoms/core/components/card';
+  import { Tabs } from '@svelte-atoms/core/components/tabs';
+  import { List } from '@svelte-atoms/core/components/list';
+  import { Badge } from '@svelte-atoms/core/components/badge';
+  
+  let activeTab = $state('overview');
+</script>
+
+<Card.Root class="w-full max-w-4xl">
+  <Card.Header>
+    <h2 class="text-2xl font-bold">Project Dashboard</h2>
+  </Card.Header>
+  
+  <Card.Body>
+    <Tabs.Root bind:value={activeTab}>
+      <Tabs.Header class="flex border-b">
+        <Tabs.Tab value="overview">
+          <Tabs.Tab.Header>Overview</Tabs.Tab.Header>
+        </Tabs.Tab>
+        <Tabs.Tab value="tasks">
+          <Tabs.Tab.Header>Tasks</Tabs.Tab.Header>
+        </Tabs.Tab>
+      </Tabs.Header>
+      
+      <Tabs.Body class="p-4">
+        <Tabs.Tab value="overview">
+          <Tabs.Tab.Body>
+            <List.Root>
+              <List.Item>
+                <div class="flex justify-between">
+                  <span>Status</span>
+                  <Badge.Root class="bg-green-100">Active</Badge.Root>
+                </div>
+              </List.Item>
+              <List.Item>
+                <div class="flex justify-between">
+                  <span>Members</span>
+                  <Badge.Root>12</Badge.Root>
+                </div>
+              </List.Item>
+            </List.Root>
+          </Tabs.Tab.Body>
+        </Tabs.Tab>
+      </Tabs.Body>
+    </Tabs.Root>
+  </Card.Body>
+</Card.Root>
+```
+
+### Dynamic Composition
+
+Compose atoms dynamically based on state:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { Avatar } from '@svelte-atoms/core/components/avatar';
+  import { Badge } from '@svelte-atoms/core/components/badge';
+  
+  let user = $state({ loggedIn: false, avatar: '', name: '' });
+  
+  // Dynamic component selection
+  const UserElement = $derived(user.loggedIn ? Avatar : Button);
+</script>
+
+<HtmlAtom as="nav" class="flex items-center gap-4">
+  <HtmlAtom as="div" class="flex-1">
+    <h1>My App</h1>
+  </HtmlAtom>
+  
+  {#if user.loggedIn}
+    <Badge.Root>{user.name}</Badge.Root>
+    <Avatar.Root src={user.avatar} alt={user.name} />
+  {:else}
+    <Button.Root onclick={() => user.loggedIn = true}>
+      Sign In
+    </Button.Root>
+  {/if}
+</HtmlAtom>
+```
+
+## Composition with Snippets
+
+Use Svelte 5 snippets to create reusable composition patterns:
+
+```svelte
+<script>
+  import { Card } from '@svelte-atoms/core/components/card';
+  import { Avatar } from '@svelte-atoms/core/components/avatar';
+  import { Badge } from '@svelte-atoms/core/components/badge';
+  import { Button } from '@svelte-atoms/core/components/button';
+  
+  let users = $state([
+    { id: 1, name: 'Alice', role: 'Admin', avatar: '/alice.jpg' },
+    { id: 2, name: 'Bob', role: 'User', avatar: '/bob.jpg' },
+  ]);
+</script>
+
+{#snippet userCard(user)}
+  <Card.Root class="max-w-sm">
+    <Card.Header class="flex items-center gap-3">
+      <Avatar.Root src={user.avatar} alt={user.name} />
+      <div>
+        <h3 class="font-bold">{user.name}</h3>
+        <Badge.Root>{user.role}</Badge.Root>
+      </div>
+    </Card.Header>
+    <Card.Footer>
+      <Button.Root class="w-full">View Profile</Button.Root>
+    </Card.Footer>
+  </Card.Root>
+{/snippet}
+
+<div class="grid gap-4 md:grid-cols-2">
+  {#each users as user}
+    {@render userCard(user)}
+  {/each}
+</div>
+```
+
+## Base Component Composition
+
+Use the `base` prop to compose components at a deeper level:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { Button } from '@svelte-atoms/core/components/button';
+  
+  // Custom wrapper component
+  import GlassCard from './GlassCard.svelte';
+</script>
+
+<!-- Compose Button with custom base -->
+<Button.Root base={GlassCard} class="backdrop-blur">
+  Glass Button
+</Button.Root>
+
+<!-- Compose HtmlAtom with custom base -->
+<HtmlAtom base={GlassCard} as="div">
+  <h2>Glass Panel</h2>
+  <p>Content with glassmorphism effect</p>
+</HtmlAtom>
+```
+
+## Real-World Example: Search Bar
+
+Combining multiple atoms to create a functional search component:
+
+```svelte
+<script lang="ts">
+  import { Combobox } from '@svelte-atoms/core/components/combobox';
+  import { Input } from '@svelte-atoms/core/components/input';
+  import { Badge } from '@svelte-atoms/core/components/badge';
+  import { Avatar } from '@svelte-atoms/core/components/avatar';
+  
+  let query = $state('');
+  let selected = $state<string[]>([]);
+  
+  const users = [
+    { id: '1', name: 'Alice Johnson', role: 'Designer', avatar: '/alice.jpg' },
+    { id: '2', name: 'Bob Smith', role: 'Developer', avatar: '/bob.jpg' },
+    { id: '3', name: 'Carol White', role: 'Manager', avatar: '/carol.jpg' },
+  ];
+  
+  let filtered = $derived(
+    users.filter(u => u.name.toLowerCase().includes(query.toLowerCase()))
+  );
+</script>
+
+<Combobox.Root bind:value={selected} bind:query multiple>
+  <Combobox.Trigger class="relative w-full">
+    <Combobox.Input 
+      placeholder="Search users..."
+      class="w-full rounded-lg border px-4 py-2"
+    />
+  </Combobox.Trigger>
+  
+  <Combobox.List class="absolute mt-1 w-full rounded-lg border bg-white shadow-lg">
+    {#if filtered.length === 0}
+      <div class="p-4 text-gray-500">No users found</div>
+    {:else}
+      {#each filtered as user}
+        <Combobox.Item 
+          value={user.id} 
+          class="flex items-center gap-3 p-3 hover:bg-blue-50"
+        >
+          <Avatar.Root 
+            src={user.avatar} 
+            alt={user.name} 
+            class="h-8 w-8"
+          />
+          <div class="flex-1">
+            <div class="font-medium">{user.name}</div>
+            <Badge.Root class="text-xs">{user.role}</Badge.Root>
+          </div>
+        </Combobox.Item>
+      {/each}
+    {/if}
+  </Combobox.List>
+</Combobox.Root>
+```
+
+<Tip>
+  This example composes Combobox, Input, Avatar, and Badge atoms into a rich search interface without any custom integration code.
+</Tip>
+
+## Composition Best Practices
+
+### 1. Keep Compositions Focused
+
+```svelte
+<!-- ✅ Good: Clear purpose -->
+<Card.Root>
+  <Card.Header>
+    <h2>User Profile</h2>
+  </Card.Header>
+  <Card.Body>
+    <Avatar.Root src={avatar} />
+    <p>{bio}</p>
+  </Card.Body>
+</Card.Root>
+
+<!-- ❌ Avoid: Too many concerns -->
+<Card.Root>
+  <Card.Header>
+    <h2>Everything</h2>
+  </Card.Header>
+  <Card.Body>
+    <Avatar />
+    <Form />
+    <DataGrid />
+    <Tabs />
+  </Card.Body>
+</Card.Root>
+```
+
+### 2. Use Semantic Structure
+
+```svelte
+<!-- ✅ Good: Semantic HTML -->
+<HtmlAtom as="nav">
+  <HtmlAtom as="ul">
+    <HtmlAtom as="li">
+      <Link.Root href="/">Home</Link.Root>
+    </HtmlAtom>
+  </HtmlAtom>
+</HtmlAtom>
+
+<!-- ❌ Avoid: Generic divs -->
+<HtmlAtom as="div">
+  <HtmlAtom as="div">
+    <Link.Root href="/">Home</Link.Root>
+  </HtmlAtom>
+</HtmlAtom>
+```
+
+### 3. Extract Reusable Compositions
+
+```svelte
+<!-- FormInput.svelte -->
+<script lang="ts">
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Input } from '@svelte-atoms/core/components/input';
+  
+  let { name, label, type = 'text', ...rest } = $props();
+</script>
+
+<Form.Field {name}>
+  <Form.Field.Label>{label}</Form.Field.Label>
+  <Form.Field.Control>
+    <Input.Root {type} {...rest} />
+  </Form.Field.Control>
+  <Form.Field.Errors />
+</Form.Field>
+```
+
+Then use it:
+
+```svelte
+<script>
+  import FormInput from './FormInput.svelte';
+</script>
+
+<Form.Root>
+  <FormInput name="email" label="Email" type="email" />
+  <FormInput name="password" label="Password" type="password" />
+</Form.Root>
+```
+
+<Warning>
+  Don't over-abstract. Create reusable compositions only when you use the same pattern 3+ times.
+</Warning>
+
+## Benefits of Composition
+
+<CardGroup cols={3}>
+  <Card title="Flexibility" icon="wand-magic-sparkles">
+    Mix and match atoms freely to create any UI pattern you need
+  </Card>
+  <Card title="Maintainability" icon="code">
+    Changes to base atoms automatically propagate to all compositions
+  </Card>
+  <Card title="Testability" icon="vial">
+    Test individual atoms and compositions independently
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Styling" icon="palette" href="/concepts/styling">
+    Learn how to style composed components with TailwindCSS
+  </Card>
+  <Card title="Accessibility" icon="universal-access" href="/concepts/accessibility">
+    Ensure your compositions are accessible to all users
+  </Card>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/concepts/animations">
+    Add animations to your composed components
+  </Card>
+  <Card title="Components" icon="shapes" href="/components/button">
+    Browse all available atoms and their APIs
+  </Card>
+</CardGroup>

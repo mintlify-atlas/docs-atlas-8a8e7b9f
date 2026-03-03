@@ -1,0 +1,516 @@
+---
+title: Customization
+description: Learn how to customize Svelte Atoms Core components with variants, props, and styling
+---
+
+## Overview
+
+Svelte Atoms Core is designed to be **headless** - giving you complete control over styling while providing sensible defaults. Customize components through variants, props, presets, and standard HTML/CSS attributes.
+
+## Styling with Variants
+
+Variants provide a type-safe way to define component styles with different options.
+
+### Defining Variants
+
+Create variant configurations using `defineVariants`:
+
+```typescript
+import { defineVariants } from '@svelte-atoms/core/utils';
+
+const buttonVariants = defineVariants({
+  class: 'inline-flex items-center justify-center rounded-md font-medium transition-colors',
+  variants: {
+    variant: {
+      primary: 'bg-blue-500 text-white hover:bg-blue-600',
+      secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300',
+      ghost: 'hover:bg-gray-100',
+      danger: 'bg-red-500 text-white hover:bg-red-600'
+    },
+    size: {
+      sm: 'h-8 px-3 text-sm',
+      md: 'h-10 px-4',
+      lg: 'h-12 px-6 text-lg'
+    }
+  },
+  defaults: {
+    variant: 'primary',
+    size: 'md'
+  }
+});
+```
+
+### Using Variants in Components
+
+```svelte
+<script lang="ts">
+  import { Button } from '@svelte-atoms/core';
+</script>
+
+<!-- Use default variants -->
+<Button>Default Button</Button>
+
+<!-- Override specific variants -->
+<Button variant="secondary">Secondary</Button>
+<Button size="lg">Large Button</Button>
+<Button variant="danger" size="sm">Small Danger</Button>
+```
+
+### Compound Variants
+
+Apply styles when multiple variant conditions match:
+
+```typescript
+const buttonVariants = defineVariants({
+  class: 'rounded-md font-medium',
+  variants: {
+    variant: {
+      primary: 'bg-blue-500 text-white',
+      secondary: 'bg-gray-200 text-gray-900'
+    },
+    size: {
+      sm: 'px-2 py-1 text-sm',
+      lg: 'px-6 py-3 text-lg'
+    }
+  },
+  compounds: [
+    {
+      variant: 'primary',
+      size: 'lg',
+      class: 'shadow-lg font-bold'
+    }
+  ],
+  defaults: {
+    variant: 'primary',
+    size: 'md'
+  }
+});
+```
+
+<Tip>
+Compound variants are perfect for edge cases where specific combinations need special styling.
+</Tip>
+
+## Dynamic Variants with Bonds
+
+Access component state through bonds for reactive styling:
+
+```typescript
+import { defineVariants } from '@svelte-atoms/core/utils';
+import type { Bond } from '@svelte-atoms/core';
+
+const buttonVariants = defineVariants((bond) => ({
+  class: 'rounded-md font-medium transition-colors',
+  variants: {
+    variant: {
+      primary: 'bg-blue-500 text-white hover:bg-blue-600',
+      secondary: 'bg-gray-500 text-white hover:bg-gray-600',
+      // Access bond state for dynamic styling
+      danger: bond?.state?.disabled
+        ? 'bg-red-300 text-white cursor-not-allowed'
+        : 'bg-red-500 text-white hover:bg-red-600'
+    },
+    size: {
+      sm: 'px-2 py-1 text-sm',
+      md: 'px-4 py-2',
+      lg: 'px-6 py-3 text-lg'
+    }
+  },
+  defaults: {
+    variant: 'primary',
+    size: 'md'
+  }
+}));
+```
+
+### Reactive Variant Functions
+
+Individual variant values can also be functions:
+
+```typescript
+const accordionVariants = defineVariants({
+  class: 'border rounded-md transition-all',
+  variants: {
+    state: {
+      open: (bond) => ({
+        class: bond?.state?.isOpen ? 'bg-blue-50 border-blue-200' : 'bg-white',
+        'aria-expanded': bond?.state?.isOpen,
+        'data-state': bond?.state?.isOpen ? 'open' : 'closed'
+      }),
+      disabled: (bond) => ({
+        class: bond?.state?.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+        'aria-disabled': bond?.state?.disabled
+      })
+    }
+  }
+});
+```
+
+<Note>
+Variant functions receive the component's bond and can return both classes and other attributes (aria-*, data-*, etc.).
+</Note>
+
+## Component Props
+
+### Common Props
+
+All components support standard HTML attributes and additional custom props:
+
+```svelte
+<script lang="ts">
+  import { Button, Input } from '@svelte-atoms/core';
+</script>
+
+<!-- Standard HTML attributes -->
+<Button 
+  class="custom-class" 
+  id="my-button"
+  disabled={true}
+  onclick={() => console.log('clicked')}
+>
+  Click me
+</Button>
+
+<!-- Component-specific props -->
+<Input.Root>
+  <Input.Control 
+    type="email"
+    placeholder="Enter email"
+    value=""
+    required
+  />
+</Input.Root>
+```
+
+### Base Prop for Composition
+
+Transform components using the `base` prop:
+
+```svelte
+<script lang="ts">
+  import { Button, Popover, Input } from '@svelte-atoms/core';
+</script>
+
+<!-- Button as Popover trigger -->
+<Popover.Root>
+  <Popover.Trigger base={Button} variant="outline">
+    Open Popover
+  </Popover.Trigger>
+  <Popover.Content>
+    <p>Popover content</p>
+  </Popover.Content>
+</Popover.Root>
+
+<!-- Input as Dropdown trigger -->
+<Dropdown.Root>
+  {#snippet children({ dropdown })}
+    <Dropdown.Trigger base={Input.Root}>
+      <Input.Control placeholder="Select option..." readonly />
+    </Dropdown.Trigger>
+    <Dropdown.Content>
+      <!-- Items -->
+    </Dropdown.Content>
+  {/snippet}
+</Dropdown.Root>
+```
+
+## Global Presets
+
+Define global styling presets for consistent theming across your application.
+
+### Creating a Preset
+
+```typescript
+import { setPreset } from '@svelte-atoms/core';
+import type { PresetEntry } from '@svelte-atoms/core';
+
+const buttonPreset: PresetEntry = (bond) => ({
+  class: 'rounded-md font-medium transition-colors focus:outline-none focus:ring-2',
+  variants: {
+    variant: {
+      primary: 'bg-blue-500 text-white hover:bg-blue-600',
+      secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300',
+      outline: 'border-2 border-gray-300 hover:bg-gray-50'
+    },
+    size: {
+      sm: 'h-8 px-3 text-sm',
+      md: 'h-10 px-4',
+      lg: 'h-12 px-6 text-lg'
+    }
+  },
+  defaults: {
+    variant: 'primary',
+    size: 'md'
+  }
+});
+
+// Apply preset
+setPreset({
+  'button': buttonPreset
+});
+```
+
+### Using Presets
+
+```svelte
+<script lang="ts">
+  import { Root } from '@svelte-atoms/core';
+  import { setPreset } from '@svelte-atoms/core';
+
+  // Set presets at app root
+  setPreset({
+    'button': (bond) => ({
+      class: 'rounded-md font-medium',
+      variants: {
+        variant: {
+          primary: 'bg-blue-500 text-white',
+          secondary: 'bg-gray-200 text-gray-900'
+        }
+      },
+      defaults: { variant: 'primary' }
+    }),
+    'input.control': (bond) => ({
+      class: 'border rounded-md px-3 py-2',
+    })
+  });
+</script>
+
+<Root>
+  <!-- All buttons use preset styles -->
+  <Button>Button</Button>
+  <Button variant="secondary">Secondary</Button>
+</Root>
+```
+
+## Extending Component Types
+
+Add custom properties to components through TypeScript interface extension:
+
+```typescript
+// types/button.d.ts
+import '@svelte-atoms/core';
+
+declare module '@svelte-atoms/core' {
+  interface ButtonExtendProps {
+    loading?: boolean;
+    icon?: string;
+  }
+}
+```
+
+```svelte
+<script lang="ts">
+  import { Button } from '@svelte-atoms/core';
+
+  let loading = $state(false);
+</script>
+
+<!-- Now supports custom props -->
+<Button loading={loading} icon="check">
+  {loading ? 'Loading...' : 'Submit'}
+</Button>
+```
+
+## Styling Patterns
+
+<Tabs>
+  <Tab title="Tailwind CSS">
+    Use Tailwind utility classes directly:
+
+    ```svelte
+    <Button class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded">
+      Tailwind Button
+    </Button>
+
+    <Dialog.Root>
+      <Dialog.Content class="bg-white rounded-lg shadow-xl p-6 max-w-md">
+        <Dialog.Header class="mb-4">
+          <Dialog.Title class="text-2xl font-bold text-gray-900">
+            Dialog Title
+          </Dialog.Title>
+        </Dialog.Header>
+      </Dialog.Content>
+    </Dialog.Root>
+    ```
+  </Tab>
+
+  <Tab title="CSS Modules">
+    Import and apply CSS modules:
+
+    ```svelte
+    <script lang="ts">
+      import styles from './Button.module.css';
+      import { Button } from '@svelte-atoms/core';
+    </script>
+
+    <Button class={styles.button}>
+      Styled Button
+    </Button>
+    ```
+
+    ```css
+    /* Button.module.css */
+    .button {
+      background: linear-gradient(to right, #667eea, #764ba2);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+
+    .button:hover {
+      transform: scale(1.05);
+    }
+    ```
+  </Tab>
+
+  <Tab title="CSS-in-JS">
+    Use style objects or tagged templates:
+
+    ```svelte
+    <script lang="ts">
+      import { Button } from '@svelte-atoms/core';
+
+      const buttonStyle = {
+        backgroundColor: '#4299e1',
+        color: 'white',
+        padding: '0.5rem 1rem',
+        borderRadius: '0.375rem',
+        fontWeight: '500'
+      };
+    </script>
+
+    <Button style={Object.entries(buttonStyle)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join('; ')}>
+      Styled Button
+    </Button>
+    ```
+  </Tab>
+</Tabs>
+
+## Theming
+
+### CSS Variables
+
+Use CSS custom properties for themeable components:
+
+```css
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary-color: #6b7280;
+  --border-radius: 0.375rem;
+}
+
+.dark {
+  --primary-color: #60a5fa;
+  --primary-hover: #3b82f6;
+  --secondary-color: #9ca3af;
+}
+```
+
+```svelte
+<script lang="ts">
+  import { Button } from '@svelte-atoms/core';
+</script>
+
+<Button class="bg-[var(--primary-color)] hover:bg-[var(--primary-hover)]">
+  Themed Button
+</Button>
+```
+
+### Dark Mode
+
+Implement dark mode with class-based toggling:
+
+```svelte
+<script lang="ts">
+  import { colorScheme } from '@svelte-atoms/core';
+  import { Button, Dialog } from '@svelte-atoms/core';
+
+  const theme = colorScheme();
+</script>
+
+<div class:dark={theme === 'dark'}>
+  <Button class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+    Theme-aware Button
+  </Button>
+
+  <Dialog.Root>
+    <Dialog.Content class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+      <Dialog.Header>
+        <Dialog.Title>Current theme: {theme}</Dialog.Title>
+      </Dialog.Header>
+    </Dialog.Content>
+  </Dialog.Root>
+</div>
+```
+
+## Best Practices
+
+<Steps>
+  <Step title="Start with base styles">
+    Define a consistent base class for all variants:
+    
+    ```typescript
+    const buttonVariants = defineVariants({
+      class: 'inline-flex items-center justify-center font-medium transition-colors',
+      variants: { /* ... */ }
+    });
+    ```
+  </Step>
+
+  <Step title="Use semantic variant names">
+    Name variants based on purpose, not appearance:
+    
+    ```typescript
+    variants: {
+      variant: {
+        primary: '...',
+        secondary: '...',
+        destructive: '...',  // Not 'red'
+        ghost: '...'
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Keep variants composable">
+    Make variants work together independently:
+    
+    ```svelte
+    <Button variant="primary" size="lg" />
+    <Button variant="ghost" size="sm" />
+    ```
+  </Step>
+
+  <Step title="Use presets for consistency">
+    Define global presets for shared styling:
+    
+    ```typescript
+    setPreset({
+      'button': buttonPreset,
+      'input.control': inputPreset
+    });
+    ```
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Using Components" icon="puzzle-piece" href="/guides/using-components">
+    Learn component patterns and composition
+  </Card>
+  <Card title="State Management" icon="circle-nodes" href="/guides/state-management">
+    Master bonds and reactive state
+  </Card>
+  <Card title="TypeScript" icon="code" href="/guides/typescript">
+    Type-safe customization
+  </Card>
+  <Card title="Examples" icon="star" href="https://statuesque-boba-0fb888.netlify.app/">
+    Browse customization examples
+  </Card>
+</CardGroup>

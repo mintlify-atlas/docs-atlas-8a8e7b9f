@@ -1,0 +1,655 @@
+---
+title: 'Animation Lifecycle Hooks'
+description: 'Master animation hooks for seamless transitions with GSAP, Motion, and more'
+---
+
+## Overview
+
+Svelte Atoms Core provides powerful animation lifecycle hooks that work seamlessly with third-party animation libraries like GSAP, Motion One, and anime.js. Every atom exposes hooks for initial state, enter/exit transitions, and data-driven animations.
+
+<Note>
+  All animation hooks expose the host element, making it easy to integrate with any animation library of your choice.
+</Note>
+
+## Animation Hooks API
+
+Every atom component supports these animation lifecycle hooks:
+
+```typescript
+interface AnimationProps {
+  // Set initial style state before component enters
+  initial?: (node: Element) => void;
+  
+  // Define enter transition when component appears
+  enter?: (node: Element) => TransitionConfig;
+  
+  // Define exit transition when component disappears
+  exit?: (node: Element) => TransitionConfig;
+  
+  // Animate style changes in response to data updates
+  animate?: (node: Element) => void;
+  
+  // Control transition scope (default: true)
+  global?: boolean;
+}
+```
+
+### Hook Execution Order
+
+1. **`initial`**: Called before the element enters the DOM
+2. **`enter`**: Called when the element enters the DOM
+3. **`animate`**: Called when reactive data changes (after enter completes)
+4. **`exit`**: Called when the element exits the DOM
+
+## Using Animation Hooks
+
+### Basic Enter/Exit Transitions
+
+Use Svelte's built-in transitions:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { fade, slide, scale } from 'svelte/transition';
+  
+  let show = $state(true);
+</script>
+
+{#if show}
+  <HtmlAtom 
+    enter={(node) => fade(node, { duration: 300 })}
+    exit={(node) => fade(node, { duration: 200 })}
+  >
+    Content with fade transition
+  </HtmlAtom>
+  
+  <HtmlAtom
+    enter={(node) => slide(node, { duration: 300 })}
+    exit={(node) => slide(node, { duration: 200 })}
+  >
+    Content with slide transition
+  </HtmlAtom>
+{/if}
+```
+
+### Initial State Setup
+
+Set the initial appearance before the enter animation:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { fade } from 'svelte/transition';
+</script>
+
+<HtmlAtom
+  initial={(node) => {
+    // Set initial state
+    node.style.opacity = '0';
+    node.style.transform = 'translateY(20px)';
+  }}
+  enter={(node) => fade(node, { duration: 400 })}
+>
+  Content starts invisible and offset
+</HtmlAtom>
+```
+
+### Data-Driven Animations
+
+Use the `animate` hook to respond to state changes:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  
+  let count = $state(0);
+  
+  function animateChange(node: HTMLElement) {
+    // Pulse animation when count changes
+    node.animate(
+      [
+        { transform: 'scale(1)' },
+        { transform: 'scale(1.2)' },
+        { transform: 'scale(1)' },
+      ],
+      { duration: 300, easing: 'ease-out' }
+    );
+  }
+</script>
+
+<HtmlAtom animate={animateChange}>
+  Count: {count}
+</HtmlAtom>
+
+<button onclick={() => count++}>Increment</button>
+```
+
+## Integration with Animation Libraries
+
+### Motion One
+
+Motion One provides a modern, performant animation API:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { animate, spring } from 'motion';
+  import { toTransitionConfig } from '@svelte-atoms/core/utils';
+  
+  let show = $state(true);
+</script>
+
+{#if show}
+  <HtmlAtom
+    initial={(node) => {
+      node.style.opacity = '0';
+      node.style.transform = 'scale(0.8)';
+    }}
+    enter={(node) => {
+      const animation = animate(
+        node,
+        { opacity: 1, transform: 'scale(1)' },
+        { duration: 0.4, easing: 'ease-out' }
+      );
+      return toTransitionConfig(animation);
+    }}
+    exit={(node) => {
+      const animation = animate(
+        node,
+        { opacity: 0, transform: 'scale(0.8)' },
+        { duration: 0.2 }
+      );
+      return toTransitionConfig(animation);
+    }}
+  >
+    Animated with Motion One
+  </HtmlAtom>
+{/if}
+```
+
+<Tip>
+  The `toTransitionConfig` utility converts animation library instances to Svelte's TransitionConfig format.
+</Tip>
+
+### GSAP
+
+GSAP is the industry-standard animation library:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import gsap from 'gsap';
+  
+  let items = $state([1, 2, 3, 4]);
+  
+  function staggerEnter(node: HTMLElement) {
+    gsap.fromTo(
+      node,
+      {
+        opacity: 0,
+        y: 30,
+      },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: 'power2.out',
+      }
+    );
+    
+    return {
+      duration: 600,
+      tick: (t: number) => {
+        // GSAP handles the animation
+      },
+    };
+  }
+  
+  function staggerExit(node: HTMLElement) {
+    gsap.to(node, {
+      opacity: 0,
+      y: -30,
+      duration: 0.4,
+      ease: 'power2.in',
+    });
+    
+    return {
+      duration: 400,
+    };
+  }
+</script>
+
+<div class="grid gap-4">
+  {#each items as item (item)}
+    <HtmlAtom
+      enter={staggerEnter}
+      exit={staggerExit}
+      class="rounded-lg bg-white p-6 shadow"
+    >
+      Item {item}
+    </HtmlAtom>
+  {/each}
+</div>
+```
+
+### Anime.js
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import anime from 'animejs';
+  
+  function animeEnter(node: HTMLElement) {
+    anime({
+      targets: node,
+      translateX: [-100, 0],
+      opacity: [0, 1],
+      duration: 800,
+      easing: 'easeOutExpo',
+    });
+    
+    return {
+      duration: 800,
+    };
+  }
+</script>
+
+<HtmlAtom enter={animeEnter}>
+  Animated with Anime.js
+</HtmlAtom>
+```
+
+## Real-World Examples
+
+### Accordion with Smooth Transitions
+
+```svelte
+<script>
+  import { Accordion, AccordionItem } from '@svelte-atoms/core';
+  import { animate } from 'motion';
+  import { toTransitionConfig } from '@svelte-atoms/core/utils';
+  
+  let openItems = $state<string[]>([]);
+</script>
+
+<Accordion bind:values={openItems} multiple collapsible>
+  <AccordionItem.Root value="item-1">
+    <AccordionItem.Header class="flex cursor-pointer items-center justify-between p-4">
+      <span class="font-semibold">What is Svelte Atoms?</span>
+      <AccordionItem.Indicator />
+    </AccordionItem.Header>
+    
+    <AccordionItem.Body
+      initial={(node) => {
+        node.style.height = '0';
+        node.style.opacity = '0';
+      }}
+      enter={(node) => {
+        const animation = animate(
+          node,
+          { height: 'auto', opacity: 1 },
+          { duration: 0.3, easing: 'ease-out' }
+        );
+        return toTransitionConfig(animation);
+      }}
+      exit={(node) => {
+        const animation = animate(
+          node,
+          { height: 0, opacity: 0 },
+          { duration: 0.2, easing: 'ease-in' }
+        );
+        return toTransitionConfig(animation);
+      }}
+      class="overflow-hidden"
+    >
+      <div class="p-4">
+        Svelte Atoms is a headless component library for Svelte 5.
+      </div>
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+</Accordion>
+```
+
+### Toast Notifications
+
+```svelte
+<script>
+  import { Toast } from '@svelte-atoms/core/components/toast';
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { animate } from 'motion';
+  import { toTransitionConfig } from '@svelte-atoms/core/utils';
+  
+  let toasts = $state<Array<{ id: number; message: string }>>([]);
+  
+  function addToast() {
+    const id = Date.now();
+    toasts = [...toasts, { id, message: 'Action completed!' }];
+    
+    setTimeout(() => {
+      toasts = toasts.filter(t => t.id !== id);
+    }, 3000);
+  }
+</script>
+
+<Button.Root onclick={addToast}>
+  Show Toast
+</Button.Root>
+
+<div class="fixed top-4 right-4 flex flex-col gap-2">
+  {#each toasts as toast (toast.id)}
+    <Toast.Root
+      enter={(node) => {
+        const animation = animate(
+          node,
+          { x: [300, 0], opacity: [0, 1] },
+          { duration: 0.3, easing: 'ease-out' }
+        );
+        return toTransitionConfig(animation);
+      }}
+      exit={(node) => {
+        const animation = animate(
+          node,
+          { x: [0, 300], opacity: [1, 0] },
+          { duration: 0.2, easing: 'ease-in' }
+        );
+        return toTransitionConfig(animation);
+      }}
+      class="rounded-lg bg-green-500 px-6 py-4 text-white shadow-lg"
+    >
+      {toast.message}
+    </Toast.Root>
+  {/each}
+</div>
+```
+
+### List with Stagger Animation
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { animate, stagger } from 'motion';
+  import { toTransitionConfig } from '@svelte-atoms/core/utils';
+  
+  let items = $state(['Item 1', 'Item 2', 'Item 3', 'Item 4']);
+  let show = $state(false);
+  
+  // Stagger index for each item
+  let staggerIndex = 0;
+  
+  function createStaggeredEnter(index: number) {
+    return (node: HTMLElement) => {
+      const animation = animate(
+        node,
+        { opacity: [0, 1], y: [20, 0] },
+        { 
+          duration: 0.5,
+          delay: index * 0.1, // Stagger delay
+          easing: 'ease-out',
+        }
+      );
+      return toTransitionConfig(animation);
+    };
+  }
+</script>
+
+<Button.Root onclick={() => show = !show}>
+  Toggle List
+</Button.Root>
+
+{#if show}
+  <div class="mt-4 space-y-2">
+    {#each items as item, i (item)}
+      <HtmlAtom
+        initial={(node) => {
+          node.style.opacity = '0';
+          node.style.transform = 'translateY(20px)';
+        }}
+        enter={createStaggeredEnter(i)}
+        exit={(node) => {
+          const animation = animate(
+            node,
+            { opacity: 0, x: -100 },
+            { duration: 0.3 }
+          );
+          return toTransitionConfig(animation);
+        }}
+        class="rounded-lg bg-white p-4 shadow"
+      >
+        {item}
+      </HtmlAtom>
+    {/each}
+  </div>
+{/if}
+```
+
+### Page Transitions
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { animate } from 'motion';
+  import { toTransitionConfig } from '@svelte-atoms/core/utils';
+  
+  let currentPage = $state('home');
+  
+  const pages = {
+    home: { title: 'Home', content: 'Welcome to the home page' },
+    about: { title: 'About', content: 'Learn more about us' },
+    contact: { title: 'Contact', content: 'Get in touch' },
+  };
+  
+  function pageEnter(node: HTMLElement) {
+    const animation = animate(
+      node,
+      { 
+        opacity: [0, 1],
+        x: [50, 0],
+      },
+      { 
+        duration: 0.4,
+        easing: [0.22, 1, 0.36, 1], // Custom easing
+      }
+    );
+    return toTransitionConfig(animation);
+  }
+  
+  function pageExit(node: HTMLElement) {
+    const animation = animate(
+      node,
+      { 
+        opacity: [1, 0],
+        x: [0, -50],
+      },
+      { duration: 0.3 }
+    );
+    return toTransitionConfig(animation);
+  }
+</script>
+
+<nav class="mb-4 flex gap-4">
+  {#each Object.keys(pages) as page}
+    <button onclick={() => currentPage = page}>
+      {pages[page].title}
+    </button>
+  {/each}
+</nav>
+
+{#key currentPage}
+  <HtmlAtom
+    enter={pageEnter}
+    exit={pageExit}
+    class="rounded-lg bg-white p-8 shadow"
+  >
+    <h1 class="mb-4 text-2xl font-bold">{pages[currentPage].title}</h1>
+    <p>{pages[currentPage].content}</p>
+  </HtmlAtom>
+{/key}
+```
+
+## Advanced Patterns
+
+### Conditional Animations
+
+Animate differently based on conditions:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { animate } from 'motion';
+  import { toTransitionConfig } from '@svelte-atoms/core/utils';
+  
+  let direction = $state<'left' | 'right'>('left');
+  
+  function conditionalEnter(node: HTMLElement) {
+    const x = direction === 'left' ? -100 : 100;
+    const animation = animate(
+      node,
+      { x: [x, 0], opacity: [0, 1] },
+      { duration: 0.4 }
+    );
+    return toTransitionConfig(animation);
+  }
+</script>
+
+<HtmlAtom enter={conditionalEnter}>
+  Enters from {direction}
+</HtmlAtom>
+```
+
+### Respecting Reduced Motion
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { animate } from 'motion';
+  import { toTransitionConfig } from '@svelte-atoms/core/utils';
+  
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+  function respectfulEnter(node: HTMLElement) {
+    if (prefersReducedMotion) {
+      // Instant appearance for users who prefer reduced motion
+      node.style.opacity = '1';
+      return { duration: 0 };
+    }
+    
+    // Full animation for others
+    const animation = animate(
+      node,
+      { opacity: [0, 1], y: [20, 0] },
+      { duration: 0.4 }
+    );
+    return toTransitionConfig(animation);
+  }
+</script>
+
+<HtmlAtom enter={respectfulEnter}>
+  Respectful animation
+</HtmlAtom>
+```
+
+### Cleanup and Cancellation
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { animate } from 'motion';
+  
+  function animateWithCleanup(node: HTMLElement) {
+    let animation: any;
+    
+    animation = animate(
+      node,
+      { rotate: [0, 360] },
+      { duration: 2, repeat: Infinity }
+    );
+    
+    // Return cleanup function
+    return () => {
+      animation?.cancel();
+    };
+  }
+</script>
+
+<HtmlAtom animate={animateWithCleanup}>
+  Continuous rotation with cleanup
+</HtmlAtom>
+```
+
+## Animation Best Practices
+
+<Accordion title="Keep Animations Short">
+  Most UI animations should be between 200-400ms. Longer animations feel sluggish.
+  
+  ```svelte
+  <!-- ✅ Good: Quick and responsive -->
+  <HtmlAtom enter={(node) => fade(node, { duration: 300 })}>
+    Content
+  </HtmlAtom>
+  
+  <!-- ❌ Avoid: Too slow -->
+  <HtmlAtom enter={(node) => fade(node, { duration: 1000 })}>
+    Content
+  </HtmlAtom>
+  ```
+</Accordion>
+
+<Accordion title="Use Appropriate Easing">
+  - **Ease-out**: For elements entering (starts fast, ends slow)
+  - **Ease-in**: For elements exiting (starts slow, ends fast)
+  - **Ease-in-out**: For elements moving between states
+  
+  ```typescript
+  // Good easing choices
+  enter: { easing: 'ease-out' }  // Elements appearing
+  exit: { easing: 'ease-in' }    // Elements disappearing
+  animate: { easing: 'ease-in-out' } // State changes
+  ```
+</Accordion>
+
+<Accordion title="Respect User Preferences">
+  Always check for `prefers-reduced-motion` and provide instant or minimal animations for users who need them.
+  
+  ```typescript
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+  ```
+</Accordion>
+
+<Accordion title="Animate Performant Properties">
+  Prefer animating `transform` and `opacity` over properties like `width`, `height`, or `top`.
+  
+  ```svelte
+  <!-- ✅ Good: GPU-accelerated -->
+  <HtmlAtom 
+    initial={(node) => node.style.transform = 'translateY(20px)'}
+  />
+  
+  <!-- ❌ Avoid: Triggers layout -->
+  <HtmlAtom 
+    initial={(node) => node.style.top = '20px'}
+  />
+  ```
+</Accordion>
+
+<Warning>
+  Avoid animating too many elements simultaneously. This can cause performance issues, especially on lower-end devices.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Composition" icon="shapes" href="/concepts/composition">
+    Learn component composition patterns
+  </Card>
+  <Card title="Styling" icon="palette" href="/concepts/styling">
+    Explore styling approaches
+  </Card>
+  <Card title="Components" icon="cube" href="/components/button">
+    Browse all animatable components
+  </Card>
+  <Card title="Motion One Docs" icon="bolt" href="https://motion.dev">
+    Read the Motion One documentation
+  </Card>
+</CardGroup>

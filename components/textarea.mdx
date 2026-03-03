@@ -1,0 +1,383 @@
+---
+title: Textarea
+description: A multi-line text input component for longer text content
+icon: align-left
+---
+
+## Overview
+
+The Textarea component is built on top of the Input component, providing a multi-line text input interface. It inherits the Input component's architecture while optimizing for textarea-specific use cases.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Textarea } from '@svelte-atoms/core/components/textarea';
+  
+  let value = $state('');
+</script>
+
+<Textarea.Root>
+  <Textarea.Input bind:value placeholder="Enter your message..." />
+</Textarea.Root>
+```
+
+## Subcomponents
+
+- **Textarea.Root** - Container for the textarea (extends Input.Root with textarea preset)
+- **Textarea.Input** - The actual textarea element
+
+## Examples
+
+### Basic Textarea
+
+```svelte
+<script>
+  let message = $state('');
+</script>
+
+<Textarea.Root>
+  <Textarea.Input bind:value={message} />
+</Textarea.Root>
+```
+
+### Textarea with Label
+
+```svelte
+<script>
+  import { Label } from '@svelte-atoms/core/components/label';
+  import { Textarea } from '@svelte-atoms/core/components/textarea';
+  
+  let comment = $state('');
+</script>
+
+<Label for="comment">Comment</Label>
+<Textarea.Root>
+  <Textarea.Input id="comment" bind:value={comment} />
+</Textarea.Root>
+```
+
+### Custom Rows and Cols
+
+```svelte
+<Textarea.Root>
+  <Textarea.Input rows={10} cols={50} />
+</Textarea.Root>
+```
+
+### With Character Limit
+
+```svelte
+<script>
+  let bio = $state('');
+  const maxLength = 500;
+</script>
+
+<Textarea.Root>
+  <Textarea.Input 
+    bind:value={bio} 
+    maxlength={maxLength}
+    placeholder="Tell us about yourself..."
+  />
+</Textarea.Root>
+<div class="text-sm text-muted-foreground">
+  {bio.length}/{maxLength} characters
+</div>
+```
+
+### Disabled and Readonly
+
+```svelte
+<!-- Disabled -->
+<Textarea.Root>
+  <Textarea.Input disabled value="This textarea is disabled" />
+</Textarea.Root>
+
+<!-- Readonly -->
+<Textarea.Root>
+  <Textarea.Input readonly value="This textarea is readonly" />
+</Textarea.Root>
+```
+
+## Textarea.Root Props
+
+<ParamField path="preset" type="string" default="'textarea'">
+  The preset key used for styling. Defaults to 'textarea' which extends the input preset.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the root container. Default includes `h-auto` to allow vertical expansion.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Child components, typically Textarea.Input.
+</ParamField>
+
+## Textarea.Input Props
+
+<ParamField path="value" type="string">
+  The current text value. Bindable for two-way data binding.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text displayed when the textarea is empty.
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  When true, the textarea is disabled and cannot be edited.
+</ParamField>
+
+<ParamField path="readonly" type="boolean">
+  When true, the textarea is read-only and cannot be edited.
+</ParamField>
+
+<ParamField path="rows" type="number">
+  The number of visible text rows.
+</ParamField>
+
+<ParamField path="cols" type="number">
+  The number of visible text columns.
+</ParamField>
+
+<ParamField path="maxlength" type="number">
+  Maximum number of characters allowed.
+</ParamField>
+
+<ParamField path="minlength" type="number">
+  Minimum number of characters required.
+</ParamField>
+
+<ParamField path="required" type="boolean">
+  When true, the textarea must have a value for form submission.
+</ParamField>
+
+<ParamField path="autofocus" type="boolean">
+  When true, the textarea receives focus on mount.
+</ParamField>
+
+<ParamField path="autocomplete" type="string">
+  Controls browser autocomplete behavior.
+</ParamField>
+
+<ParamField path="spellcheck" type="boolean">
+  Controls spell checking behavior.
+</ParamField>
+
+<ParamField path="wrap" type="'soft' | 'hard' | 'off'">
+  Controls how text wrapping is handled.
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the textarea element.
+</ParamField>
+
+## Default Styling
+
+### Textarea.Root
+Extends Input.Root styling with:
+```css
+h-auto /* Allows vertical expansion */
+```
+
+### Textarea.Input
+```css
+border-border
+w-full
+p-2
+outline-none
+```
+
+## HTML Attributes
+
+The Textarea.Input component accepts all standard HTML textarea attributes, including:
+
+- `id` - Element ID for label association
+- `name` - Form field name
+- `form` - Associates with a form element
+- `oninput` - Input event handler
+- `onchange` - Change event handler
+- `onfocus` - Focus event handler
+- `onblur` - Blur event handler
+
+## Event Handling
+
+```svelte
+<script>
+  function handleInput(e) {
+    console.log('Input event:', e.target.value);
+  }
+  
+  function handleChange(e) {
+    console.log('Change event:', e.target.value);
+  }
+  
+  function handleBlur(e) {
+    console.log('Lost focus');
+  }
+</script>
+
+<Textarea.Root>
+  <Textarea.Input 
+    oninput={handleInput}
+    onchange={handleChange}
+    onblur={handleBlur}
+  />
+</Textarea.Root>
+```
+
+## TypeScript Support
+
+```typescript
+interface TextareaRootProps<
+  E extends keyof HTMLElementTagNameMap = 'div',
+  B extends Base = Base
+> extends HtmlAtomProps<E, B>, TextareaRootExtendProps {}
+
+interface TextareaInputProps extends TextareaInputExtendProps {
+  value?: string;
+  placeholder?: string;
+  disabled?: boolean;
+  readonly?: boolean;
+  rows?: number;
+  cols?: number;
+  maxlength?: number;
+  minlength?: number;
+  required?: boolean;
+  autofocus?: boolean;
+  autocomplete?: string;
+  spellcheck?: boolean;
+  wrap?: 'soft' | 'hard' | 'off';
+}
+```
+
+### Extending Textarea Props
+
+```typescript
+// In your types file
+declare module '@svelte-atoms/core/components/textarea' {
+  interface TextareaRootExtendProps {
+    variant?: 'default' | 'large';
+  }
+  
+  interface TextareaInputExtendProps {
+    autoResize?: boolean;
+  }
+}
+```
+
+## Integration with Forms
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Textarea } from '@svelte-atoms/core/components/textarea';
+  import { z } from 'zod';
+  
+  const messageSchema = z.string().min(10).max(500);
+</script>
+
+<Form.Root>
+  <Form.Field name="message" schema={messageSchema}>
+    <Form.Field.Label>Message</Form.Field.Label>
+    <Textarea.Root>
+      <Form.Field.Control base={Textarea.Input} />
+    </Textarea.Root>
+    <Form.Field.Errors />
+  </Form.Field>
+</Form.Root>
+```
+
+## Architecture
+
+The Textarea component is built on top of the Input component:
+
+```svelte
+<!-- Textarea.Root -->
+<Input.Root preset="textarea" class={['h-auto', klass]}>
+  {@render children?.()}
+</Input.Root>
+```
+
+This architecture means:
+- Textarea.Root extends Input.Root with textarea-specific defaults
+- All Input.Root features are available (bond system, state management)
+- Preset system allows customization via "textarea" preset key
+
+## Accessibility
+
+- Uses semantic `<textarea>` element
+- Supports all ARIA attributes
+- Works with form labels via `id` attribute
+- Keyboard accessible (Tab to focus, Shift+Tab to unfocus)
+- Supports screen readers
+
+## Best Practices
+
+1. **Always provide a label**: Use the Label component and associate it with the textarea via `id`
+2. **Set appropriate rows**: Default is browser-dependent, explicitly set `rows` for consistency
+3. **Use maxlength for character limits**: Combine with a character counter for better UX
+4. **Provide clear placeholders**: Help users understand what content is expected
+5. **Consider auto-resize**: For better UX, implement auto-resize based on content
+6. **Handle validation**: Use with Form.Field for built-in validation support
+
+## Common Patterns
+
+### Auto-Resizing Textarea
+
+```svelte
+<script>
+  let textarea;
+  let value = $state('');
+  
+  $effect(() => {
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+  });
+</script>
+
+<Textarea.Root>
+  <Textarea.Input bind:this={textarea} bind:value />
+</Textarea.Root>
+```
+
+### Character Counter with Validation
+
+```svelte
+<script>
+  let value = $state('');
+  const minChars = 50;
+  const maxChars = 500;
+  
+  const isValid = $derived(value.length >= minChars && value.length <= maxChars);
+  const remaining = $derived(maxChars - value.length);
+</script>
+
+<Textarea.Root>
+  <Textarea.Input 
+    bind:value 
+    maxlength={maxChars}
+    class={!isValid && value.length > 0 ? 'border-red-500' : ''}
+  />
+</Textarea.Root>
+<div class="text-sm" class:text-red-500={!isValid}>
+  {#if value.length < minChars}
+    Minimum {minChars} characters ({minChars - value.length} more needed)
+  {:else}
+    {remaining} characters remaining
+  {/if}
+</div>
+```
+
+## Related Components
+
+- [Input](/components/input) - For single-line text input
+- [Form](/components/form) - For form management and validation
+- [Label](/components/label) - For textarea labels

@@ -1,0 +1,517 @@
+---
+title: Form
+description: Comprehensive form management with validation, field tracking, and composable field components
+icon: file-alt
+---
+
+## Overview
+
+The Form component provides a powerful and flexible form management system with built-in validation support, field tracking, and composable architecture. It works seamlessly with validation libraries like Zod and provides granular control over form state.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+For validation support:
+```bash
+npm install zod  # or your preferred validation library
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Input } from '@svelte-atoms/core/components/input';
+</script>
+
+<Form.Root>
+  <Form.Field name="email">
+    <Form.Field.Label>Email</Form.Field.Label>
+    <Input.Root>
+      <Form.Field.Control base={Input.Control} type="email" />
+    </Input.Root>
+  </Form.Field>
+</Form.Root>
+```
+
+## Subcomponents
+
+- **Form.Root** - Main form container
+- **Form.Field** - Individual form field wrapper
+- **Form.Field.Label** - Field label component
+- **Form.Field.Control** - Field control wrapper for inputs
+- **Form.Field.Errors** - Error display component
+
+## Examples
+
+### Complete Form with Validation
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Input } from '@svelte-atoms/core/components/input';
+  import { Checkbox } from '@svelte-atoms/core/components/checkbox';
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { z } from 'zod';
+  import { ZodAdapter } from '@svelte-atoms/core/components/form/field/validation-adapters';
+  
+  const personSchema = z.object({
+    firstName: z.string().min(2).max(100),
+    lastName: z.string().min(2).max(100),
+    email: z.string().email(),
+    isAdmin: z.boolean()
+  });
+  
+  const validator = new ZodAdapter();
+</script>
+
+<Form.Root class="flex flex-col gap-2" {validator}>
+  <div class="mb-4 flex flex-col">
+    <h2 class="text-3xl font-semibold">User Registration</h2>
+    <p class="text-sm text-gray-500">Fill in your details below.</p>
+  </div>
+  
+  <div class="flex gap-2">
+    <Form.Field name="firstName" schema={personSchema.shape.firstName}>
+      {#snippet children({ field })}
+        <Form.Field.Label>First Name</Form.Field.Label>
+        <Input.Root>
+          <Form.Field.Control
+            base={Input.Control}
+            placeholder="Enter your first name"
+            onblur={() => field?.state.validate()}
+          />
+        </Input.Root>
+        {#if field?.state?.errors?.length > 0}
+          <div class="text-xs text-red-600">
+            {#each field.state.errors as error}
+              <div>{error.message}</div>
+            {/each}
+          </div>
+        {/if}
+      {/snippet}
+    </Form.Field>
+    
+    <Form.Field name="lastName" schema={personSchema.shape.lastName}>
+      <Form.Field.Label>Last Name</Form.Field.Label>
+      <Input.Root>
+        <Form.Field.Control base={Input.Control} placeholder="Enter your last name" />
+      </Input.Root>
+    </Form.Field>
+  </div>
+  
+  <Form.Field name="email" schema={personSchema.shape.email}>
+    <Form.Field.Label>Email</Form.Field.Label>
+    <Input.Root>
+      <Form.Field.Control base={Input.Control} type="email" placeholder="you@example.com" />
+    </Input.Root>
+  </Form.Field>
+  
+  <Form.Field name="isAdmin" schema={personSchema.shape.isAdmin}>
+    <Form.Field.Label>Administrator</Form.Field.Label>
+    <Form.Field.Control base={Checkbox} />
+  </Form.Field>
+  
+  <Button type="submit">Submit</Button>
+</Form.Root>
+```
+
+### Renderless Form
+
+```svelte
+<Form.Root renderless>
+  {#snippet children({ form })}
+    <div>
+      <!-- Custom form layout without a <form> element -->
+      <Form.Field name="field1">
+        <!-- fields -->
+      </Form.Field>
+    </div>
+  {/snippet}
+</Form.Root>
+```
+
+### Form with Radio Buttons
+
+```svelte
+<script>
+  import { Radio, RadioGroup } from '@svelte-atoms/core/components/radio';
+  import { z } from 'zod';
+  
+  const colorSchema = z.enum(['red', 'blue', 'green']);
+</script>
+
+<Form.Root>
+  <Form.Field name="color" schema={colorSchema}>
+    <Form.Field.Label>Favorite Color</Form.Field.Label>
+    <Form.Field.Control class="flex flex-col items-start text-sm" base={RadioGroup}>
+      <div class="flex items-center gap-2">
+        <Radio value="red" />
+        <div>Red</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <Radio value="blue" />
+        <div>Blue</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <Radio value="green" />
+        <div>Green</div>
+      </div>
+    </Form.Field.Control>
+  </Form.Field>
+</Form.Root>
+```
+
+### Manual Validation
+
+```svelte
+<script>
+  let fieldRef;
+  
+  function validateField() {
+    const results = fieldRef?.state.validate();
+    console.log('Validation results:', results);
+  }
+</script>
+
+<Form.Root>
+  <Form.Field bind:this={fieldRef} name="username" schema={usernameSchema}>
+    <Form.Field.Label>Username</Form.Field.Label>
+    <Input.Root>
+      <Form.Field.Control base={Input.Control} />
+    </Input.Root>
+  </Form.Field>
+  
+  <Button type="button" onclick={validateField}>Validate</Button>
+</Form.Root>
+```
+
+## Form.Root Props
+
+<ParamField path="renderless" type="boolean" default="false">
+  When true, renders children without a wrapping `<form>` element.
+</ParamField>
+
+<ParamField path="validator" type="Validator">
+  Validation adapter instance (e.g., ZodAdapter, YupAdapter).
+</ParamField>
+
+<ParamField path="preset" type="string" default="'form'">
+  The preset key used for styling.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the form element.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ form: FormBond }]>">
+  Child content with access to the form bond.
+</ParamField>
+
+<ParamField path="factory" type="Factory<FormBond>">
+  Custom factory function for creating the form bond.
+</ParamField>
+
+## Form.Field Props
+
+<ParamField path="name" type="string" required>
+  The field name, used for identification and form submission.
+</ParamField>
+
+<ParamField path="value" type="any">
+  The current field value. Bindable for two-way data binding.
+</ParamField>
+
+<ParamField path="schema" type="Schema">
+  Validation schema for this specific field (e.g., from Zod).
+</ParamField>
+
+<ParamField path="validator" type="Validator">
+  Field-specific validator. Overrides form-level validator if provided.
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  When true, the field is disabled.
+</ParamField>
+
+<ParamField path="readonly" type="boolean">
+  When true, the field is readonly.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'field'">
+  The preset key used for styling.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the field container.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ field: FieldBond }]>">
+  Child content with access to the field bond.
+</ParamField>
+
+## Form.Field.Label Props
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'label'">
+  The HTML element to render as.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'field.label'">
+  The preset key used for styling.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Label text content.
+</ParamField>
+
+## Form.Field.Control Props
+
+<ParamField path="base" type="Component" required>
+  The base input component to wrap (e.g., Input.Control, Checkbox, RadioGroup).
+</ParamField>
+
+<ParamField path="value" type="any">
+  The control value. Bindable.
+</ParamField>
+
+<ParamField path="checked" type="boolean">
+  For checkbox/radio controls. Bindable.
+</ParamField>
+
+<ParamField path="number" type="number">
+  For number inputs. Bindable.
+</ParamField>
+
+<ParamField path="date" type="Date">
+  For date inputs. Bindable.
+</ParamField>
+
+<ParamField path="files" type="File[]">
+  For file inputs. Bindable.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'field.control'">
+  The preset key used for styling.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes.
+</ParamField>
+
+<ParamField path="oninput" type="function">
+  Input event handler.
+</ParamField>
+
+## Form.Field.Errors Props
+
+<ParamField path="children" type="Snippet<[{ errors: Error[] }]>">
+  Render function that receives the array of validation errors.
+</ParamField>
+
+## Default Styling
+
+### Form.Root
+```css
+/* No default styling - inherits from HtmlAtom */
+```
+
+### Form.Field
+```css
+flex
+flex-col
+```
+
+### Form.Field.Label
+```css
+flex
+flex-col
+```
+
+### Form.Field.Control
+```css
+flex
+items-center
+```
+
+## Validation
+
+### Zod Adapter
+
+```svelte
+<script>
+  import { z } from 'zod';
+  import { ZodAdapter } from '@svelte-atoms/core/components/form/field/validation-adapters';
+  
+  const validator = new ZodAdapter();
+  const emailSchema = z.string().email('Invalid email address');
+</script>
+
+<Form.Root {validator}>
+  <Form.Field name="email" schema={emailSchema}>
+    <!-- field content -->
+  </Form.Field>
+</Form.Root>
+```
+
+### Custom Validator
+
+```typescript
+import type { Validator } from '@svelte-atoms/core/components/form/types';
+
+class CustomValidator implements Validator {
+  validate(schema: any, value: any) {
+    // Your validation logic
+    return {
+      success: boolean,
+      errors: Array<{ message: string }>
+    };
+  }
+}
+```
+
+## Field Bond API
+
+The field bond provides access to field state and methods:
+
+```svelte
+<Form.Field name="username">
+  {#snippet children({ field })}
+    <!-- Access field state -->
+    <div>Value: {field.state.props.value}</div>
+    <div>Errors: {field.state.errors.length}</div>
+    
+    <!-- Manually validate -->
+    <button onclick={() => field.state.validate()}>
+      Validate
+    </button>
+  {/snippet}
+</Form.Field>
+```
+
+## Form Bond API
+
+The form bond provides access to form state:
+
+```svelte
+<Form.Root>
+  {#snippet children({ form })}
+    <!-- Access all fields -->
+    {#each Object.entries(form.state.fields) as [name, field]}
+      <div>{name}: {field.state.props.value}</div>
+    {/each}
+  {/snippet}
+</Form.Root>
+```
+
+## TypeScript Support
+
+```typescript
+type FormRootProps<B extends Base = Base> = CommonProps & (RenderlessProps | RenderfullProps<B>);
+
+type FieldRootProps<E extends keyof HTMLElementTagNameMap = 'div', B extends Base = Base> = Override<
+  HtmlAtomProps<E, B>,
+  {
+    disabled: boolean;
+    readonly: boolean;
+    name?: string;
+    value?: any;
+    schema?: Schema;
+    parse: (schema: Schema) => void;
+    extend: any;
+    factory?: Factory<FieldBond>;
+    children?: Snippet<[{ field?: FieldBond }]>;
+  }
+> & FieldRootExtendProps;
+```
+
+## Validation Lifecycle
+
+1. **Field value changes** → Updates field state
+2. **Validation triggered** → By blur, submit, or manual call
+3. **Schema validation** → Using provided validator
+4. **Errors stored** → In field.state.errors
+5. **UI updates** → Error components re-render
+
+## Best Practices
+
+1. **Define schemas outside component**: Improves performance and reusability
+2. **Use validator at form level**: Share validator instance across fields
+3. **Validate on blur**: Better UX than validating on every keystroke
+4. **Provide clear error messages**: Help users understand what went wrong
+5. **Use bindable values**: Enable two-way data binding for form state
+6. **Group related fields**: Use fieldsets or visual grouping
+7. **Handle submission**: Validate entire form before submitting
+8. **Reset forms properly**: Clear errors and values after submission
+
+## Common Patterns
+
+### Form Submission
+
+```svelte
+<script>
+  async function handleSubmit(event) {
+    event.preventDefault();
+    
+    // Validate all fields
+    const isValid = validateAllFields();
+    
+    if (!isValid) return;
+    
+    // Submit form data
+    const formData = new FormData(event.target);
+    await submitForm(formData);
+  }
+</script>
+
+<Form.Root onsubmit={handleSubmit}>
+  <!-- fields -->
+  <Button type="submit">Submit</Button>
+</Form.Root>
+```
+
+### Displaying Field Errors
+
+```svelte
+<Form.Field name="email" schema={emailSchema}>
+  <Form.Field.Label>Email</Form.Field.Label>
+  <Input.Root>
+    <Form.Field.Control base={Input.Control} />
+  </Input.Root>
+  <Form.Field.Errors>
+    {#snippet children({ errors })}
+      {#if errors.length > 0}
+        <ul class="text-sm text-red-600 mt-1">
+          {#each errors as error}
+            <li>{error.message}</li>
+          {/each}
+        </ul>
+      {/if}
+    {/snippet}
+  </Form.Field.Errors>
+</Form.Field>
+```
+
+## Accessibility
+
+- Uses semantic HTML form elements
+- Proper label associations via Form.Field.Label
+- Error messages linked to form fields
+- Supports all native form attributes
+- Keyboard navigation friendly
+- Screen reader compatible
+
+## Related Components
+
+- [Input](/components/input) - Text input fields
+- [Textarea](/components/textarea) - Multi-line text input
+- [Checkbox](/components/checkbox) - Checkbox inputs
+- [Radio](/components/radio) - Radio button inputs
+- [Button](/components/button) - Form submission buttons
+- [Label](/components/label) - Field labels

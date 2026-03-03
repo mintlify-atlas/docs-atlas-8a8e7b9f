@@ -1,0 +1,174 @@
+---
+title: "Stack"
+description: "A layout component for arranging items in a horizontal or vertical stack with flexible spacing and alignment"
+---
+
+## Overview
+
+The Stack component provides a flexible container for arranging child elements in either a row or column layout with customizable gap, alignment, and justification.
+
+## Anatomy
+
+```svelte
+<Stack.Root direction="column" gap={4} align="start" justify="start">
+  <Stack.Item>Item 1</Stack.Item>
+  <Stack.Item>Item 2</Stack.Item>
+  <Stack.Item>Item 3</Stack.Item>
+</Stack.Root>
+```
+
+## Subcomponents
+
+### Stack.Root
+
+The root container that defines the stack layout.
+
+<ParamField path="direction" type="'row' | 'column'" default="'column'">
+  The direction of the stack layout
+</ParamField>
+
+<ParamField path="gap" type="number | string">
+  Spacing between stack items (can be a number for rem units or a string like "1rem", "16px")
+</ParamField>
+
+<ParamField path="align" type="'start' | 'center' | 'end' | 'stretch'">
+  Cross-axis alignment of items
+</ParamField>
+
+<ParamField path="justify" type="'start' | 'center' | 'end' | 'between' | 'around' | 'evenly'">
+  Main-axis justification of items
+</ParamField>
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'div'">
+  The HTML element to render as
+</ParamField>
+
+### Stack.Item
+
+An individual item within the stack.
+
+Inherits all standard HTML attributes for the element type specified.
+
+## Examples
+
+### Vertical Stack
+
+```svelte
+<script>
+  import { Stack } from '$lib/components/stack';
+</script>
+
+<Stack.Root direction="column" gap={4}>
+  <Stack.Item>
+    <div class="rounded border p-4">
+      First item
+    </div>
+  </Stack.Item>
+  <Stack.Item>
+    <div class="rounded border p-4">
+      Second item
+    </div>
+  </Stack.Item>
+  <Stack.Item>
+    <div class="rounded border p-4">
+      Third item
+    </div>
+  </Stack.Item>
+</Stack.Root>
+```
+
+### Horizontal Stack
+
+```svelte
+<Stack.Root direction="row" gap={2} align="center">
+  <Stack.Item>
+    <button class="rounded bg-blue-500 px-4 py-2 text-white">
+      Button 1
+    </button>
+  </Stack.Item>
+  <Stack.Item>
+    <button class="rounded bg-green-500 px-4 py-2 text-white">
+      Button 2
+    </button>
+  </Stack.Item>
+  <Stack.Item>
+    <button class="rounded bg-red-500 px-4 py-2 text-white">
+      Button 3
+    </button>
+  </Stack.Item>
+</Stack.Root>
+```
+
+### Centered Stack
+
+```svelte
+<Stack.Root direction="column" gap={3} align="center" justify="center">
+  <Stack.Item>
+    <h2 class="text-2xl font-bold">Welcome</h2>
+  </Stack.Item>
+  <Stack.Item>
+    <p class="text-gray-600">This content is centered both horizontally and vertically</p>
+  </Stack.Item>
+  <Stack.Item>
+    <button class="rounded bg-blue-500 px-4 py-2 text-white">
+      Get Started
+    </button>
+  </Stack.Item>
+</Stack.Root>
+```
+
+### Space Between Items
+
+```svelte
+<Stack.Root direction="row" justify="between" class="w-full">
+  <Stack.Item>
+    <span>Left Content</span>
+  </Stack.Item>
+  <Stack.Item>
+    <span>Right Content</span>
+  </Stack.Item>
+</Stack.Root>
+```
+
+### Custom Gap
+
+```svelte
+<!-- Using numeric value (rem) -->
+<Stack.Root direction="column" gap={8}>
+  <Stack.Item>Large spacing</Stack.Item>
+  <Stack.Item>Between items</Stack.Item>
+</Stack.Root>
+
+<!-- Using string value -->
+<Stack.Root direction="column" gap="32px">
+  <Stack.Item>Custom pixel spacing</Stack.Item>
+  <Stack.Item>Between items</Stack.Item>
+</Stack.Root>
+```
+
+## Layout Behavior
+
+- **Direction**: Controls the primary axis (row = horizontal, column = vertical)
+- **Gap**: Adds consistent spacing between items
+- **Align**: Controls cross-axis alignment (perpendicular to direction)
+- **Justify**: Controls main-axis distribution (along the direction)
+
+### Alignment Reference
+
+- `start`: Items align to the start of the cross-axis
+- `center`: Items align to the center of the cross-axis
+- `end`: Items align to the end of the cross-axis
+- `stretch`: Items stretch to fill the cross-axis
+
+### Justification Reference
+
+- `start`: Items pack to the start of the main-axis
+- `center`: Items pack to the center of the main-axis
+- `end`: Items pack to the end of the main-axis
+- `between`: Items distributed with space between them
+- `around`: Items distributed with space around them
+- `evenly`: Items distributed with equal space around them
+
+## Styling
+
+The Stack component applies flexbox layout with the `flex` and `flex-1` classes by default. Additional classes can be applied through the `class` prop.

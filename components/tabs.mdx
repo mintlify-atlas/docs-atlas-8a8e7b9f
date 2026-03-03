@@ -1,0 +1,239 @@
+---
+title: "Tabs"
+description: "A set of layered sections of content that are displayed one at a time"
+---
+
+## Overview
+
+The Tabs component provides a way to organize content into separate views where only one view is visible at a time. Tab content is teleported from Tab.Body to the Tabs.Content component.
+
+## Installation
+
+```bash
+import { Tabs, Tab } from '@svelte-atoms/core';
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Tabs, Tab } from '@svelte-atoms/core';
+  
+  let value = $state('en');
+  
+  const tabs = [
+    { value: 'en', label: 'English', content: 'English content' },
+    { value: 'ar', label: 'Arabic', content: 'Arabic content' },
+    { value: 'fr', label: 'French', content: 'French content' }
+  ];
+</script>
+
+<Tabs.Root bind:value>
+  <Tabs.Header class="border-b">
+    {#each tabs as item (item.value)}
+      <Tab.Root value={item.value}>
+        <Tab.Header>{item.label}</Tab.Header>
+        <Tab.Body class="p-4">
+          <h3 class="font-bold mb-2">{item.label} Content</h3>
+          <p>{item.content}</p>
+        </Tab.Body>
+      </Tab.Root>
+    {/each}
+  </Tabs.Header>
+  
+  <Tabs.Body>
+    <Tabs.Content />
+  </Tabs.Body>
+</Tabs.Root>
+```
+
+## Tabs.Root Props
+
+<ParamField path="value" type="string" optional>
+  The currently active tab value
+</ParamField>
+
+<ParamField path="factory" type="Factory<TabsBond>" optional>
+  Custom factory function for creating tabs bond
+</ParamField>
+
+<ParamField path="onchange" type="(value: string) => void" optional>
+  Callback fired when the active tab changes
+</ParamField>
+
+<ParamField path="preset" type="string" default="tabs">
+  Preset key for styling
+</ParamField>
+
+## Tab.Root Props
+
+<ParamField path="value" type="string" required>
+  Unique identifier for this tab
+</ParamField>
+
+Extends all HtmlAtomProps.
+
+## Tab.Header Props
+
+<ParamField path="onpointerdown" type="(ev: PointerEvent, context: { tab?: TabBond }) => void" optional>
+  Callback fired when tab header is clicked
+</ParamField>
+
+Extends all HtmlAtomProps for button elements.
+
+## Tab.Body Props
+
+Extends all HtmlAtomProps for div elements.
+
+## Tab.Description Props
+
+Extends all HtmlAtomProps for p elements.
+
+## Tabs.Header Props
+
+Extends all HtmlAtomProps for div elements.
+
+## Tabs.Body Props
+
+Extends all HtmlAtomProps for div elements.
+
+## Tabs.Content Props
+
+Extends all HtmlAtomProps for div elements.
+
+## Subcomponents
+
+### Tabs.Root
+
+The root container that manages tab state.
+
+### Tabs.Header
+
+Container for tab headers/triggers.
+
+### Tabs.Body
+
+Container for the active tab content.
+
+### Tabs.Content
+
+The component that renders the active tab's body content (teleported from Tab.Body).
+
+### Tab.Root
+
+Container for an individual tab.
+
+### Tab.Header
+
+The clickable trigger for switching tabs.
+
+### Tab.Body
+
+The content that will be teleported to Tabs.Content when this tab is active.
+
+### Tab.Description
+
+Optional description text for the tab.
+
+## Examples
+
+### With Animations
+
+Add enter/exit animations to tab content:
+
+```svelte
+<script>
+  import { animate } from 'motion';
+</script>
+
+<Tabs.Root bind:value>
+  <Tabs.Header class="border-b">
+    {#each tabs as item (item.value)}
+      <Tab.Root value={item.value}>
+        <Tab.Header>{item.label}</Tab.Header>
+        <Tab.Body>
+          <p>{item.content}</p>
+        </Tab.Body>
+      </Tab.Root>
+    {/each}
+  </Tabs.Header>
+  
+  <Tabs.Body>
+    <Tabs.Content 
+      enter={node => {
+        const duration = 0.3;
+        animate(node, { opacity: [0, 1] }, { duration });
+        return { duration };
+      }}
+      exit={node => {
+        const duration = 0.1;
+        animate(node, { opacity: [1, 0] }, { duration });
+        return { duration };
+      }}
+    />
+  </Tabs.Body>
+</Tabs.Root>
+```
+
+### With Tab Descriptions
+
+```svelte
+<Tabs.Root bind:value>
+  <Tabs.Header>
+    {#each tabs as item (item.value)}
+      <Tab.Root value={item.value}>
+        <Tab.Header>
+          <div class="flex flex-col">
+            <span>{item.label}</span>
+            <Tab.Description class="text-xs text-muted-foreground">
+              {item.description}
+            </Tab.Description>
+          </div>
+        </Tab.Header>
+        <Tab.Body>{item.content}</Tab.Body>
+      </Tab.Root>
+    {/each}
+  </Tabs.Header>
+  
+  <Tabs.Body>
+    <Tabs.Content />
+  </Tabs.Body>
+</Tabs.Root>
+```
+
+### Controlled Tabs
+
+```svelte
+<script>
+  let activeTab = $state('tab1');
+  
+  function selectTab(value: string) {
+    activeTab = value;
+  }
+</script>
+
+<Tabs.Root bind:value={activeTab}>
+  <Tabs.Header>
+    <Tab.Root value="tab1">
+      <Tab.Header>Tab 1</Tab.Header>
+      <Tab.Body>Content 1</Tab.Body>
+    </Tab.Root>
+    <Tab.Root value="tab2">
+      <Tab.Header>Tab 2</Tab.Header>
+      <Tab.Body>Content 2</Tab.Body>
+    </Tab.Root>
+  </Tabs.Header>
+  
+  <Tabs.Body>
+    <Tabs.Content />
+  </Tabs.Body>
+</Tabs.Root>
+
+<button onclick={() => selectTab('tab2')}>Go to Tab 2</button>
+```
+
+## Accessibility
+
+- Tab headers are keyboard navigable
+- ARIA roles and attributes for proper screen reader support
+- Only the active tab content is rendered in the DOM

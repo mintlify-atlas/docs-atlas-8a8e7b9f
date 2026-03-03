@@ -1,0 +1,396 @@
+---
+title: State Management
+description: Understanding bonds and Svelte 5 runes for component state management
+---
+
+## Overview
+
+Svelte Atoms Core uses a unique **Bond Architecture** for state management. Bonds are self-contained state objects that communicate through Svelte's context system, providing predictable and type-safe state management.
+
+## Svelte 5 Runes
+
+All components leverage Svelte 5's new reactivity system with runes:
+
+### State with `$state`
+
+Create reactive state that automatically updates the UI:
+
+```svelte
+<script lang="ts">
+  import { Button, Dialog } from '@svelte-atoms/core';
+
+  let dialogOpen = $state(false);
+  let inputValue = $state('');
+  let count = $state(0);
+</script>
+
+<Button onclick={() => (count++)}>
+  Clicked {count} times
+</Button>
+
+<Button onclick={() => (dialogOpen = true)}>
+  Open Dialog
+</Button>
+
+<Dialog.Root bind:open={dialogOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Count: {count}</Dialog.Title>
+    </Dialog.Header>
+    <Dialog.Body>
+      <p>You've clicked the button {count} times</p>
+    </Dialog.Body>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+### Derived State with `$derived`
+
+Compute values that automatically update when dependencies change:
+
+```svelte
+<script lang="ts">
+  import { filterDropdownData } from '@svelte-atoms/core';
+
+  let items = $state([
+    { id: 1, name: 'Apple', category: 'fruit' },
+    { id: 2, name: 'Carrot', category: 'vegetable' },
+    { id: 3, name: 'Banana', category: 'fruit' }
+  ]);
+
+  let selectedCategory = $state('fruit');
+  
+  // Automatically recomputes when items or selectedCategory change
+  let filteredItems = $derived(
+    items.filter(item => item.category === selectedCategory)
+  );
+</script>
+
+<p>Showing {filteredItems.length} items</p>
+```
+
+### Effects with `$effect`
+
+Run side effects when state changes:
+
+```svelte
+<script lang="ts">
+  let count = $state(0);
+
+  $effect(() => {
+    console.log('Count changed to:', count);
+    
+    // Save to localStorage
+    localStorage.setItem('count', count.toString());
+  });
+</script>
+```
+
+## Understanding Bonds
+
+Bonds are the core state management abstraction in Svelte Atoms Core. They encapsulate component state and provide a consistent interface for state access and manipulation.
+
+### What is a Bond?
+
+A Bond is a class that extends the base `Bond` class:
+
+```typescript
+export abstract class Bond<
+  Props extends BondStateProps = BondStateProps,
+  State extends BondState<Props> = BondState<Props>,
+  Elements extends BondElements = BondElements
+> {
+  get elements() { /* ... */ }
+  get id() { /* ... */ }
+  get state() { /* ... */ }
+  abstract share(): this;
+  destroy() {}
+}
+```
+
+<Note>
+Bonds provide:
+- **State management** - Reactive state with Svelte 5 runes
+- **Element references** - Access to DOM elements
+- **Context-based communication** - Share state between components
+- **Lifecycle management** - Setup and cleanup
+</Note>
+
+### Accessing Component Bonds
+
+Components expose their bond through snippets:
+
+```svelte
+<script lang="ts">
+  import { Dialog, Button } from '@svelte-atoms/core';
+
+  let open = $state(false);
+</script>
+
+<Dialog.Root bind:open>
+  {#snippet children({ dialog })}
+    <!-- Access dialog bond -->
+    <Button onclick={() => dialog.state.open()}>
+      Open Dialog
+    </Button>
+    
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Dialog is {dialog.state.props.open ? 'open' : 'closed'}</Dialog.Title>
+      </Dialog.Header>
+    </Dialog.Content>
+  {/snippet}
+</Dialog.Root>
+```
+
+### Bond State Properties
+
+Each bond has a `state` property that provides access to component state:
+
+```svelte
+<script lang="ts">
+  import { Dropdown, Button } from '@svelte-atoms/core';
+</script>
+
+<Dropdown.Root keys={['apple', 'banana', 'cherry']}>
+  {#snippet children({ dropdown })}
+    <Dropdown.Trigger>
+      <Button>
+        Selected: {dropdown.state.selectedItems.length}
+      </Button>
+    </Dropdown.Trigger>
+
+    <Dropdown.Content>
+      <Dropdown.Item value="apple">Apple</Dropdown.Item>
+      <Dropdown.Item value="banana">Banana</Dropdown.Item>
+      <Dropdown.Item value="cherry">Cherry</Dropdown.Item>
+    </Dropdown.Content>
+  {/snippet}
+</Dropdown.Root>
+```
+
+## Component State Patterns
+
+### Controlled Components
+
+Control component state from parent:
+
+```svelte
+<script lang="ts">
+  import { Dialog, Button } from '@svelte-atoms/core';
+
+  let isOpen = $state(false);
+
+  function openDialog() {
+    isOpen = true;
+  }
+
+  function closeDialog() {
+    isOpen = false;
+  }
+</script>
+
+<Button onclick={openDialog}>Open</Button>
+<Button onclick={closeDialog}>Close</Button>
+
+<Dialog.Root bind:open={isOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Controlled Dialog</Dialog.Title>
+    </Dialog.Header>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+### Uncontrolled Components
+
+Let components manage their own state:
+
+```svelte
+<script lang="ts">
+  import { Dialog, Button } from '@svelte-atoms/core';
+</script>
+
+<Dialog.Root>
+  {#snippet children({ dialog })}
+    <Button onclick={() => dialog.state.open()}>
+      Open Dialog
+    </Button>
+
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Uncontrolled Dialog</Dialog.Title>
+      </Dialog.Header>
+      <Dialog.Footer>
+        <Button onclick={() => dialog.state.close()}>Close</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  {/snippet}
+</Dialog.Root>
+```
+
+## Custom State Management
+
+### Using filterDropdownData
+
+The `filterDropdownData` utility creates reactive filtered state:
+
+```svelte
+<script lang="ts">
+  import { Dropdown, filterDropdownData } from '@svelte-atoms/core';
+
+  let items = $state([
+    { id: 1, value: 'apple', label: 'Apple', category: 'fruit' },
+    { id: 2, value: 'banana', label: 'Banana', category: 'fruit' },
+    { id: 3, value: 'carrot', label: 'Carrot', category: 'vegetable' }
+  ]);
+
+  // Create filtered state
+  const filtered = filterDropdownData(
+    () => items,
+    (query, item) => {
+      const searchText = `${item.label} ${item.category}`.toLowerCase();
+      return searchText.includes(query.toLowerCase());
+    }
+  );
+</script>
+
+<Dropdown.Root
+  keys={items.map(i => i.value)}
+  onquerychange={(q) => (filtered.query = q)}
+>
+  {#snippet children({ dropdown })}
+    <Dropdown.Trigger>
+      <Dropdown.Query placeholder="Search items..." />
+    </Dropdown.Trigger>
+
+    <Dropdown.Content>
+      {#each filtered.current as item (item.id)}
+        <Dropdown.Item value={item.value}>
+          {item.label}
+          <span class="text-gray-500">{item.category}</span>
+        </Dropdown.Item>
+      {/each}
+    </Dropdown.Content>
+  {/snippet}
+</Dropdown.Root>
+```
+
+<Tip>
+`filterDropdownData` returns an object with:
+- `query` - Current search query (get/set)
+- `current` - Filtered results (reactive)
+</Tip>
+
+### Custom Runes
+
+Svelte Atoms Core provides custom runes for common patterns:
+
+```svelte
+<script lang="ts">
+  import { colorScheme, reducedMotion, viewport } from '@svelte-atoms/core';
+
+  // Detect color scheme preference
+  const theme = colorScheme();
+  
+  // Detect reduced motion preference
+  const prefersReducedMotion = reducedMotion();
+  
+  // Track viewport size
+  const vp = viewport();
+</script>
+
+<div class:dark={theme === 'dark'}>
+  <p>Current theme: {theme}</p>
+  <p>Viewport width: {vp.width}px</p>
+  {#if prefersReducedMotion}
+    <p>Reduced motion enabled</p>
+  {/if}
+</div>
+```
+
+## State Management Best Practices
+
+<Steps>
+  <Step title="Use $state for local reactive state">
+    Keep component-local state simple with `$state` runes:
+    
+    ```svelte
+    let open = $state(false);
+    let value = $state('');
+    ```
+  </Step>
+
+  <Step title="Use $derived for computed values">
+    Avoid manual updates by deriving values:
+    
+    ```svelte
+    let count = $state(0);
+    let doubled = $derived(count * 2);
+    ```
+  </Step>
+
+  <Step title="Access bonds through snippets">
+    Get component state through the bond parameter:
+    
+    ```svelte
+    {#snippet children({ dialog })}
+      <!-- Use dialog.state -->
+    {/snippet}
+    ```
+  </Step>
+
+  <Step title="Use bind: for two-way binding">
+    Keep parent and component state in sync:
+    
+    ```svelte
+    <Dialog.Root bind:open={isOpen}>
+    ```
+  </Step>
+</Steps>
+
+## Advanced Bond Usage
+
+### Custom Bond Factories
+
+Create custom bonds for specialized behavior:
+
+```typescript
+import { DialogBond, type DialogBondProps } from '@svelte-atoms/core';
+
+function createCustomDialogBond(props: DialogBondProps) {
+  const bond = new DialogBond(props);
+  
+  // Add custom behavior
+  const originalOpen = bond.state.open;
+  bond.state.open = () => {
+    console.log('Opening dialog');
+    originalOpen();
+  };
+  
+  return bond;
+}
+```
+
+```svelte
+<Dialog.Root factory={createCustomDialogBond}>
+  <!-- Custom bond behavior -->
+</Dialog.Root>
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Using Components" icon="puzzle-piece" href="/guides/using-components">
+    Learn component composition patterns
+  </Card>
+  <Card title="Customization" icon="paintbrush" href="/guides/customization">
+    Customize components with variants
+  </Card>
+  <Card title="TypeScript" icon="code" href="/guides/typescript">
+    Type-safe state management
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/runes">
+    Full API documentation
+  </Card>
+</CardGroup>

@@ -1,0 +1,234 @@
+---
+title: "Accordion"
+description: "A vertically stacked set of interactive headings that reveal content panels"
+---
+
+## Overview
+
+The Accordion component allows users to expand and collapse content sections. It supports single or multiple panel expansion, with optional collapsible behavior.
+
+## Installation
+
+```bash
+import { Accordion, AccordionItem } from '@svelte-atoms/core';
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Accordion, AccordionItem } from '@svelte-atoms/core';
+</script>
+
+<Accordion>
+  <AccordionItem.Root>
+    <AccordionItem.Header>
+      <div>Section 1</div>
+      <AccordionItem.Indicator class="ml-auto" />
+    </AccordionItem.Header>
+    
+    <AccordionItem.Body>
+      <div class="p-2">
+        Content for section 1
+      </div>
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+  
+  <AccordionItem.Root>
+    <AccordionItem.Header>
+      <div>Section 2</div>
+      <AccordionItem.Indicator class="ml-auto" />
+    </AccordionItem.Header>
+    
+    <AccordionItem.Body>
+      <div class="p-2">
+        Content for section 2
+      </div>
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+</Accordion>
+```
+
+## Accordion Props
+
+<ParamField path="value" type="string" optional>
+  The value of the currently active accordion item (single mode)
+</ParamField>
+
+<ParamField path="values" type="string[]" optional>
+  Array of active accordion item values (multiple mode)
+</ParamField>
+
+<ParamField path="multiple" type="boolean" default="false">
+  Allow multiple accordion items to be open simultaneously
+</ParamField>
+
+<ParamField path="collapsible" type="boolean" default="false">
+  Allow all accordion items to be collapsed
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disable all accordion interactions
+</ParamField>
+
+<ParamField path="data" type="unknown" optional>
+  Custom data associated with the accordion
+</ParamField>
+
+<ParamField path="factory" type="Factory<AccordionBond>" optional>
+  Custom factory function for creating accordion bond
+</ParamField>
+
+<ParamField path="preset" type="string" default="accordion">
+  Preset key for styling
+</ParamField>
+
+## AccordionItem.Root Props
+
+<ParamField path="value" type="string" optional>
+  Unique identifier for this accordion item
+</ParamField>
+
+<ParamField path="data" type="any" optional>
+  Custom data associated with this item
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disable this specific accordion item
+</ParamField>
+
+<ParamField path="factory" type="Factory<AccordionItemBond>" optional>
+  Custom factory function for creating accordion item bond
+</ParamField>
+
+## AccordionItem.Header Props
+
+<ParamField path="class" type="string" optional>
+  CSS classes for styling the header
+</ParamField>
+
+Extends all HtmlAtomProps for div elements.
+
+## AccordionItem.Body Props
+
+<ParamField path="class" type="string" optional>
+  CSS classes for styling the body content
+</ParamField>
+
+Extends all HtmlAtomProps for div elements.
+
+## AccordionItem.Indicator Props
+
+<ParamField path="class" type="string" optional>
+  CSS classes for styling the indicator icon
+</ParamField>
+
+Extends all HtmlAtomProps for div elements.
+
+## Subcomponents
+
+### Accordion
+
+The root container that manages accordion state and behavior.
+
+### AccordionItem.Root
+
+Container for an individual accordion item.
+
+### AccordionItem.Header
+
+The clickable header that toggles the accordion item.
+
+### AccordionItem.Body
+
+The collapsible content panel.
+
+### AccordionItem.Indicator
+
+Visual indicator (typically an icon) showing the expanded/collapsed state.
+
+## Examples
+
+### Multiple Mode
+
+Allow multiple panels to be open at once:
+
+```svelte
+<Accordion multiple>
+  <AccordionItem.Root>
+    <AccordionItem.Header>
+      <div>Panel 1</div>
+      <AccordionItem.Indicator class="ml-auto" />
+    </AccordionItem.Header>
+    <AccordionItem.Body>
+      <div class="p-2">Content 1</div>
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+  
+  <AccordionItem.Root>
+    <AccordionItem.Header>
+      <div>Panel 2</div>
+      <AccordionItem.Indicator class="ml-auto" />
+    </AccordionItem.Header>
+    <AccordionItem.Body>
+      <div class="p-2">Content 2</div>
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+</Accordion>
+```
+
+### Collapsible Mode
+
+Allow all panels to be collapsed:
+
+```svelte
+<Accordion collapsible>
+  <AccordionItem.Root>
+    <AccordionItem.Header>
+      <div>Collapsible Panel</div>
+      <AccordionItem.Indicator class="ml-auto" />
+    </AccordionItem.Header>
+    <AccordionItem.Body>
+      <div class="p-2">This can be fully collapsed</div>
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+</Accordion>
+```
+
+### Controlled Value
+
+Control which item is active:
+
+```svelte
+<script>
+  let activeValue = $state('item-1');
+</script>
+
+<Accordion bind:value={activeValue}>
+  <AccordionItem.Root value="item-1">
+    <AccordionItem.Header>
+      <div>Item 1</div>
+      <AccordionItem.Indicator class="ml-auto" />
+    </AccordionItem.Header>
+    <AccordionItem.Body>
+      <div class="p-2">Content 1</div>
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+  
+  <AccordionItem.Root value="item-2">
+    <AccordionItem.Header>
+      <div>Item 2</div>
+      <AccordionItem.Indicator class="ml-auto" />
+    </AccordionItem.Header>
+    <AccordionItem.Body>
+      <div class="p-2">Content 2</div>
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+</Accordion>
+```
+
+## Accessibility
+
+- Headers are keyboard navigable
+- Supports ARIA attributes for screen readers
+- Indicator provides visual feedback for expand/collapse state

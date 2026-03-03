@@ -1,0 +1,572 @@
+---
+title: 'Accessibility'
+description: 'Built-in accessibility features and best practices for inclusive UI'
+---
+
+## Overview
+
+Svelte Atoms Core components are built with accessibility in mind, providing semantic HTML, ARIA attributes, and keyboard navigation out of the box. All components follow WAI-ARIA authoring practices to ensure your applications are usable by everyone.
+
+<Note>
+  While components include accessibility features by default, you're responsible for providing appropriate labels, descriptions, and context for your specific use case.
+</Note>
+
+## Semantic HTML
+
+All atoms render semantic HTML elements by default, which can be customized using the `as` prop.
+
+### Default Semantic Elements
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { Link } from '@svelte-atoms/core/components/link';
+  import { HtmlAtom } from '@svelte-atoms/core';
+</script>
+
+<!-- Renders as <button> -->
+<Button.Root type="button">Click me</Button.Root>
+
+<!-- Renders as <a> -->
+<Link.Root href="/home">Home</Link.Root>
+
+<!-- Customize with 'as' prop -->
+<HtmlAtom as="nav">
+  <HtmlAtom as="ul">
+    <HtmlAtom as="li">
+      <Link.Root href="/">Home</Link.Root>
+    </HtmlAtom>
+  </HtmlAtom>
+</HtmlAtom>
+```
+
+<Tip>
+  Always use the most appropriate semantic element for your content. This improves both accessibility and SEO.
+</Tip>
+
+## ARIA Attributes
+
+Components include ARIA attributes where appropriate. You can extend or override these as needed.
+
+### Buttons and Interactive Elements
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+  
+  let isLoading = $state(false);
+  let isExpanded = $state(false);
+</script>
+
+<!-- ARIA busy state -->
+<Button.Root aria-busy={isLoading} disabled={isLoading}>
+  {isLoading ? 'Loading...' : 'Submit'}
+</Button.Root>
+
+<!-- ARIA expanded state -->
+<Button.Root 
+  aria-expanded={isExpanded}
+  aria-controls="content-panel"
+  onclick={() => isExpanded = !isExpanded}
+>
+  Toggle Content
+</Button.Root>
+
+{#if isExpanded}
+  <div id="content-panel" role="region">
+    Content here
+  </div>
+{/if}
+```
+
+### Form Controls
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Input } from '@svelte-atoms/core/components/input';
+  
+  let formData = $state({ email: '', password: '' });
+  let errors = $state({ email: '', password: '' });
+</script>
+
+<Form.Root bind:value={formData}>
+  <Form.Field name="email">
+    <!-- Label is automatically associated -->
+    <Form.Field.Label>Email Address</Form.Field.Label>
+    
+    <Form.Field.Control>
+      <Input.Root 
+        type="email"
+        placeholder="you@example.com"
+        aria-required="true"
+        aria-invalid={!!errors.email}
+        aria-describedby="email-error email-description"
+      />
+    </Form.Field.Control>
+    
+    <Form.Field.Description id="email-description">
+      We'll never share your email
+    </Form.Field.Description>
+    
+    {#if errors.email}
+      <Form.Field.Errors id="email-error" role="alert">
+        {errors.email}
+      </Form.Field.Errors>
+    {/if}
+  </Form.Field>
+</Form.Root>
+```
+
+### Dialogs and Overlays
+
+```svelte
+<script>
+  import { Dialog } from '@svelte-atoms/core/components/dialog';
+  import { Button } from '@svelte-atoms/core/components/button';
+  
+  let open = $state(false);
+</script>
+
+<Button.Root onclick={() => open = true}>
+  Open Settings
+</Button.Root>
+
+<Dialog.Root bind:open>
+  <!-- Dialog automatically includes:
+       - role="dialog"
+       - aria-modal="true"
+       - aria-labelledby (if header present)
+       - aria-describedby (if body present)
+  -->
+  <Dialog.Content>
+    <Dialog.Header id="dialog-title">
+      <h2>Settings</h2>
+      <Dialog.CloseButton aria-label="Close settings dialog" />
+    </Dialog.Header>
+    
+    <Dialog.Body id="dialog-description">
+      Configure your preferences here
+    </Dialog.Body>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+## Keyboard Navigation
+
+All interactive components support keyboard navigation following WAI-ARIA patterns.
+
+### Buttons
+
+<Tabs>
+  <Tab title="Keys">
+    - **Enter**: Activate button
+    - **Space**: Activate button
+    - **Tab**: Focus next element
+    - **Shift+Tab**: Focus previous element
+  </Tab>
+  <Tab title="Example">
+    ```svelte
+    <script>
+      import { Button } from '@svelte-atoms/core/components/button';
+    </script>
+
+    <Button.Root onclick={() => console.log('activated')}>
+      Keyboard Accessible Button
+    </Button.Root>
+    ```
+  </Tab>
+</Tabs>
+
+### Dropdowns and Comboboxes
+
+<Tabs>
+  <Tab title="Keys">
+    - **Enter/Space**: Open/close dropdown
+    - **Arrow Down**: Move to next item
+    - **Arrow Up**: Move to previous item
+    - **Home**: Move to first item
+    - **End**: Move to last item
+    - **Escape**: Close dropdown
+    - **Type to search**: Filter items
+  </Tab>
+  <Tab title="Example">
+    ```svelte
+    <script>
+      import { Dropdown } from '@svelte-atoms/core/components/dropdown';
+      
+      let selected = $state<string[]>([]);
+    </script>
+
+    <Dropdown.Root bind:value={selected}>
+      <Dropdown.Trigger>
+        <Dropdown.Value placeholder="Select option" />
+      </Dropdown.Trigger>
+      
+      <Dropdown.List>
+        <Dropdown.Item value="1">Option 1</Dropdown.Item>
+        <Dropdown.Item value="2">Option 2</Dropdown.Item>
+        <Dropdown.Item value="3">Option 3</Dropdown.Item>
+      </Dropdown.List>
+    </Dropdown.Root>
+    ```
+  </Tab>
+</Tabs>
+
+### Accordion
+
+<Tabs>
+  <Tab title="Keys">
+    - **Enter/Space**: Toggle accordion item
+    - **Tab**: Move focus to next focusable element
+    - **Arrow Down**: Move to next accordion header
+    - **Arrow Up**: Move to previous accordion header
+    - **Home**: Focus first accordion header
+    - **End**: Focus last accordion header
+  </Tab>
+  <Tab title="Example">
+    ```svelte
+    <script>
+      import { Accordion, AccordionItem } from '@svelte-atoms/core';
+    </script>
+
+    <Accordion multiple={false} collapsible={true}>
+      <AccordionItem.Root value="item-1">
+        <AccordionItem.Header>
+          Keyboard Navigable Item 1
+        </AccordionItem.Header>
+        <AccordionItem.Body>
+          Content of item 1
+        </AccordionItem.Body>
+      </AccordionItem.Root>
+      
+      <AccordionItem.Root value="item-2">
+        <AccordionItem.Header>
+          Keyboard Navigable Item 2
+        </AccordionItem.Header>
+        <AccordionItem.Body>
+          Content of item 2
+        </AccordionItem.Body>
+      </AccordionItem.Root>
+    </Accordion>
+    ```
+  </Tab>
+</Tabs>
+
+### Tabs
+
+<Tabs>
+  <Tab title="Keys">
+    - **Arrow Left**: Focus previous tab
+    - **Arrow Right**: Focus next tab
+    - **Home**: Focus first tab
+    - **End**: Focus last tab
+    - **Tab**: Move focus to active tab panel
+  </Tab>
+  <Tab title="Example">
+    ```svelte
+    <script>
+      import { Tabs } from '@svelte-atoms/core/components/tabs';
+      
+      let activeTab = $state('tab1');
+    </script>
+
+    <Tabs.Root bind:value={activeTab}>
+      <Tabs.Header role="tablist">
+        <Tabs.Tab value="tab1">
+          <Tabs.Tab.Header>Tab 1</Tabs.Tab.Header>
+        </Tabs.Tab>
+        <Tabs.Tab value="tab2">
+          <Tabs.Tab.Header>Tab 2</Tabs.Tab.Header>
+        </Tabs.Tab>
+      </Tabs.Header>
+      
+      <Tabs.Body>
+        <Tabs.Tab value="tab1">
+          <Tabs.Tab.Body>Content 1</Tabs.Tab.Body>
+        </Tabs.Tab>
+        <Tabs.Tab value="tab2">
+          <Tabs.Tab.Body>Content 2</Tabs.Tab.Body>
+        </Tabs.Tab>
+      </Tabs.Body>
+    </Tabs.Root>
+    ```
+  </Tab>
+</Tabs>
+
+## Focus Management
+
+Components handle focus management automatically for common patterns.
+
+### Dialog Focus Trap
+
+```svelte
+<script>
+  import { Dialog } from '@svelte-atoms/core/components/dialog';
+  import { Button } from '@svelte-atoms/core/components/button';
+  
+  let open = $state(false);
+</script>
+
+<Button.Root onclick={() => open = true}>
+  Open Dialog
+</Button.Root>
+
+<Dialog.Root bind:open>
+  <!-- Focus automatically trapped within dialog when open -->
+  <!-- Focus returns to trigger when closed -->
+  <Dialog.Content>
+    <Dialog.Header>
+      <h2>Confirm Action</h2>
+    </Dialog.Header>
+    
+    <Dialog.Body>
+      Are you sure you want to proceed?
+    </Dialog.Body>
+    
+    <Dialog.Footer>
+      <!-- Focus moves between these buttons only -->
+      <Button.Root onclick={() => open = false}>Cancel</Button.Root>
+      <Button.Root onclick={() => open = false}>Confirm</Button.Root>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+### Custom Focus Handling
+
+Use lifecycle hooks for custom focus management:
+
+```svelte
+<script>
+  import { Input } from '@svelte-atoms/core/components/input';
+  
+  function handleMount(node: HTMLInputElement) {
+    // Auto-focus on mount
+    node.focus();
+    
+    return () => {
+      // Cleanup on destroy
+      console.log('Input unmounted');
+    };
+  }
+</script>
+
+<Input.Root 
+  onmount={handleMount}
+  placeholder="Auto-focused input"
+/>
+```
+
+## Screen Reader Support
+
+### Announcements with ARIA Live Regions
+
+```svelte
+<script>
+  import { Toast } from '@svelte-atoms/core/components/toast';
+  import { Button } from '@svelte-atoms/core/components/button';
+  
+  let message = $state('');
+  let showToast = $state(false);
+  
+  function notify(msg: string) {
+    message = msg;
+    showToast = true;
+    setTimeout(() => showToast = false, 3000);
+  }
+</script>
+
+<Button.Root onclick={() => notify('Changes saved successfully')}>
+  Save Changes
+</Button.Root>
+
+{#if showToast}
+  <!-- aria-live="polite" announces to screen readers -->
+  <Toast.Root aria-live="polite" role="status">
+    {message}
+  </Toast.Root>
+{/if}
+```
+
+### Descriptive Labels
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { Avatar } from '@svelte-atoms/core/components/avatar';
+</script>
+
+<!-- Icon buttons need aria-label -->
+<Button.Root aria-label="Delete item">
+  <svg><!-- trash icon --></svg>
+</Button.Root>
+
+<!-- Images need alt text -->
+<Avatar.Root 
+  src="/user.jpg" 
+  alt="Profile picture of John Doe"
+/>
+
+<!-- Decorative images should have empty alt -->
+<img src="/decoration.svg" alt="" role="presentation" />
+```
+
+## Color and Contrast
+
+Ensure sufficient color contrast for text and interactive elements.
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { Badge } from '@svelte-atoms/core/components/badge';
+</script>
+
+<!-- ✅ Good: High contrast -->
+<Button.Root class="bg-blue-700 text-white">
+  High Contrast Button
+</Button.Root>
+
+<!-- ⚠️ Warning: Low contrast -->
+<Button.Root class="bg-gray-300 text-gray-400">
+  Low Contrast Button
+</Button.Root>
+
+<!-- Badge with sufficient contrast -->
+<Badge.Root class="bg-red-600 text-white">
+  Error
+</Badge.Root>
+```
+
+<Warning>
+  WCAG 2.1 requires a contrast ratio of at least 4.5:1 for normal text and 3:1 for large text. Use tools like [WebAIM's Contrast Checker](https://webaim.org/resources/contrastchecker/) to verify.
+</Warning>
+
+## Motion and Animations
+
+Respect user preferences for reduced motion:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import { animate } from 'motion';
+  
+  // Check for reduced motion preference
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+  function enterTransition(node: HTMLElement) {
+    if (prefersReducedMotion) {
+      // Skip animation
+      return {};
+    }
+    
+    // Full animation for users who want motion
+    const animation = animate(
+      node,
+      { opacity: [0, 1], y: [20, 0] },
+      { duration: 0.3 }
+    );
+    
+    return {
+      duration: 300,
+      tick: (t: number) => {
+        // Animation handled by Motion
+      }
+    };
+  }
+</script>
+
+<HtmlAtom enter={enterTransition}>
+  Content with respectful animation
+</HtmlAtom>
+```
+
+Or use CSS:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+## Testing Accessibility
+
+### Manual Testing Checklist
+
+<Accordion title="Keyboard Navigation">
+  - [ ] All interactive elements are focusable
+  - [ ] Focus order is logical
+  - [ ] Focus is visible
+  - [ ] No keyboard traps
+  - [ ] All functionality available via keyboard
+</Accordion>
+
+<Accordion title="Screen Reader">
+  - [ ] All content is announced properly
+  - [ ] Form labels are associated correctly
+  - [ ] Error messages are announced
+  - [ ] Dynamic content changes are announced
+  - [ ] Images have appropriate alt text
+</Accordion>
+
+<Accordion title="Visual">
+  - [ ] Text has sufficient contrast
+  - [ ] Focus indicators are visible
+  - [ ] Content is readable when zoomed to 200%
+  - [ ] No information conveyed by color alone
+</Accordion>
+
+### Automated Testing
+
+Use tools like axe-core for automated accessibility testing:
+
+```typescript
+import { axe, toHaveNoViolations } from 'jest-axe';
+import { render } from '@testing-library/svelte';
+import MyComponent from './MyComponent.svelte';
+
+expect.extend(toHaveNoViolations);
+
+test('should have no accessibility violations', async () => {
+  const { container } = render(MyComponent);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
+```
+
+## Accessibility Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Semantic HTML" icon="code">
+    Always use the most appropriate HTML element for the content
+  </Card>
+  <Card title="Provide Labels" icon="tag">
+    Every form control must have an associated label
+  </Card>
+  <Card title="Keyboard Navigation" icon="keyboard">
+    Ensure all functionality is accessible via keyboard
+  </Card>
+  <Card title="Test with Users" icon="users">
+    Test with real assistive technology users when possible
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/concepts/animations">
+    Learn about animation lifecycle hooks
+  </Card>
+  <Card title="Styling" icon="palette" href="/concepts/styling">
+    Explore styling approaches for accessible design
+  </Card>
+  <Card title="Components" icon="cube" href="/components/button">
+    Browse all accessible components
+  </Card>
+  <Card title="WAI-ARIA" icon="book" href="https://www.w3.org/WAI/ARIA/apg/">
+    Read the official ARIA Authoring Practices Guide
+  </Card>
+</CardGroup>

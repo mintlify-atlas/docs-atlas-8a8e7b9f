@@ -1,0 +1,187 @@
+---
+title: Breadcrumb
+description: A navigation component that shows the current page's location within a hierarchy.
+---
+
+The Breadcrumb component provides a navigation aid that helps users understand their location within a website or application's hierarchy.
+
+## Structure
+
+The Breadcrumb component consists of three subcomponents:
+
+- `Breadcrumb.Root` - The container for the breadcrumb navigation
+- `Breadcrumb.Item` - Individual navigation items (typically links)
+- `Breadcrumb.Separator` - Visual separator between items
+
+## Import
+
+```svelte
+import { Breadcrumb } from '@svelte-atoms/core';
+```
+
+## Usage
+
+### Basic Breadcrumb
+
+```svelte
+<Breadcrumb.Root>
+  <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+  <Breadcrumb.Separator>/</Breadcrumb.Separator>
+  <Breadcrumb.Item href="/vehicles">Vehicles</Breadcrumb.Item>
+</Breadcrumb.Root>
+```
+
+### Multi-level Navigation
+
+```svelte
+<Breadcrumb.Root>
+  <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+  <Breadcrumb.Separator>/</Breadcrumb.Separator>
+  <Breadcrumb.Item href="/products">Products</Breadcrumb.Item>
+  <Breadcrumb.Separator>/</Breadcrumb.Separator>
+  <Breadcrumb.Item href="/products/electronics">Electronics</Breadcrumb.Item>
+  <Breadcrumb.Separator>/</Breadcrumb.Separator>
+  <Breadcrumb.Item href="/products/electronics/laptops">Laptops</Breadcrumb.Item>
+</Breadcrumb.Root>
+```
+
+### Custom Separator
+
+```svelte
+<Breadcrumb.Root>
+  <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+  <Breadcrumb.Separator>→</Breadcrumb.Separator>
+  <Breadcrumb.Item href="/blog">Blog</Breadcrumb.Item>
+  <Breadcrumb.Separator>→</Breadcrumb.Separator>
+  <Breadcrumb.Item href="/blog/2024">2024</Breadcrumb.Item>
+</Breadcrumb.Root>
+```
+
+### With Icon Separator
+
+```svelte
+<script>
+  import { Breadcrumb, Icon } from '@svelte-atoms/core';
+  import ChevronRightIcon from '@svelte-atoms/core/icons/icon-chevron-right.svelte';
+</script>
+
+<Breadcrumb.Root>
+  <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+  <Breadcrumb.Separator>
+    <Icon src={ChevronRightIcon} class="h-4 w-4" />
+  </Breadcrumb.Separator>
+  <Breadcrumb.Item href="/settings">Settings</Breadcrumb.Item>
+</Breadcrumb.Root>
+```
+
+### Using Different Elements
+
+```svelte
+<Breadcrumb.Root>
+  <Breadcrumb.Item as="span">Current Page (Not a Link)</Breadcrumb.Item>
+  <Breadcrumb.Separator>/</Breadcrumb.Separator>
+  <Breadcrumb.Item as="button" onclick={() => console.log('Clicked')}>Clickable</Breadcrumb.Item>
+</Breadcrumb.Root>
+```
+
+## API Reference
+
+### Breadcrumb.Root
+
+The container component that wraps all breadcrumb items and separators.
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'div'">
+  The HTML element type to render.
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply. Default styles include flex layout and border styling.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The breadcrumb items and separators to display.
+</ParamField>
+
+### Breadcrumb.Item
+
+An individual breadcrumb item, typically rendered as a link.
+
+<ParamField path="href" type="string" default="''">
+  The URL to navigate to when the item is clicked. If empty and `as` is `'a'`, the item will still render as a link but won't navigate anywhere.
+</ParamField>
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'a'">
+  The HTML element type to render (e.g., `'a'`, `'button'`, `'span'`).
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply. Default styles include text color transitions and hover effects.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The content to display inside the breadcrumb item.
+</ParamField>
+
+### Breadcrumb.Separator
+
+A visual separator between breadcrumb items.
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'span'">
+  The HTML element type to render.
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply. Default styles include muted text color.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The separator content. If no children are provided, defaults to `/`.
+</ParamField>
+
+## Styling
+
+The Breadcrumb component uses the following preset keys for styling:
+
+- `breadcrumb` - Applied to the root container
+- `breadcrumb.item` - Applied to each breadcrumb item
+- `breadcrumb.separator` - Applied to each separator
+
+You can customize the appearance by:
+
+1. Using the `class` prop to add custom classes
+2. Defining custom styles for the preset keys in your theme
+3. Using the `$preset` class placeholder in your styles
+
+### Default Styles
+
+**Root**: Flex container with nowrap, items centered, gap spacing, and border styling.
+
+**Item**: Muted text color that brightens on hover, rounded corners, padding, and smooth transitions.
+
+**Separator**: Muted text color with reduced opacity, minimal padding.
+
+## Accessibility
+
+- The breadcrumb navigation should be wrapped in a `<nav>` element with `aria-label="Breadcrumb"` for screen readers
+- The current page item should have `aria-current="page"` attribute
+- Use semantic HTML elements (`<a>` for links, `<span>` for current page)
+
+### Accessible Example
+
+```svelte
+<nav aria-label="Breadcrumb">
+  <Breadcrumb.Root>
+    <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+    <Breadcrumb.Separator>/</Breadcrumb.Separator>
+    <Breadcrumb.Item href="/products">Products</Breadcrumb.Item>
+    <Breadcrumb.Separator>/</Breadcrumb.Separator>
+    <Breadcrumb.Item as="span" aria-current="page">Laptops</Breadcrumb.Item>
+  </Breadcrumb.Root>
+</nav>
+```
+
+## Related Components
+
+- [Menu](/components/menu) - For dropdown navigation
+- [Sidebar](/components/sidebar) - For main navigation
+- [Tabs](/components/tabs) - For switching between views

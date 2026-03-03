@@ -1,0 +1,378 @@
+---
+title: Label
+description: A flexible label component for associating text with form controls
+icon: tag
+---
+
+## Overview
+
+The Label component provides a semantic and accessible way to associate descriptive text with form controls. It's built on top of the `HtmlAtom` component and supports rendering as different HTML elements.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Label } from '@svelte-atoms/core/components/label';
+</script>
+
+<Label for="username">Username</Label>
+<input id="username" type="text" />
+```
+
+## Examples
+
+### Label with Input
+
+```svelte
+<script>
+  import { Label } from '@svelte-atoms/core/components/label';
+  import { Input } from '@svelte-atoms/core/components/input';
+</script>
+
+<Label for="email">Email Address</Label>
+<Input.Root>
+  <Input.Control id="email" type="email" />
+</Input.Root>
+```
+
+### Label with Checkbox
+
+```svelte
+<script>
+  import { Label } from '@svelte-atoms/core/components/label';
+  import { Checkbox } from '@svelte-atoms/core/components/checkbox';
+</script>
+
+<div class="flex items-center gap-2">
+  <Checkbox id="agree" />
+  <Label for="agree">I agree to the terms and conditions</Label>
+</div>
+```
+
+### Inline Label (as span)
+
+```svelte
+<Label as="span" class="inline-block">Status:</Label>
+<span>Active</span>
+```
+
+### Label with Custom Element
+
+```svelte
+<Label as="div" class="text-lg font-bold">
+  Section Heading
+</Label>
+```
+
+### Styled Label
+
+```svelte
+<Label for="password" class="text-sm text-gray-600 uppercase tracking-wide">
+  Password
+</Label>
+<input id="password" type="password" />
+```
+
+### Label with Required Indicator
+
+```svelte
+<Label for="fullname">
+  Full Name
+  <span class="text-red-500 ml-1">*</span>
+</Label>
+<input id="fullname" required />
+```
+
+### Disabled Field Label
+
+```svelte
+<Label for="disabled-input" class="opacity-50 cursor-not-allowed">
+  Disabled Field
+</Label>
+<input id="disabled-input" disabled />
+```
+
+## Props
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'label'">
+  The HTML element to render as. Can be any valid HTML element like 'label', 'span', 'div', etc.
+</ParamField>
+
+<ParamField path="for" type="string | null">
+  The ID of the form control this label is associated with. Only applicable when `as="label"`.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'label'">
+  The preset key used for styling.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the label element.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[]>">
+  The content to render inside the label.
+</ParamField>
+
+## HTML Attributes
+
+The Label component accepts all standard HTML attributes for the element it renders as. When rendered as a `<label>` element, this includes:
+
+- `htmlFor` / `for` - Associates label with form control
+- `id` - Element ID
+- `onclick` - Click event handler
+- `title` - Tooltip text
+- And all other standard HTML attributes
+
+## Default Styling
+
+```css
+font-medium
+```
+
+The Label component has minimal default styling, allowing you to easily customize its appearance.
+
+## TypeScript Support
+
+```typescript
+interface LabelProps<
+  E extends keyof HTMLElementTagNameMap = 'label', 
+  B extends Base = Base
+> extends HtmlAtomProps<E, B>, LabelExtendProps {
+  for?: string | null;
+  children?: Snippet<[]>;
+}
+```
+
+### Generic Element Types
+
+The Label component supports TypeScript generics for type-safe element rendering:
+
+```svelte
+<script lang="ts">
+  import { Label } from '@svelte-atoms/core/components/label';
+</script>
+
+<!-- Type is inferred as HTMLLabelElement -->
+<Label for="input">Label text</Label>
+
+<!-- Type is inferred as HTMLSpanElement -->
+<Label as="span">Span label</Label>
+
+<!-- Type is inferred as HTMLDivElement -->
+<Label as="div">Div label</Label>
+```
+
+### Extending Label Props
+
+```typescript
+declare module '@svelte-atoms/core/components/label' {
+  interface LabelExtendProps {
+    variant?: 'default' | 'bold' | 'muted';
+    required?: boolean;
+  }
+}
+```
+
+## Integration with Forms
+
+### With Form.Field
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Input } from '@svelte-atoms/core/components/input';
+</script>
+
+<Form.Root>
+  <Form.Field name="username">
+    <Form.Field.Label>Username</Form.Field.Label>
+    <Input.Root>
+      <Form.Field.Control base={Input.Control} />
+    </Input.Root>
+  </Form.Field>
+</Form.Root>
+```
+
+### With Radio Group
+
+```svelte
+<script>
+  import { Label } from '@svelte-atoms/core/components/label';
+  import { Radio, RadioGroup } from '@svelte-atoms/core/components/radio';
+</script>
+
+<Label>Choose an option:</Label>
+<RadioGroup>
+  <Radio id="opt1" value="option1" />
+  <Label for="opt1">Option 1</Label>
+  
+  <Radio id="opt2" value="option2" />
+  <Label for="opt2">Option 2</Label>
+</RadioGroup>
+```
+
+## Accessibility
+
+- Uses semantic `<label>` element by default
+- Properly associates with form controls via `for` attribute
+- Clicking the label focuses/activates the associated control
+- Screen reader friendly
+- Supports all ARIA attributes
+
+### Best Accessibility Practices
+
+1. **Always use `for` attribute**: Associate labels with their controls
+```svelte
+<Label for="email">Email</Label>
+<input id="email" />
+```
+
+2. **Provide visible labels**: Don't rely solely on placeholders
+```svelte
+<!-- Good -->
+<Label for="search">Search</Label>
+<input id="search" placeholder="Enter search term" />
+
+<!-- Bad - no visible label -->
+<input placeholder="Search" />
+```
+
+3. **Indicate required fields**: Make it clear which fields are required
+```svelte
+<Label for="name">
+  Name <span aria-label="required">*</span>
+</Label>
+<input id="name" required />
+```
+
+## Styling Patterns
+
+### Floating Label
+
+```svelte
+<script>
+  let focused = $state(false);
+  let value = $state('');
+</script>
+
+<div class="relative">
+  <input 
+    id="floating"
+    bind:value
+    onfocus={() => focused = true}
+    onblur={() => focused = false}
+    class="peer"
+  />
+  <Label 
+    for="floating"
+    class={[
+      'absolute left-2 transition-all',
+      focused || value ? 'top-0 text-xs' : 'top-2 text-base'
+    ]}
+  >
+    Email
+  </Label>
+</div>
+```
+
+### Label with Helper Text
+
+```svelte
+<div class="flex flex-col">
+  <Label for="bio">Biography</Label>
+  <span class="text-sm text-muted-foreground mt-1">
+    Tell us a bit about yourself
+  </span>
+  <textarea id="bio" />
+</div>
+```
+
+### Inline Form Labels
+
+```svelte
+<div class="flex items-center gap-4">
+  <Label for="quantity" class="min-w-24">Quantity:</Label>
+  <input id="quantity" type="number" class="flex-1" />
+</div>
+```
+
+## Presets
+
+The Label component supports preset-based styling:
+
+```svelte
+<Label preset="label.large" for="title">Title</Label>
+<Label preset="label.small" for="subtitle">Subtitle</Label>
+```
+
+Define custom presets in your preset configuration:
+
+```typescript
+// In your preset configuration
+export const presets = {
+  'label.large': {
+    class: 'text-lg font-bold'
+  },
+  'label.small': {
+    class: 'text-xs text-muted-foreground'
+  }
+};
+```
+
+## Best Practices
+
+1. **Always associate labels with inputs**: Use the `for` attribute to link labels to form controls
+2. **Use semantic HTML**: Use `as="label"` (default) for form labels, other elements for non-form text
+3. **Make labels clickable**: The entire label should be clickable to activate the associated control
+4. **Keep labels concise**: Use clear, brief text that describes the field
+5. **Position labels consistently**: Place labels in a consistent position (usually above or to the left of inputs)
+6. **Indicate optional fields**: If most fields are required, mark optional ones instead
+7. **Don't hide labels**: Visible labels are better for accessibility than placeholder-only inputs
+
+## Common Patterns
+
+### Form Field Group
+
+```svelte
+<div class="space-y-4">
+  <div class="flex flex-col gap-1">
+    <Label for="name">Name</Label>
+    <input id="name" />
+  </div>
+  
+  <div class="flex flex-col gap-1">
+    <Label for="email">Email</Label>
+    <input id="email" type="email" />
+  </div>
+</div>
+```
+
+### Label Grid Layout
+
+```svelte
+<div class="grid grid-cols-[120px_1fr] gap-4 items-center">
+  <Label for="first">First Name:</Label>
+  <input id="first" />
+  
+  <Label for="last">Last Name:</Label>
+  <input id="last" />
+  
+  <Label for="email">Email Address:</Label>
+  <input id="email" type="email" />
+</div>
+```
+
+## Related Components
+
+- [Input](/components/input) - Text input component
+- [Textarea](/components/textarea) - Multi-line text input
+- [Checkbox](/components/checkbox) - Checkbox input
+- [Radio](/components/radio) - Radio button input
+- [Form](/components/form) - Form management

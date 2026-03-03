@@ -1,0 +1,351 @@
+---
+title: 'Runes'
+description: 'Reactive utilities for Svelte 5 runes-based state management'
+icon: 'wand-magic-sparkles'
+---
+
+## Overview
+
+Runes are reactive utilities built on Svelte 5's runes system. They provide clean, reusable patterns for common reactive scenarios like viewport tracking, color scheme detection, and lifecycle management.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Import
+
+```typescript
+import { 
+  colorScheme, 
+  container, 
+  viewport, 
+  reducedMotion, 
+  mounted 
+} from '@svelte-atoms/core/runes';
+```
+
+## API Reference
+
+### colorScheme
+
+Tracks the user's color scheme preference via the `prefers-color-scheme` media query.
+
+#### Returns
+
+<ResponseField name="current" type="'light' | 'dark' | undefined">
+  The current color scheme preference
+</ResponseField>
+
+#### Example
+
+```svelte
+<script>
+  import { colorScheme } from '@svelte-atoms/core/runes';
+
+  const scheme = colorScheme();
+</script>
+
+{#if scheme.current === 'dark'}
+  <div class="dark-theme">Dark mode active</div>
+{:else}
+  <div class="light-theme">Light mode active</div>
+{/if}
+```
+
+#### Implementation Details
+
+- Automatically listens to `prefers-color-scheme` changes
+- Returns `undefined` during server-side rendering
+- Cleans up event listeners on component unmount
+- Reactive to system theme changes
+
+---
+
+### container
+
+Tracks the dimensions of a container element using ResizeObserver.
+
+#### Returns
+
+<ResponseField name="current" type="{ width: number; height: number } | undefined">
+  Current dimensions of the attached element
+</ResponseField>
+
+<ResponseField name="attach" type="(node: HTMLElement) => void">
+  Attachment function to bind to an element
+</ResponseField>
+
+#### Example
+
+```svelte
+<script>
+  import { container } from '@svelte-atoms/core/runes';
+
+  const containerSize = container();
+</script>
+
+<div {@attach containerSize.attach}>
+  {#if containerSize.current}
+    <p>Width: {containerSize.current.width}px</p>
+    <p>Height: {containerSize.current.height}px</p>
+  {/if}
+</div>
+```
+
+#### Use Cases
+
+- Responsive component behavior
+- Dynamic layout calculations
+- Conditional rendering based on container size
+- Chart and visualization sizing
+
+#### Implementation Details
+
+- Uses native ResizeObserver API
+- Provides `clientWidth` and `clientHeight` measurements
+- Automatically disconnects observer on cleanup
+- Returns new object reference on each update
+
+---
+
+### viewport
+
+Tracks viewport dimensions using the Visual Viewport API.
+
+#### Returns
+
+<ResponseField name="current" type="{ width: number; height: number } | undefined">
+  Current viewport dimensions
+</ResponseField>
+
+#### Example
+
+```svelte
+<script>
+  import { viewport } from '@svelte-atoms/core/runes';
+
+  const vp = viewport();
+</script>
+
+{#if vp.current && vp.current.width < 768}
+  <MobileLayout />
+{:else}
+  <DesktopLayout />
+{/if}
+```
+
+#### Implementation Details
+
+- Uses `window.visualViewport` for accurate measurements
+- Updates on window resize events
+- Handles mobile viewport variations (keyboard, etc.)
+- Returns `undefined` during SSR
+
+---
+
+### reducedMotion
+
+Tracks the user's motion preference via the `prefers-reduced-motion` media query.
+
+#### Returns
+
+<ResponseField name="current" type="boolean">
+  `true` if the user prefers reduced motion, `false` otherwise
+</ResponseField>
+
+#### Example
+
+```svelte
+<script>
+  import { reducedMotion } from '@svelte-atoms/core/runes';
+
+  const motion = reducedMotion();
+</script>
+
+{#if motion.current}
+  <div>Animations disabled</div>
+{:else}
+  <div class="animated">Animations enabled</div>
+{/if}
+```
+
+#### Accessibility
+
+Respecting user motion preferences is crucial for accessibility:
+
+```svelte
+<script>
+  import { reducedMotion } from '@svelte-atoms/core/runes';
+  import { fly } from 'svelte/transition';
+
+  const motion = reducedMotion();
+</script>
+
+<div 
+  in:fly={motion.current ? {} : { y: 20, duration: 300 }}>
+  Content with conditional animation
+</div>
+```
+
+#### Implementation Details
+
+- Listens to `prefers-reduced-motion: reduce` media query
+- Default value is `false` (animations enabled)
+- Reactive to system preference changes
+- Cleans up event listeners automatically
+
+---
+
+### mounted
+
+Tracks component mount/unmount lifecycle state.
+
+#### Returns
+
+<ResponseField name="current" type="boolean">
+  `true` when component is mounted, `false` when unmounted
+</ResponseField>
+
+#### Example
+
+```svelte
+<script>
+  import { mounted } from '@svelte-atoms/core/runes';
+
+  const isMounted = mounted();
+
+  $effect(() => {
+    if (isMounted.current) {
+      console.log('Component mounted');
+      // Initialize client-side only features
+      initializeThirdPartyLibrary();
+    }
+  });
+</script>
+
+{#if isMounted.current}
+  <ClientOnlyComponent />
+{/if}
+```
+
+#### Use Cases
+
+- Conditional rendering of client-side only components
+- Delaying operations until after mount
+- Preventing SSR hydration mismatches
+- Initializing browser-only APIs
+
+---
+
+## Type Definitions
+
+### ColorScheme
+
+```typescript
+type ColorScheme = 'light' | 'dark';
+```
+
+### Viewport
+
+```typescript
+type Viewport = {
+  width: number;
+  height: number;
+};
+```
+
+## Advanced Patterns
+
+### Combining Multiple Runes
+
+```svelte
+<script>
+  import { viewport, reducedMotion, colorScheme } from '@svelte-atoms/core/runes';
+
+  const vp = viewport();
+  const motion = reducedMotion();
+  const scheme = colorScheme();
+
+  const showAnimations = $derived(
+    !motion.current && vp.current && vp.current.width >= 768
+  );
+</script>
+
+<div class:dark={scheme.current === 'dark'}>
+  {#if showAnimations}
+    <AnimatedComponent />
+  {:else}
+    <StaticComponent />
+  {/if}
+</div>
+```
+
+### Responsive Container Queries
+
+```svelte
+<script>
+  import { container } from '@svelte-atoms/core/runes';
+
+  const size = container();
+
+  const layout = $derived(() => {
+    if (!size.current) return 'default';
+    if (size.current.width < 640) return 'mobile';
+    if (size.current.width < 1024) return 'tablet';
+    return 'desktop';
+  });
+</script>
+
+<div {@attach size.attach} class={layout}>
+  <!-- Content adapts to container size -->
+</div>
+```
+
+### Custom Rune Pattern
+
+You can create your own runes following the same pattern:
+
+```typescript
+export function customRune() {
+  let value = $state<any>(initialValue);
+
+  $effect(() => {
+    // Setup logic
+    const cleanup = setupListener(() => {
+      value = newValue;
+    });
+
+    // Cleanup
+    return () => cleanup();
+  });
+
+  return {
+    get current() {
+      return value;
+    }
+  };
+}
+```
+
+## Browser Compatibility
+
+- **colorScheme**: All modern browsers
+- **container**: ResizeObserver required (polyfill available)
+- **viewport**: Visual Viewport API (fallback to window for older browsers)
+- **reducedMotion**: All modern browsers
+- **mounted**: All environments
+
+## Performance Considerations
+
+- Runes use Svelte's fine-grained reactivity
+- Event listeners are automatically cleaned up
+- ResizeObserver is efficient for dimension tracking
+- Media query listeners have minimal overhead
+
+## Related
+
+- [Attachments](/api/attachments) - DOM element attachments
+- [Context](/api/context) - Context utilities
+- [Shared](/api/shared) - Shared utilities

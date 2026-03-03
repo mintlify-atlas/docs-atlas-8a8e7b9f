@@ -1,0 +1,472 @@
+---
+title: 'Shared Utilities'
+description: 'Core utilities and base classes shared across components'
+icon: 'share-nodes'
+---
+
+## Overview
+
+The shared module provides foundational utilities and base classes used throughout Svelte Atoms. This includes the Bond system for state management, motion constants, and DOM utilities.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Import
+
+```typescript
+import { Bond, BondState, DURATION } from '@svelte-atoms/core/shared';
+```
+
+## API Reference
+
+### Bond
+
+Abstract base class for component state management. Bond provides a unified interface for managing component state, elements, and context.
+
+#### Type Definition
+
+```typescript
+abstract class Bond<
+  Props extends BondStateProps = BondStateProps,
+  State extends BondState<Props> = BondState<Props>,
+  Elements extends BondElements = BondElements
+>
+```
+
+#### Properties
+
+<ResponseField name="elements" type="Elements">
+  Record of DOM elements associated with this bond
+</ResponseField>
+
+<ResponseField name="state" type="State">
+  The bond's state instance
+</ResponseField>
+
+<ResponseField name="id" type="string">
+  Unique identifier for this bond instance
+</ResponseField>
+
+#### Methods
+
+<ResponseField name="share" type="() => this">
+  Abstract method to share the bond via context (must be implemented by subclasses)
+</ResponseField>
+
+<ResponseField name="destroy" type="() => void">
+  Cleanup method called when bond is destroyed
+</ResponseField>
+
+<ResponseField name="get" type="static () => unknown | undefined">
+  Static method to retrieve bond from context (must be implemented by subclasses)
+</ResponseField>
+
+<ResponseField name="set" type="static (bond: unknown) => unknown">
+  Static method to set bond in context (must be implemented by subclasses)
+</ResponseField>
+
+#### Example
+
+```typescript
+import { Bond, BondState, type BondStateProps } from '@svelte-atoms/core/shared';
+import { getContext, setContext } from 'svelte';
+
+interface MyComponentProps extends BondStateProps {
+  value: string;
+  disabled: boolean;
+}
+
+class MyComponentState extends BondState<MyComponentProps> {
+  get value() {
+    return this.props.value;
+  }
+
+  get disabled() {
+    return this.props.disabled;
+  }
+}
+
+class MyComponentBond extends Bond<
+  MyComponentProps,
+  MyComponentState
+> {
+  static CONTEXT_KEY = 'my-component';
+
+  share() {
+    setContext(MyComponentBond.CONTEXT_KEY, this);
+    return this;
+  }
+
+  static get() {
+    return getContext<MyComponentBond>(MyComponentBond.CONTEXT_KEY);
+  }
+
+  static set(bond: MyComponentBond) {
+    return setContext(MyComponentBond.CONTEXT_KEY, bond);
+  }
+}
+```
+
+---
+
+### BondState
+
+Abstract base class for bond state management. Handles props and provides unique identifiers.
+
+#### Type Definition
+
+```typescript
+abstract class BondState<S extends BondStateProps = BondStateProps>
+```
+
+#### Constructor
+
+<ParamField path="props" type="() => S">
+  Function that returns the current props
+</ParamField>
+
+<ParamField path="id" type="string">
+  Optional unique identifier (auto-generated using nanoid if not provided)
+</ParamField>
+
+#### Properties
+
+<ResponseField name="id" type="string">
+  Unique identifier for this state instance (falls back to props.id or generated ID)
+</ResponseField>
+
+<ResponseField name="props" type="S">
+  Current props object
+</ResponseField>
+
+#### Example
+
+```typescript
+import { BondState, type BondStateProps } from '@svelte-atoms/core/shared';
+
+interface ButtonProps extends BondStateProps {
+  variant: 'primary' | 'secondary';
+  size: 'sm' | 'md' | 'lg';
+  disabled: boolean;
+}
+
+class ButtonState extends BondState<ButtonProps> {
+  get variant() {
+    return this.props.variant ?? 'primary';
+  }
+
+  get size() {
+    return this.props.size ?? 'md';
+  }
+
+  get disabled() {
+    return this.props.disabled ?? false;
+  }
+
+  get className() {
+    return `btn btn-${this.variant} btn-${this.size}`;
+  }
+}
+```
+
+---
+
+### DURATION
+
+Predefined animation duration constants for consistent motion design.
+
+#### Type Definition
+
+```typescript
+const DURATION: {
+  quick: 50;
+  fast: 100;
+  normal: 200;
+  smooth: 300;
+  slow: 400;
+  dragging: 500;
+}
+```
+
+#### Values
+
+<ResponseField name="quick" type="50">
+  Very fast animations (50ms) - subtle state changes
+</ResponseField>
+
+<ResponseField name="fast" type="100">
+  Fast animations (100ms) - hover effects, quick transitions
+</ResponseField>
+
+<ResponseField name="normal" type="200">
+  Normal animations (200ms) - standard transitions
+</ResponseField>
+
+<ResponseField name="smooth" type="300">
+  Smooth animations (300ms) - modal open/close, panel slides
+</ResponseField>
+
+<ResponseField name="slow" type="400">
+  Slow animations (400ms) - page transitions, complex animations
+</ResponseField>
+
+<ResponseField name="dragging" type="500">
+  Dragging animations (500ms) - drag-and-drop feedback
+</ResponseField>
+
+#### Example
+
+```svelte
+<script>
+  import { DURATION } from '@svelte-atoms/core/shared';
+  import { fade, fly } from 'svelte/transition';
+
+  let isOpen = $state(false);
+</script>
+
+{#if isOpen}
+  <div 
+    in:fly={{ y: 20, duration: DURATION.smooth }}
+    out:fade={{ duration: DURATION.fast }}>
+    Animated content
+  </div>
+{/if}
+```
+
+#### With Motion
+
+```svelte
+<script>
+  import { DURATION } from '@svelte-atoms/core/shared';
+
+  let position = $state({ x: 0, y: 0 });
+
+  function animate() {
+    position = { x: 100, y: 100 };
+  }
+</script>
+
+<style>
+  .element {
+    transition: transform {DURATION.normal}ms ease-out;
+    transform: translate({position.x}px, {position.y}px);
+  }
+</style>
+```
+
+---
+
+## Type Definitions
+
+### BondStateProps
+
+```typescript
+type BondStateProps = { 
+  id?: string 
+};
+```
+
+Base properties for bond state. All bond props should extend this interface.
+
+### BondElements
+
+```typescript
+type BondElements = Record<string, Element | undefined>;
+```
+
+Record type for storing references to DOM elements within a bond.
+
+## Advanced Patterns
+
+### Custom Bond Implementation
+
+```typescript
+import { 
+  Bond, 
+  BondState, 
+  type BondStateProps, 
+  type BondElements 
+} from '@svelte-atoms/core/shared';
+import { getContext, setContext } from 'svelte';
+
+// Define props interface
+interface DropdownProps extends BondStateProps {
+  open: boolean;
+  placement: 'top' | 'bottom';
+  items: Array<{ label: string; value: string }>;
+}
+
+// Define elements interface
+interface DropdownElements extends BondElements {
+  trigger?: HTMLElement;
+  menu?: HTMLElement;
+}
+
+// Implement state
+class DropdownState extends BondState<DropdownProps> {
+  #selectedIndex = $state(0);
+
+  get open() {
+    return this.props.open;
+  }
+
+  get placement() {
+    return this.props.placement ?? 'bottom';
+  }
+
+  get items() {
+    return this.props.items;
+  }
+
+  get selectedIndex() {
+    return this.#selectedIndex;
+  }
+
+  selectNext() {
+    this.#selectedIndex = Math.min(
+      this.#selectedIndex + 1,
+      this.items.length - 1
+    );
+  }
+
+  selectPrevious() {
+    this.#selectedIndex = Math.max(this.#selectedIndex - 1, 0);
+  }
+}
+
+// Implement bond
+class DropdownBond extends Bond<
+  DropdownProps,
+  DropdownState,
+  DropdownElements
+> {
+  static CONTEXT_KEY = 'dropdown';
+
+  constructor(state: DropdownState) {
+    super(state);
+  }
+
+  share() {
+    setContext(DropdownBond.CONTEXT_KEY, this);
+    return this;
+  }
+
+  static get() {
+    return getContext<DropdownBond>(DropdownBond.CONTEXT_KEY);
+  }
+
+  static set(bond: DropdownBond) {
+    return setContext(DropdownBond.CONTEXT_KEY, bond);
+  }
+
+  // Custom methods
+  toggle() {
+    // Implementation
+  }
+
+  open() {
+    // Implementation
+  }
+
+  close() {
+    // Implementation
+  }
+}
+```
+
+### Using Bond in Components
+
+```svelte
+<script>
+  import { DropdownBond, DropdownState } from './dropdown-bond';
+  import { defineState, defineProperty } from '@svelte-atoms/core/utils';
+
+  let { 
+    open = $bindable(false),
+    placement = 'bottom',
+    items = []
+  } = $props();
+
+  const bondProps = defineState([
+    defineProperty('open', () => open, (v) => open = v),
+    defineProperty('placement', () => placement),
+    defineProperty('items', () => items)
+  ]);
+
+  const state = new DropdownState(() => bondProps);
+  const bond = new DropdownBond(state).share();
+</script>
+
+<div>
+  <!-- Use bond in component -->
+  {bond.state.open ? 'Open' : 'Closed'}
+</div>
+```
+
+## Design Philosophy
+
+### Why Bond?
+
+The Bond system provides:
+
+1. **Unified State Management**: Consistent pattern across all components
+2. **Context Integration**: Seamless parent-child communication
+3. **Type Safety**: Full TypeScript support with generics
+4. **Separation of Concerns**: State, behavior, and view are cleanly separated
+5. **Extensibility**: Easy to extend and customize
+
+### Bond Lifecycle
+
+1. **Creation**: Props are defined and state is initialized
+2. **Sharing**: Bond is shared via Svelte context
+3. **Usage**: Child components access bond via context
+4. **Cleanup**: `destroy()` method called on unmount
+
+## Performance
+
+- Bond instances use Svelte's fine-grained reactivity
+- State changes only trigger updates to affected components
+- Element references are stored without creating unnecessary reactivity
+- Context lookups are efficient and cached
+
+## Migration Guide
+
+### From Component State to Bond
+
+**Before:**
+```svelte
+<script>
+  let value = $state('');
+  let disabled = $state(false);
+
+  function handleChange() {
+    // Logic
+  }
+</script>
+```
+
+**After:**
+```typescript
+// bond.ts
+class ComponentState extends BondState<Props> {
+  get value() { return this.props.value; }
+  get disabled() { return this.props.disabled; }
+  
+  handleChange() {
+    // Logic
+  }
+}
+
+class ComponentBond extends Bond<Props, ComponentState> {
+  // Implementation
+}
+```
+
+## Related
+
+- [Context](/api/context) - Context utilities and presets
+- [TypeScript Types](/api/typescript-types) - Type utilities
+- [Runes](/api/runes) - Reactive utilities

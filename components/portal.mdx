@@ -1,0 +1,287 @@
+---
+title: "Portal"
+description: "A component for rendering content outside the normal DOM hierarchy, useful for modals, tooltips, and overlays"
+---
+
+## Overview
+
+The Portal component enables you to render content at a different location in the DOM tree than where it's defined in your component hierarchy. This is essential for components like modals, tooltips, and dropdowns that need to escape parent overflow or stacking contexts.
+
+## Anatomy
+
+```svelte
+<!-- Define a portal destination -->
+<Portal.Outer id="modal-portal" />
+
+<!-- Render content into the portal -->
+<Portal.Root name="modal-portal">
+  {#snippet children({ portal })}
+    <!-- Your portaled content -->
+  {/snippet}
+</Portal.Root>
+
+<!-- Or use Teleport for simpler cases -->
+<Teleport portal="modal-portal">
+  <!-- Your content -->
+</Teleport>
+```
+
+## Subcomponents
+
+### Portal.Outer
+
+Defines a portal destination where content can be rendered.
+
+<ParamField path="id" type="RootPortals | string" required>
+  Unique identifier for the portal destination. Can be a predefined root portal or a custom string.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Optional content to render in the portal container
+</ParamField>
+
+Inherits all standard HTML attributes for a `div` element.
+
+### Portal.Root (Portal.Inner)
+
+Creates a portal that renders its content at a specific destination.
+
+<ParamField path="name" type="string">
+  The name/id of the portal destination to render into
+</ParamField>
+
+<ParamField path="factory" type="Factory<PortalBond>">
+  Factory function for customizing the portal bond instance
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ portal: PortalBond }]>">
+  Children render function with access to portal bond instance
+</ParamField>
+
+Inherits all standard HTML attributes for a `div` element.
+
+### Teleport
+
+A simpler alternative to Portal.Root for basic teleportation needs.
+
+<ParamField path="portal" type="string | PortalBond">
+  The portal destination name or bond instance to teleport into
+</ParamField>
+
+<ParamField path="as" type="HtmlElementTagName" default="'div'">
+  The HTML element to render as
+</ParamField>
+
+Inherits all standard HTML attributes for the element type specified.
+
+## Examples
+
+### Basic Portal
+
+```svelte
+<script>
+  import { Portal } from '$lib/components/portal';
+</script>
+
+<!-- Define the portal destination (usually in your root layout) -->
+<Portal.Outer id="app-portal" />
+
+<!-- Use the portal anywhere in your app -->
+<div class="container">
+  <Portal.Root name="app-portal">
+    {#snippet children({ portal })}
+      <div class="rounded border bg-white p-4 shadow-lg">
+        This content is rendered outside the container!
+      </div>
+    {/snippet}
+  </Portal.Root>
+</div>
+```
+
+### Modal with Portal
+
+```svelte
+<script>
+  import { Portal } from '$lib/components/portal';
+  
+  let showModal = $state(false);
+</script>
+
+<Portal.Outer id="modal-root" />
+
+<button onclick={() => showModal = true}>
+  Open Modal
+</button>
+
+{#if showModal}
+  <Portal.Root name="modal-root">
+    {#snippet children({ portal })}
+      <div class="fixed inset-0 flex items-center justify-center bg-black/50">
+        <div class="max-w-md rounded-lg bg-white p-6 shadow-xl">
+          <h2 class="mb-4 text-xl font-bold">Modal Title</h2>
+          <p class="mb-4 text-gray-600">This modal is rendered via a portal.</p>
+          <button
+            class="rounded bg-blue-500 px-4 py-2 text-white"
+            onclick={() => showModal = false}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    {/snippet}
+  </Portal.Root>
+{/if}
+```
+
+### Using Teleport
+
+```svelte
+<script>
+  import { Teleport, Portal } from '$lib/components/portal';
+</script>
+
+<Portal.Outer id="notifications" />
+
+<!-- Simpler syntax for basic portaling -->
+<Teleport portal="notifications">
+  <div class="rounded border bg-green-100 p-4 text-green-800">
+    Success! Your changes have been saved.
+  </div>
+</Teleport>
+```
+
+### Nested Portals
+
+```svelte
+<script>
+  import { Portal } from '$lib/components/portal';
+</script>
+
+<!-- Outer portal -->
+<Portal.Outer id="outer-portal" />
+
+<Portal.Root name="outer-portal">
+  {#snippet children({ portal: outerPortal })}
+    <div class="border-2 border-blue-500 p-4">
+      <p>This is in the outer portal</p>
+      
+      <!-- Define an inner portal destination -->
+      <Portal.Outer id="inner-portal" />
+    </div>
+  {/snippet}
+</Portal.Root>
+
+<!-- Content for the inner portal -->
+<Portal.Root name="inner-portal">
+  {#snippet children({ portal: innerPortal })}
+    <div class="border-2 border-green-500 p-4">
+      <p>This is in the inner portal</p>
+    </div>
+  {/snippet}
+</Portal.Root>
+```
+
+### Tooltip with Portal
+
+```svelte
+<script>
+  import { Portal } from '$lib/components/portal';
+  
+  let showTooltip = $state(false);
+  let tooltipPosition = $state({ x: 0, y: 0 });
+  
+  function handleMouseEnter(e: MouseEvent) {
+    showTooltip = true;
+    tooltipPosition = { x: e.clientX, y: e.clientY };
+  }
+</script>
+
+<Portal.Outer id="tooltip-portal" />
+
+<button
+  onmouseenter={handleMouseEnter}
+  onmouseleave={() => showTooltip = false}
+>
+  Hover me
+</button>
+
+{#if showTooltip}
+  <Portal.Root name="tooltip-portal">
+    {#snippet children({ portal })}
+      <div
+        class="pointer-events-none fixed rounded bg-gray-900 px-2 py-1 text-sm text-white"
+        style="left: {tooltipPosition.x}px; top: {tooltipPosition.y + 10}px;"
+      >
+        Tooltip content
+      </div>
+    {/snippet}
+  </Portal.Root>
+{/if}
+```
+
+### Multiple Portal Destinations
+
+```svelte
+<script>
+  import { Portal } from '$lib/components/portal';
+</script>
+
+<!-- Define multiple portal destinations -->
+<Portal.Outer id="header-portal" class="fixed top-0 left-0 right-0" />
+<Portal.Outer id="sidebar-portal" class="fixed left-0 top-0 bottom-0 w-64" />
+<Portal.Outer id="footer-portal" class="fixed bottom-0 left-0 right-0" />
+
+<!-- Use them from anywhere -->
+<Portal.Root name="header-portal">
+  {#snippet children({ portal })}
+    <div class="bg-blue-500 p-4 text-white">Header Content</div>
+  {/snippet}
+</Portal.Root>
+
+<Portal.Root name="sidebar-portal">
+  {#snippet children({ portal })}
+    <div class="bg-gray-100 p-4">Sidebar Content</div>
+  {/snippet}
+</Portal.Root>
+
+<Portal.Root name="footer-portal">
+  {#snippet children({ portal })}
+    <div class="bg-gray-800 p-4 text-white">Footer Content</div>
+  {/snippet}
+</Portal.Root>
+```
+
+## Use Cases
+
+- **Modals**: Render modals at the document root to avoid z-index issues
+- **Tooltips**: Position tooltips without being constrained by parent overflow
+- **Dropdowns**: Render dropdown menus outside scrollable containers
+- **Notifications**: Render toast notifications in a fixed position
+- **Overlays**: Create full-screen overlays that escape parent constraints
+
+## Bond API
+
+The PortalBond instance provides:
+
+<ParamField path="targetElement" type="HTMLElement">
+  The destination element where content is rendered (either inner or root)
+</ParamField>
+
+<ParamField path="destroy" type="() => void">
+  Cleans up the portal and removes elements from DOM
+</ParamField>
+
+## How It Works
+
+1. **Portal.Outer** creates a destination element in the DOM with a unique ID
+2. **Portal.Root** or **Teleport** finds that destination by ID and renders its content there
+3. Content appears at the portal destination while maintaining component hierarchy and reactivity
+4. When unmounted, portaled content is automatically cleaned up
+
+## Best Practices
+
+- Define `Portal.Outer` destinations in your root layout or app component
+- Use descriptive IDs for portal destinations (e.g., "modal-root", "tooltip-portal")
+- For simple cases, use `Teleport` instead of the full `Portal.Root` API
+- Remember that portaled content escapes the parent's CSS overflow and z-index context
+- Clean up event listeners and animations when portal content unmounts

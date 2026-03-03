@@ -1,0 +1,230 @@
+---
+title: Avatar
+description: Display user profile images or fallback initials with a circular design.
+---
+
+The Avatar component provides a consistent way to display user profile pictures, icons, or text initials with automatic fallback handling.
+
+## Import
+
+```svelte
+import { Avatar } from '@svelte-atoms/core';
+```
+
+## Usage
+
+### Basic Avatar with Image
+
+```svelte
+<Avatar 
+  src="https://example.com/profile.jpg" 
+  alt="John Doe" 
+/>
+```
+
+### Avatar with Initials Fallback
+
+When an image fails to load or no image is provided, the avatar displays the user's initials:
+
+```svelte
+<Avatar alt="John Doe" />
+<!-- Displays "JD" -->
+
+<Avatar alt="Sarah Williams" />
+<!-- Displays "SW" -->
+```
+
+### Avatar with Icon
+
+You can pass a Svelte component as the `src` to display an icon instead of an image:
+
+```svelte
+<script>
+  import { Avatar } from '@svelte-atoms/core';
+  import UserIcon from '@svelte-atoms/core/icons/icon-user.svelte';
+</script>
+
+<Avatar src={UserIcon} alt="User profile" />
+```
+
+### Custom Size
+
+```svelte
+<Avatar 
+  src="https://example.com/profile.jpg" 
+  alt="John Doe"
+  class="h-16 w-16"
+/>
+
+<Avatar 
+  src="https://example.com/profile.jpg" 
+  alt="Jane Smith"
+  class="h-24 w-24"
+/>
+```
+
+### Avatar Group
+
+```svelte
+<div class="flex -space-x-4">
+  <Avatar src="https://example.com/user1.jpg" alt="User 1" class="border-2 border-white" />
+  <Avatar src="https://example.com/user2.jpg" alt="User 2" class="border-2 border-white" />
+  <Avatar src="https://example.com/user3.jpg" alt="User 3" class="border-2 border-white" />
+  <Avatar alt="+5" class="border-2 border-white" />
+</div>
+```
+
+## API Reference
+
+### Avatar
+
+<ParamField path="src" type="string | Component">
+  The image URL or Svelte component to display. If a string is provided, it will be used as the image source. If a component is provided, it will be rendered as an icon.
+</ParamField>
+
+<ParamField path="alt" type="string" default="''">
+  Alternative text for the image. When no image is provided or the image fails to load, the first letters of the first two words are extracted as initials.
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply. The default size is `h-10` (40px), but you can override with any size class.
+</ParamField>
+
+<ParamField path="element" type="HTMLElement" readonly>
+  Reference to the root DOM element.
+</ParamField>
+
+## Behavior
+
+### Image Loading
+
+The Avatar component handles image loading gracefully:
+
+1. **Image loads successfully** - Displays the image
+2. **Image fails to load** - Falls back to displaying initials from the `alt` text
+3. **No image provided** - Immediately displays initials
+
+### Initials Generation
+
+Initials are generated from the `alt` text:
+
+- Takes the first two words
+- Extracts the first letter of each word
+- Converts to uppercase
+- Example: "John Doe" → "JD"
+- Example: "Sarah" → "S"
+- Example: "Mary Jane Watson" → "MJ" (only first two words)
+
+### Icon Display
+
+When a Svelte component is passed as `src`:
+
+- The component is rendered inside an Icon wrapper
+- Automatic sizing and styling applied
+- No fallback to initials
+
+## Styling
+
+The Avatar component uses the `avatar` preset key for styling.
+
+Default styles include:
+- Circular shape (`rounded-full`)
+- Square aspect ratio
+- Default height of 40px (`h-10`)
+- Border styling
+- Background color from theme
+- Hover and active states
+- Centered content
+- Text sizing for initials
+
+You can customize the appearance by:
+
+1. Using the `class` prop to add custom classes
+2. Defining custom styles for the `avatar` preset in your theme
+
+### Custom Styling Examples
+
+```svelte
+<!-- Large avatar with custom background -->
+<Avatar 
+  alt="John Doe"
+  class="h-20 w-20 bg-blue-500 text-white"
+/>
+
+<!-- Square avatar -->
+<Avatar 
+  src="https://example.com/profile.jpg"
+  alt="Jane Smith"
+  class="rounded-lg"
+/>
+
+<!-- Avatar with shadow -->
+<Avatar 
+  src="https://example.com/profile.jpg"
+  alt="Bob Johnson"
+  class="shadow-lg"
+/>
+```
+
+## Accessibility
+
+- The `alt` attribute provides alternative text for screen readers
+- Images have `role="presentation"` and `aria-hidden="true"` since the parent element has the `alt` text
+- The component uses semantic HTML structure
+- Initials are visible text content, readable by screen readers
+
+### Accessible Example
+
+```svelte
+<Avatar 
+  src="https://example.com/profile.jpg"
+  alt="John Doe, Software Engineer"
+  class="h-12 w-12"
+/>
+```
+
+## Common Use Cases
+
+### User Profile
+
+```svelte
+<div class="flex items-center gap-3">
+  <Avatar src={user.avatar} alt={user.name} />
+  <div>
+    <p class="font-medium">{user.name}</p>
+    <p class="text-sm text-muted">{user.email}</p>
+  </div>
+</div>
+```
+
+### Comment Section
+
+```svelte
+<div class="flex gap-4">
+  <Avatar src={comment.author.avatar} alt={comment.author.name} class="h-8 w-8" />
+  <div class="flex-1">
+    <p class="font-medium">{comment.author.name}</p>
+    <p>{comment.text}</p>
+  </div>
+</div>
+```
+
+### Team Members
+
+```svelte
+<div class="grid grid-cols-4 gap-4">
+  {#each team as member}
+    <div class="text-center">
+      <Avatar src={member.avatar} alt={member.name} class="h-16 w-16 mx-auto" />
+      <p class="mt-2 text-sm font-medium">{member.name}</p>
+      <p class="text-xs text-muted">{member.role}</p>
+    </div>
+  {/each}
+</div>
+```
+
+## Related Components
+
+- [Badge](/components/badge) - For status indicators on avatars
+- [Chip](/components/chip) - For removable user tags
+- [Card](/components/card) - For user profile cards

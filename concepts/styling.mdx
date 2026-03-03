@@ -1,0 +1,577 @@
+---
+title: 'Styling Approaches'
+description: 'Learn how to style Svelte Atoms components with TailwindCSS and custom solutions'
+---
+
+## Overview
+
+Svelte Atoms Core is **headless by default**, providing no opinionated styling. This gives you complete freedom to style components using your preferred approach: TailwindCSS, CSS modules, custom CSS, or any styling solution.
+
+<Note>
+  All components accept a `class` prop that supports strings, arrays, and objects for maximum flexibility.
+</Note>
+
+## TailwindCSS Integration
+
+Svelte Atoms has first-class TailwindCSS support with powerful class merging and preset systems.
+
+### Basic Usage
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+</script>
+
+<Button.Root class="rounded-lg bg-blue-500 px-6 py-3 text-white hover:bg-blue-600">
+  Click me
+</Button.Root>
+```
+
+### Class Arrays
+
+Pass arrays of classes for conditional styling:
+
+```svelte
+<script>
+  import { Badge } from '@svelte-atoms/core/components/badge';
+  
+  let variant = $state<'info' | 'warning' | 'error'>('info');
+  
+  const classes = $derived([
+    'rounded-full px-3 py-1 text-sm font-medium',
+    variant === 'info' && 'bg-blue-100 text-blue-800',
+    variant === 'warning' && 'bg-yellow-100 text-yellow-800',
+    variant === 'error' && 'bg-red-100 text-red-800',
+  ]);
+</script>
+
+<Badge.Root class={classes}>
+  Status: {variant}
+</Badge.Root>
+```
+
+### Dynamic Classes with `cn` Utility
+
+Use the built-in `cn` utility for conditional classes:
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { cn } from '@svelte-atoms/core/utils';
+  
+  let isActive = $state(false);
+  let isLoading = $state(false);
+</script>
+
+<Button.Root 
+  class={cn(
+    'rounded-lg px-4 py-2',
+    isActive && 'bg-blue-500 text-white',
+    !isActive && 'bg-gray-200 text-gray-800',
+    isLoading && 'cursor-wait opacity-50'
+  )}
+>
+  {isLoading ? 'Loading...' : 'Submit'}
+</Button.Root>
+```
+
+## Preset System
+
+The preset system enables consistent styling across your application with reusable configurations.
+
+### Creating a Preset
+
+```typescript
+// presets/button.ts
+export const buttonPreset = {
+  button: {
+    // Base classes applied to all buttons
+    class: 'rounded-md px-4 py-2 font-medium transition-colors',
+    
+    // Variant system
+    variants: {
+      variant: {
+        primary: 'bg-blue-500 text-white hover:bg-blue-600',
+        secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
+        danger: 'bg-red-500 text-white hover:bg-red-600',
+      },
+      size: {
+        sm: 'px-2 py-1 text-sm',
+        md: 'px-4 py-2 text-base',
+        lg: 'px-6 py-3 text-lg',
+      },
+    },
+    
+    // Compound variants for combinations
+    compounds: [
+      {
+        variant: 'primary',
+        size: 'lg',
+        class: 'shadow-lg',
+      },
+    ],
+    
+    // Default variant values
+    defaults: {
+      variant: 'primary',
+      size: 'md',
+    },
+  },
+};
+```
+
+### Using Presets
+
+```svelte
+<script>
+  import { Root } from '@svelte-atoms/core/components/root';
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { buttonPreset } from './presets/button';
+</script>
+
+<Root presets={{ button: buttonPreset }}>
+  <!-- Uses default: variant="primary" size="md" -->
+  <Button.Root>Default Button</Button.Root>
+  
+  <!-- Override variants -->
+  <Button.Root variant="secondary" size="lg">
+    Large Secondary
+  </Button.Root>
+  
+  <!-- Compound variant automatically applies shadow-lg -->
+  <Button.Root variant="primary" size="lg">
+    Large Primary with Shadow
+  </Button.Root>
+</Root>
+```
+
+### The `$preset` Placeholder
+
+Control where preset classes are inserted using the `$preset` placeholder:
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+</script>
+
+<!-- Preset classes inserted at $preset position -->
+<Button.Root class="flex items-center gap-2 $preset font-bold">
+  Custom Order
+</Button.Root>
+
+<!-- Without $preset, variants override direct classes -->
+<Button.Root class="flex items-center gap-2 font-bold">
+  Default Order
+</Button.Root>
+```
+
+<Tip>
+  The `$preset` placeholder gives you precise control over class precedence and allows you to override preset classes with your own.
+</Tip>
+
+## Variant System
+
+Define variants directly on components:
+
+```svelte
+<script lang="ts">
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import type { VariantDefinition } from '@svelte-atoms/core/utils';
+  
+  type Props = {
+    variant?: 'solid' | 'outline' | 'ghost';
+    size?: 'sm' | 'md' | 'lg';
+  };
+  
+  let { variant = 'solid', size = 'md', ...rest }: Props = $props();
+  
+  const variants: VariantDefinition<Props> = {
+    class: 'rounded transition-colors',
+    variants: {
+      variant: {
+        solid: 'bg-blue-500 text-white',
+        outline: 'border-2 border-blue-500 text-blue-500',
+        ghost: 'text-blue-500 hover:bg-blue-50',
+      },
+      size: {
+        sm: 'px-2 py-1 text-sm',
+        md: 'px-4 py-2 text-base',
+        lg: 'px-6 py-3 text-lg',
+      },
+    },
+    compounds: [
+      {
+        variant: 'outline',
+        size: 'lg',
+        class: 'border-4',
+      },
+    ],
+    defaults: {
+      variant: 'solid',
+      size: 'md',
+    },
+  };
+</script>
+
+<HtmlAtom as="button" {variants} {variant} {size} {...rest}>
+  {@render children?.()}
+</HtmlAtom>
+```
+
+Use the component:
+
+```svelte
+<CustomButton variant="outline" size="lg">
+  Outlined Large Button
+</CustomButton>
+```
+
+## CSS Modules
+
+Use CSS modules for scoped styling:
+
+```css
+/* Button.module.css */
+.button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.secondary {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+```
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+  import styles from './Button.module.css';
+  
+  let variant = $state('primary');
+</script>
+
+<Button.Root class="{styles.button} {styles[variant]}">
+  Styled Button
+</Button.Root>
+```
+
+## Custom CSS
+
+Use traditional CSS with custom classes:
+
+```svelte
+<script>
+  import { Card } from '@svelte-atoms/core/components/card';
+</script>
+
+<Card.Root class="custom-card">
+  <Card.Header class="custom-card-header">
+    <h2>Card Title</h2>
+  </Card.Header>
+  <Card.Body class="custom-card-body">
+    Content here
+  </Card.Body>
+</Card.Root>
+
+<style>
+  :global(.custom-card) {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  :global(.custom-card-header) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+  }
+  
+  :global(.custom-card-body) {
+    padding: 1.5rem;
+  }
+</style>
+```
+
+## Styled Components Pattern
+
+Create pre-styled components:
+
+```svelte
+<!-- PrimaryButton.svelte -->
+<script lang="ts">
+  import { Button } from '@svelte-atoms/core/components/button';
+  
+  let { class: className = '', ...rest } = $props();
+</script>
+
+<Button.Root 
+  class="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-3 font-bold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl {className}"
+  {...rest}
+>
+  {@render children?.()}
+</Button.Root>
+```
+
+Use it:
+
+```svelte
+<script>
+  import PrimaryButton from './PrimaryButton.svelte';
+</script>
+
+<PrimaryButton onclick={() => console.log('clicked')}>
+  Click Me
+</PrimaryButton>
+
+<!-- Override with additional classes -->
+<PrimaryButton class="mt-4 w-full">
+  Full Width
+</PrimaryButton>
+```
+
+## Theming
+
+### CSS Variables
+
+Define themes with CSS variables:
+
+```css
+/* global.css */
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-secondary: #6b7280;
+  --color-danger: #ef4444;
+  --color-success: #10b981;
+  
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}
+
+[data-theme="dark"] {
+  --color-primary: #60a5fa;
+  --color-primary-hover: #3b82f6;
+  --color-secondary: #9ca3af;
+}
+```
+
+```svelte
+<script>
+  import { Button } from '@svelte-atoms/core/components/button';
+  
+  let theme = $state('light');
+</script>
+
+<div data-theme={theme}>
+  <Button.Root style="background-color: var(--color-primary);">
+    Themed Button
+  </Button.Root>
+</div>
+```
+
+### TailwindCSS Dark Mode
+
+```svelte
+<script>
+  import { Card } from '@svelte-atoms/core/components/card';
+</script>
+
+<Card.Root class="bg-white dark:bg-gray-800">
+  <Card.Header class="border-b border-gray-200 dark:border-gray-700">
+    <h2 class="text-gray-900 dark:text-white">Dark Mode Support</h2>
+  </Card.Header>
+  <Card.Body class="text-gray-700 dark:text-gray-300">
+    Content that adapts to dark mode
+  </Card.Body>
+</Card.Root>
+```
+
+## Real-World Example: Button System
+
+Create a comprehensive button system:
+
+```svelte
+<!-- AppButton.svelte -->
+<script lang="ts">
+  import { Button } from '@svelte-atoms/core/components/button';
+  import { cn } from '@svelte-atoms/core/utils';
+  
+  type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
+  type Size = 'sm' | 'md' | 'lg';
+  
+  type Props = {
+    variant?: Variant;
+    size?: Size;
+    loading?: boolean;
+    icon?: Component;
+    class?: string;
+  };
+  
+  let {
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    icon,
+    class: className = '',
+    children,
+    ...rest
+  }: Props = $props();
+  
+  const baseClasses = 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50';
+  
+  const variantClasses: Record<Variant, string> = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm hover:shadow-md',
+    secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 active:bg-gray-400',
+    danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm hover:shadow-md',
+    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200',
+  };
+  
+  const sizeClasses: Record<Size, string> = {
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-4 py-2 text-base',
+    lg: 'px-6 py-3 text-lg',
+  };
+  
+  const finalClasses = cn(
+    baseClasses,
+    variantClasses[variant],
+    sizeClasses[size],
+    loading && 'cursor-wait',
+    className
+  );
+</script>
+
+<Button.Root class={finalClasses} disabled={loading} {...rest}>
+  {#if loading}
+    <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  {/if}
+  
+  {#if icon && !loading}
+    <svelte:component this={icon} class="h-4 w-4" />
+  {/if}
+  
+  {@render children?.()}
+</Button.Root>
+```
+
+Use the button system:
+
+```svelte
+<script>
+  import AppButton from './AppButton.svelte';
+  import { IconTrash, IconEdit } from './icons';
+  
+  let loading = $state(false);
+  
+  async function handleSubmit() {
+    loading = true;
+    await new Promise(r => setTimeout(r, 2000));
+    loading = false;
+  }
+</script>
+
+<div class="flex gap-2">
+  <AppButton variant="primary" onclick={handleSubmit} loading={loading}>
+    Submit Form
+  </AppButton>
+  
+  <AppButton variant="secondary" size="sm" icon={IconEdit}>
+    Edit
+  </AppButton>
+  
+  <AppButton variant="danger" icon={IconTrash}>
+    Delete
+  </AppButton>
+  
+  <AppButton variant="ghost">
+    Cancel
+  </AppButton>
+</div>
+```
+
+## Styling Best Practices
+
+<Accordion title="Use Consistent Spacing">
+  Define a spacing scale and stick to it. TailwindCSS provides this by default, or define your own:
+  
+  ```css
+  --spacing-1: 0.25rem;  /* 4px */
+  --spacing-2: 0.5rem;   /* 8px */
+  --spacing-3: 0.75rem;  /* 12px */
+  --spacing-4: 1rem;     /* 16px */
+  ```
+</Accordion>
+
+<Accordion title="Leverage Composition">
+  Create styled wrapper components instead of repeating classes:
+  
+  ```svelte
+  <!-- ✅ Good -->
+  <PrimaryButton>Submit</PrimaryButton>
+  
+  <!-- ❌ Avoid -->
+  <Button.Root class="rounded-lg bg-blue-500 px-6 py-3 text-white">
+    Submit
+  </Button.Root>
+  ```
+</Accordion>
+
+<Accordion title="Use Semantic Color Names">
+  ```svelte
+  <!-- ✅ Good: Semantic -->
+  <Button.Root class="bg-primary text-primary-foreground">
+    Primary Action
+  </Button.Root>
+  
+  <!-- ❌ Avoid: Color-specific -->
+  <Button.Root class="bg-blue-500 text-white">
+    Primary Action
+  </Button.Root>
+  ```
+</Accordion>
+
+<Warning>
+  Avoid inline styles unless absolutely necessary. Use classes for better performance and maintainability.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Accessibility" icon="universal-access" href="/concepts/accessibility">
+    Learn about built-in accessibility features
+  </Card>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/concepts/animations">
+    Add animations with lifecycle hooks
+  </Card>
+  <Card title="Composition" icon="shapes" href="/concepts/composition">
+    Master component composition patterns
+  </Card>
+  <Card title="Components" icon="cube" href="/components/button">
+    Browse all available components
+  </Card>
+</CardGroup>

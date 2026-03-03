@@ -1,0 +1,349 @@
+---
+title: Input
+description: A flexible input component with support for icons, placeholders, and various input types
+icon: keyboard
+---
+
+## Overview
+
+The Input component is a composite component that provides a flexible and feature-rich text input interface. It consists of multiple subcomponents that work together to create sophisticated input experiences.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Input } from '@svelte-atoms/core/components/input';
+  
+  let value = $state('');
+</script>
+
+<Input.Root>
+  <Input.Control bind:value placeholder="Enter text..." />
+</Input.Root>
+```
+
+## Subcomponents
+
+The Input component is made up of several subcomponents:
+
+- **Input.Root** - Container for the input and related elements
+- **Input.Control** - The actual input element
+- **Input.Icon** - Icon elements displayed inside the input
+- **Input.Placeholder** - Custom placeholder that appears when input is empty
+
+## Examples
+
+### Input with Icons
+
+```svelte
+<script>
+  import { Input } from '@svelte-atoms/core/components/input';
+  import { Label } from '@svelte-atoms/core/components/label';
+</script>
+
+<Label for="price-input">Price</Label>
+<Input.Root>
+  <Input.Icon class="text-foreground box-content px-0">$</Input.Icon>
+  <Input.Control id="price-input" class="border-border box-content border-x px-2 py-2" />
+  <Input.Icon class="text-foreground box-content px-2">.00</Input.Icon>
+</Input.Root>
+```
+
+### Input with Custom Placeholder
+
+```svelte
+<Input.Root>
+  <Input.Control />
+  <Input.Placeholder class="text-foreground/20 pl-2">Enter your name</Input.Placeholder>
+</Input.Root>
+```
+
+### Different Input Types
+
+```svelte
+<!-- Text input -->
+<Input.Root>
+  <Input.Control type="text" />
+</Input.Root>
+
+<!-- Number input -->
+<Input.Root>
+  <Input.Control type="number" bind:number />
+</Input.Root>
+
+<!-- Date input -->
+<Input.Root>
+  <Input.Control type="date" bind:date />
+</Input.Root>
+
+<!-- File input -->
+<Input.Root>
+  <Input.Control type="file" bind:files />
+</Input.Root>
+```
+
+### Controlled Input
+
+```svelte
+<script>
+  let value = $state('');
+  let files = $state([]);
+  let date = $state(null);
+  let number = $state(0);
+</script>
+
+<Input.Root>
+  <Input.Control 
+    bind:value 
+    bind:files
+    bind:date
+    bind:number
+  />
+</Input.Root>
+```
+
+## Input.Root Props
+
+<ParamField path="value" type="string | number | string[] | null">
+  The current value of the input. Can be bound for two-way binding.
+</ParamField>
+
+<ParamField path="checked" type="boolean">
+  For checkbox/radio inputs, indicates checked state.
+</ParamField>
+
+<ParamField path="files" type="File[] | null">
+  For file inputs, the array of selected files.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'input'">
+  The preset key used for styling.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the root container.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ input: InputBond }]>">
+  Child components with access to the input bond.
+</ParamField>
+
+## Input.Control Props
+
+<ParamField path="value" type="any">
+  The input value. Bindable for two-way data binding.
+</ParamField>
+
+<ParamField path="files" type="File[]">
+  Array of files for file inputs. Bindable.
+</ParamField>
+
+<ParamField path="date" type="Date | null">
+  Date value for date inputs. Bindable.
+</ParamField>
+
+<ParamField path="number" type="number">
+  Number value for number inputs. Bindable.
+</ParamField>
+
+<ParamField path="checked" type="boolean">
+  Checked state for checkbox/radio inputs. Bindable.
+</ParamField>
+
+<ParamField path="type" type="HTMLInputTypeAttribute | null" default="'text'">
+  The HTML input type (text, number, date, email, password, file, etc.).
+</ParamField>
+
+<ParamField path="class" type="string">
+  Additional CSS classes for the input element.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'input.control'">
+  The preset key for the input control.
+</ParamField>
+
+<ParamField path="onchange" type="function">
+  Change event handler. Receives the event and options object with value, files, date, number, and checked properties.
+</ParamField>
+
+<ParamField path="oninput" type="function">
+  Input event handler. Receives the event and options object with value, files, date, number, and checked properties.
+</ParamField>
+
+## Input.Icon Props
+
+<ParamField path="class" type="string">
+  CSS classes for the icon container.
+</ParamField>
+
+<ParamField path="src" type="Component">
+  The icon component to render.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  Text or components to render as the icon.
+</ParamField>
+
+## Input.Placeholder Props
+
+<ParamField path="class" type="string">
+  CSS classes for the placeholder element.
+</ParamField>
+
+<ParamField path="children" type="Snippet">
+  The placeholder content.
+</ParamField>
+
+## Default Styling
+
+### Input.Root
+```css
+border-border
+text-foreground
+bg-input
+relative
+flex
+h-10
+w-auto
+items-center
+overflow-hidden
+rounded-md
+border
+```
+
+### Input.Control
+```css
+text-foreground
+placeholder:text-muted-foreground
+h-full
+w-full
+flex-1
+bg-transparent
+px-2
+leading-1
+outline-none
+```
+
+### Input.Icon
+```css
+border-border
+flex
+aspect-square
+h-full
+items-center
+justify-center
+bg-transparent
+text-sm
+leading-0
+```
+
+### Input.Placeholder
+```css
+text-muted-foreground
+pointer-events-none
+absolute
+inset-0
+flex
+h-full
+w-full
+items-center
+px-1
+leading-1
+outline-none
+```
+
+## Event Handling
+
+The Input.Control component provides enhanced event handlers:
+
+```svelte
+<script>
+  function handleInput(ev, options) {
+    console.log('Value:', options.value);
+    console.log('Files:', options.files);
+    console.log('Date:', options.date);
+    console.log('Number:', options.number);
+  }
+  
+  function handleChange(ev, options) {
+    console.log('Changed:', options);
+  }
+</script>
+
+<Input.Root>
+  <Input.Control 
+    type="text"
+    oninput={handleInput}
+    onchange={handleChange}
+  />
+</Input.Root>
+```
+
+## TypeScript Support
+
+```typescript
+interface InputRootProps<E extends keyof HTMLElementTagNameMap = 'div', B extends Base = Base>
+  extends HtmlAtomProps<E, B>, InputRootExtendProps {
+  value?: string | number | string[] | null;
+  checked?: boolean;
+  files?: File[] | null;
+  children?: Snippet<[]>;
+}
+
+interface InputControlProps<B extends Base = Base>
+  extends Override<HtmlAtomProps<'input', B>, InputControlBaseProps>, InputControlExtendProps {}
+```
+
+## Integration with Forms
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Input } from '@svelte-atoms/core/components/input';
+</script>
+
+<Form.Root>
+  <Form.Field name="email">
+    <Form.Field.Label>Email</Form.Field.Label>
+    <Input.Root>
+      <Form.Field.Control base={Input.Control} type="email" />
+    </Input.Root>
+  </Form.Field>
+</Form.Root>
+```
+
+## Input Bond System
+
+The Input component uses a bond system to manage state across subcomponents:
+
+- Automatically syncs value between Input.Root and Input.Control
+- Manages placeholder visibility based on input value
+- Handles different input types (text, file, date, number)
+- Coordinates events and state updates
+
+## Accessibility
+
+- Uses semantic `<input>` element
+- Supports all native input attributes (aria-*, required, disabled, etc.)
+- Placeholder is hidden from screen readers when using Input.Placeholder
+- Compatible with form labels via `id` attribute
+
+## Best Practices
+
+1. **Always use Input.Root as container**: It manages the bond and state
+2. **Bind appropriate value types**: Use `bind:value` for text, `bind:number` for numbers, `bind:files` for files
+3. **Use with Label component**: Associate labels with inputs using `for` attribute
+4. **Handle validation**: Combine with Form.Field for validation support
+5. **Customize with presets**: Define input variants in your preset configuration
+
+## Related Components
+
+- [Form](/components/form) - For form management and validation
+- [Label](/components/label) - For input labels
+- [Textarea](/components/textarea) - For multi-line text input

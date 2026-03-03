@@ -1,0 +1,589 @@
+---
+title: TypeScript Support
+description: Complete guide to using TypeScript with Svelte Atoms Core
+---
+
+## Overview
+
+Svelte Atoms Core is built with **full TypeScript support**, providing comprehensive type definitions for all components, props, and state management utilities. Get IDE autocompletion, type checking, and inline documentation out of the box.
+
+## Type-Safe Components
+
+### Component Props
+
+All components have fully-typed props interfaces:
+
+```typescript
+import type { ButtonProps } from '@svelte-atoms/core';
+import type { DialogProps, DialogContentProps } from '@svelte-atoms/core';
+import type { DropdownRootProps, DropdownTriggerProps } from '@svelte-atoms/core';
+
+// ButtonProps interface
+interface ButtonProps extends HtmlAtomProps<'button'> {
+  type?: 'button' | 'submit' | 'reset';
+  children?: Snippet<[]>;
+}
+
+// DialogProps interface  
+interface DialogProps extends HtmlAtomProps<'div'> {
+  open?: boolean;
+  disabled?: boolean;
+  portal?: string | PortalBond;
+  factory?: (props: DialogBondProps) => DialogBond;
+  children?: Snippet<[{ dialog: DialogBond }]>;
+}
+```
+
+### Using Component Types
+
+```svelte
+<script lang="ts">
+  import { Button, Dialog } from '@svelte-atoms/core';
+  import type { ButtonProps, DialogProps } from '@svelte-atoms/core';
+
+  // Type-safe prop definitions
+  let buttonProps: ButtonProps = {
+    type: 'submit',
+    class: 'btn-primary',
+    disabled: false
+  };
+
+  let dialogOpen: boolean = $state(false);
+</script>
+
+<Button {...buttonProps}>Submit</Button>
+
+<Dialog.Root bind:open={dialogOpen}>
+  <Dialog.Content>
+    <Dialog.Title>Type-safe Dialog</Dialog.Title>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+## Generic Component Props
+
+Many components support generic element types:
+
+```typescript
+import type { HtmlAtomProps, Base } from '@svelte-atoms/core';
+
+// Customize the underlying element
+interface DialogContentProps<
+  E extends keyof HTMLElementTagNameMap = 'div',
+  B extends Base = Base
+> extends HtmlAtomProps<E, B> {}
+
+// Use as different elements
+interface DialogTitleProps<
+  E extends keyof HTMLElementTagNameMap = 'h2',
+  B extends Base = Base
+> extends HtmlAtomProps<E, B> {}
+```
+
+### Element Type Customization
+
+```svelte
+<script lang="ts">
+  import { Dialog } from '@svelte-atoms/core';
+</script>
+
+<!-- Default: h2 element -->
+<Dialog.Title>Title</Dialog.Title>
+
+<!-- Custom: h1 element -->
+<Dialog.Title as="h1">Main Title</Dialog.Title>
+
+<!-- Custom: div with role -->
+<Dialog.Title as="div" role="heading" aria-level="2">
+  Accessible Title
+</Dialog.Title>
+```
+
+## Bond Types
+
+### Bond State Types
+
+Bonds are strongly typed with state interfaces:
+
+```typescript
+import type { Bond, BondState, BondStateProps } from '@svelte-atoms/core';
+
+// Base Bond class
+export abstract class Bond<
+  Props extends BondStateProps = BondStateProps,
+  State extends BondState<Props> = BondState<Props>,
+  Elements extends BondElements = BondElements
+> {
+  get elements(): Elements;
+  get id(): string;
+  get state(): State;
+  abstract share(): this;
+  destroy(): void;
+}
+
+// BondState class
+export abstract class BondState<S extends BondStateProps = BondStateProps> {
+  get id(): string;
+  get props(): S;
+}
+```
+
+### Using Bond Types
+
+```svelte
+<script lang="ts">
+  import { Dialog } from '@svelte-atoms/core';
+  import type { DialogBond } from '@svelte-atoms/core';
+
+  let dialogBond: DialogBond | undefined = $state();
+</script>
+
+<Dialog.Root>
+  {#snippet children({ dialog })}
+    <!-- dialog is typed as DialogBond -->
+    <button onclick={() => {
+      // Type-safe bond access
+      dialog.state.open();
+      const isOpen: boolean = dialog.state.props.open ?? false;
+    }}>
+      Open Dialog
+    </button>
+
+    <Dialog.Content>
+      <Dialog.Title>Dialog</Dialog.Title>
+    </Dialog.Content>
+  {/snippet}
+</Dialog.Root>
+```
+
+## Variant Types
+
+### defineVariants Type Safety
+
+Variants are fully typed with autocompletion:
+
+```typescript
+import { defineVariants } from '@svelte-atoms/core/utils';
+import type { VariantDefinition, VariantProps } from '@svelte-atoms/core/utils';
+
+const buttonVariants = defineVariants({
+  class: 'inline-flex items-center',
+  variants: {
+    variant: {
+      primary: 'bg-blue-500',
+      secondary: 'bg-gray-500',
+      danger: 'bg-red-500'
+    },
+    size: {
+      sm: 'text-sm px-2',
+      md: 'text-base px-4',
+      lg: 'text-lg px-6'
+    }
+  },
+  defaults: {
+    variant: 'primary',
+    size: 'md'
+  }
+});
+
+// Extract variant props type
+type ButtonVariantProps = Parameters<typeof buttonVariants>[1];
+// Type: { variant?: 'primary' | 'secondary' | 'danger', size?: 'sm' | 'md' | 'lg' }
+```
+
+### Using Variant Types
+
+```svelte
+<script lang="ts">
+  import { Button } from '@svelte-atoms/core';
+  import type { ExtractVariants } from '@svelte-atoms/core/utils';
+
+  // Type-safe variant props
+  type ButtonVariants = {
+    variant?: 'primary' | 'secondary' | 'danger';
+    size?: 'sm' | 'md' | 'lg';
+  };
+
+  let buttonConfig: ButtonVariants = {
+    variant: 'primary',  // Autocomplete works!
+    size: 'lg'
+  };
+</script>
+
+<Button {...buttonConfig}>Button</Button>
+```
+
+## Utility Types
+
+### Override Type
+
+Deep merge types for prop overriding:
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+
+// Override conflicting properties
+type BaseProps = {
+  value: string;
+  onChange: (val: string) => void;
+};
+
+type CustomProps = Override<BaseProps, {
+  value: number;  // Override string with number
+  onChange: (val: number) => void;
+}>;
+
+// Result:
+// {
+//   value: number;
+//   onChange: (val: number) => void;
+// }
+```
+
+### Factory Type
+
+Type-safe bond factories:
+
+```typescript
+import type { Factory, Bond, BondStateProps } from '@svelte-atoms/core';
+
+type Factory<T extends Bond> = (props?: BondStateProps) => T;
+
+// Usage
+import type { DialogBond, DialogBondProps } from '@svelte-atoms/core';
+
+const dialogFactory: Factory<DialogBond> = (props?: DialogBondProps) => {
+  return new DialogBond(props);
+};
+```
+
+## Component Type Extension
+
+### Extending Component Props
+
+Add custom properties to components:
+
+```typescript
+// global.d.ts or types/svelte-atoms.d.ts
+import '@svelte-atoms/core';
+
+declare module '@svelte-atoms/core' {
+  interface ButtonExtendProps {
+    loading?: boolean;
+    icon?: string;
+    iconPosition?: 'left' | 'right';
+  }
+
+  interface InputControlExtendProps {
+    mask?: string;
+    pattern?: string;
+  }
+
+  interface DialogExtendProps {
+    closeOnEscape?: boolean;
+    closeOnOutsideClick?: boolean;
+  }
+}
+```
+
+### Using Extended Props
+
+```svelte
+<script lang="ts">
+  import { Button, Input, Dialog } from '@svelte-atoms/core';
+
+  let loading = $state(false);
+</script>
+
+<!-- Custom props now available with types -->
+<Button loading={loading} icon="check" iconPosition="left">
+  {loading ? 'Loading...' : 'Submit'}
+</Button>
+
+<Input.Root>
+  <Input.Control mask="(999) 999-9999" placeholder="Phone number" />
+</Input.Root>
+
+<Dialog.Root closeOnEscape={true} closeOnOutsideClick={false}>
+  <Dialog.Content>
+    <Dialog.Title>Custom Dialog</Dialog.Title>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+## Type-Safe State Management
+
+### Typed Runes
+
+```typescript
+import { filterDropdownData } from '@svelte-atoms/core';
+
+type Item = {
+  id: number;
+  value: string;
+  label: string;
+  category: string;
+};
+
+const items: Item[] = [
+  { id: 1, value: 'apple', label: 'Apple', category: 'fruit' },
+  { id: 2, value: 'banana', label: 'Banana', category: 'fruit' }
+];
+
+// Type-safe filter
+const filtered = filterDropdownData<Item>(
+  () => items,
+  (query: string, item: Item) => {
+    return item.label.toLowerCase().includes(query.toLowerCase());
+  }
+);
+
+// filtered.current is typed as Item[]
+const results: Item[] = filtered.current;
+```
+
+### Custom Runes Types
+
+```typescript
+import type { ColorScheme, Viewport } from '@svelte-atoms/core';
+import { colorScheme, viewport } from '@svelte-atoms/core';
+
+// ColorScheme type: 'light' | 'dark' | 'auto'
+const theme: ColorScheme = colorScheme();
+
+// Viewport type
+const vp: Viewport = viewport();
+// {
+//   width: number;
+//   height: number;
+// }
+```
+
+## Advanced Patterns
+
+<Tabs>
+  <Tab title="Preset Types">
+    Type-safe global presets:
+
+    ```typescript
+    import { setPreset } from '@svelte-atoms/core';
+    import type { Preset, PresetEntry, PresetModuleName } from '@svelte-atoms/core';
+
+    const buttonPreset: PresetEntry = (bond) => ({
+      class: 'rounded-md',
+      variants: {
+        variant: {
+          primary: 'bg-blue-500',
+          secondary: 'bg-gray-500'
+        }
+      },
+      defaults: {
+        variant: 'primary'
+      }
+    });
+
+    // Type-safe preset names
+    const presetConfig: Partial<Preset> = {
+      'button': buttonPreset,
+      'input.control': (bond) => ({ class: 'border rounded' })
+    };
+
+    setPreset(presetConfig);
+    ```
+  </Tab>
+
+  <Tab title="Component Wrappers">
+    Create typed wrapper components:
+
+    ```typescript
+    // components/CustomButton.svelte
+    <script lang="ts">
+      import { Button } from '@svelte-atoms/core';
+      import type { ButtonProps } from '@svelte-atoms/core';
+      import type { Snippet } from 'svelte';
+
+      interface CustomButtonProps extends ButtonProps {
+        loading?: boolean;
+        icon?: Snippet;
+      }
+
+      let {
+        loading = false,
+        icon,
+        children,
+        ...rest
+      }: CustomButtonProps = $props();
+    </script>
+
+    <Button {...rest} disabled={loading || rest.disabled}>
+      {#if loading}
+        <span class="spinner" />
+      {:else if icon}
+        {@render icon()}
+      {/if}
+      {@render children?.()}
+    </Button>
+    ```
+  </Tab>
+
+  <Tab title="Generic Components">
+    Build generic typed components:
+
+    ```typescript
+    <script lang="ts" generics="T extends Record<string, any>">
+      import { Dropdown, filterDropdownData } from '@svelte-atoms/core';
+      import type { Snippet } from 'svelte';
+
+      interface Props<T> {
+        items: T[];
+        getValue: (item: T) => string;
+        getLabel: (item: T) => string;
+        renderItem?: Snippet<[{ item: T }]>;
+        onSelect?: (item: T) => void;
+      }
+
+      let {
+        items,
+        getValue,
+        getLabel,
+        renderItem,
+        onSelect
+      }: Props<T> = $props();
+
+      const filtered = filterDropdownData(
+        () => items,
+        (query, item) => getLabel(item).toLowerCase().includes(query.toLowerCase())
+      );
+    </script>
+
+    <Dropdown.Root 
+      keys={items.map(getValue)}
+      onquerychange={(q) => (filtered.query = q)}
+    >
+      {#snippet children({ dropdown })}
+        <Dropdown.Content>
+          {#each filtered.current as item (getValue(item))}
+            <Dropdown.Item 
+              value={getValue(item)}
+              onclick={() => onSelect?.(item)}
+            >
+              {#if renderItem}
+                {@render renderItem({ item })}
+              {:else}
+                {getLabel(item)}
+              {/if}
+            </Dropdown.Item>
+          {/each}
+        </Dropdown.Content>
+      {/snippet}
+    </Dropdown.Root>
+    ```
+  </Tab>
+</Tabs>
+
+## Type Safety Best Practices
+
+<Steps>
+  <Step title="Use explicit type imports">
+    Import types separately for clarity:
+    
+    ```typescript
+    import { Button, Dialog } from '@svelte-atoms/core';
+    import type { ButtonProps, DialogBond } from '@svelte-atoms/core';
+    ```
+  </Step>
+
+  <Step title="Type component props">
+    Always type your component props:
+    
+    ```typescript
+    interface Props {
+      variant: 'primary' | 'secondary';
+      disabled?: boolean;
+    }
+    
+    let { variant, disabled = false }: Props = $props();
+    ```
+  </Step>
+
+  <Step title="Leverage type inference">
+    Let TypeScript infer types when possible:
+    
+    ```typescript
+    const items = [{ id: 1, name: 'Item' }];
+    // Type is automatically inferred as { id: number; name: string }[]
+    ```
+  </Step>
+
+  <Step title="Extend component types">
+    Use declaration merging for custom props:
+    
+    ```typescript
+    declare module '@svelte-atoms/core' {
+      interface ButtonExtendProps {
+        loading?: boolean;
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Common Type Patterns
+
+### Event Handlers
+
+```typescript
+import type { MouseEvent, KeyboardEvent } from 'svelte/elements';
+
+function handleClick(event: MouseEvent<HTMLButtonElement>) {
+  console.log('Button clicked', event.currentTarget);
+}
+
+function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+  if (event.key === 'Enter') {
+    console.log('Enter pressed');
+  }
+}
+```
+
+### Snippet Types
+
+```typescript
+import type { Snippet } from 'svelte';
+
+interface Props {
+  header?: Snippet;
+  content?: Snippet<[{ title: string }]>;
+  footer?: Snippet<[{ onClose: () => void }]>;
+}
+```
+
+### Bond Factories
+
+```typescript
+import type { DialogBond, DialogBondProps } from '@svelte-atoms/core';
+import { DialogBond } from '@svelte-atoms/core';
+
+function createCustomDialog(props?: DialogBondProps): DialogBond {
+  const bond = new DialogBond(props);
+  // Customize bond
+  return bond;
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Using Components" icon="puzzle-piece" href="/guides/using-components">
+    Learn component composition patterns
+  </Card>
+  <Card title="State Management" icon="circle-nodes" href="/guides/state-management">
+    Type-safe state with bonds
+  </Card>
+  <Card title="Customization" icon="paintbrush" href="/guides/customization">
+    Typed variants and styling
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/runes">
+    Complete type documentation
+  </Card>
+</CardGroup>

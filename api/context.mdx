@@ -1,0 +1,475 @@
+---
+title: 'Context'
+description: 'Context management and preset system for component customization'
+icon: 'layer-group'
+---
+
+## Overview
+
+The context module provides utilities for managing Svelte context and the preset system. Presets allow you to customize component appearance and behavior globally across your application.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Import
+
+```typescript
+import { getPreset, setPreset } from '@svelte-atoms/core/context';
+import type { Preset, PresetEntry, PresetModuleName } from '@svelte-atoms/core/context';
+```
+
+## API Reference
+
+### setPreset
+
+Sets or merges preset configuration for components. Presets allow you to customize component styles, variants, and behavior globally.
+
+#### Signature
+
+```typescript
+function setPreset(preset: Partial<Preset>): Partial<Preset>
+```
+
+#### Parameters
+
+<ParamField path="preset" type="Partial<Preset>">
+  Preset configuration object with component-specific customizations
+</ParamField>
+
+#### Returns
+
+<ResponseField type="Partial<Preset>">
+  The merged preset configuration
+</ResponseField>
+
+#### Example
+
+```svelte
+<script>
+  import { setPreset } from '@svelte-atoms/core/context';
+
+  setPreset({
+    button: (bond) => ({
+      class: 'rounded-lg font-semibold',
+      variants: {
+        variant: {
+          primary: 'bg-blue-500 text-white',
+          secondary: 'bg-gray-200 text-gray-800'
+        },
+        size: {
+          sm: 'px-2 py-1 text-sm',
+          md: 'px-4 py-2',
+          lg: 'px-6 py-3 text-lg'
+        }
+      },
+      defaults: {
+        variant: 'primary',
+        size: 'md'
+      }
+    }),
+    input: (bond) => ({
+      class: 'border-2 rounded focus:ring-2'
+    })
+  });
+</script>
+```
+
+---
+
+### getPreset
+
+Retrieves preset configuration for a specific component or all presets.
+
+#### Signatures
+
+```typescript
+// Get specific preset
+function getPreset<K extends PresetModuleName>(key: K): PresetEntry | undefined
+
+// Get all presets
+function getPreset(): Partial<Preset> | undefined
+```
+
+#### Parameters
+
+<ParamField path="key" type="PresetModuleName" optional>
+  Optional component name to retrieve specific preset
+</ParamField>
+
+#### Returns
+
+<ResponseField type="PresetEntry | Partial<Preset> | undefined">
+  The preset entry for the specified component, or all presets if no key provided
+</ResponseField>
+
+#### Example
+
+```svelte
+<script>
+  import { getPreset } from '@svelte-atoms/core/context';
+
+  // Get specific preset
+  const buttonPreset = getPreset('button');
+
+  // Get all presets
+  const allPresets = getPreset();
+
+  console.log(buttonPreset, allPresets);
+</script>
+```
+
+---
+
+## Type Definitions
+
+### PresetModuleName
+
+Union type of all available component preset names.
+
+```typescript
+type PresetModuleName =
+  | 'accordion'
+  | 'alert'
+  | 'badge'
+  | 'button'
+  | 'checkbox'
+  | 'datagrid'
+  | 'datagrid.header'
+  | 'datagrid.th'
+  | 'datagrid.td'
+  | 'datagrid.tr'
+  | 'dialog'
+  | 'dropdown'
+  | 'input'
+  | 'label'
+  | 'popover'
+  | 'radio'
+  | 'tabs'
+  // ... and many more
+```
+
+### PresetEntry
+
+Function that returns preset configuration for a component.
+
+```typescript
+type PresetEntry = (
+  bond: Bond | undefined | null,
+  ...args: any[]
+) => PresetEntryRecord | (() => PresetEntryRecord)
+```
+
+### PresetEntryRecord
+
+Configuration object for a component preset.
+
+```typescript
+interface PresetEntryRecord {
+  class?: ClassValue;
+  as?: string;
+  base?: Base;
+  variants?: Record<string, Record<string, any>>;
+  compounds?: Array<Record<string, any>>;
+  defaults?: Record<string, any>;
+  attachments?: Attachment[];
+  [key: string]: unknown;
+}
+```
+
+<ParamField path="class" type="ClassValue">
+  CSS classes to apply
+</ParamField>
+
+<ParamField path="as" type="string">
+  HTML element tag name to render as
+</ParamField>
+
+<ParamField path="base" type="Base">
+  Base component or snippet to use
+</ParamField>
+
+<ParamField path="variants" type="Record<string, Record<string, any>>">
+  Variant definitions for different states
+</ParamField>
+
+<ParamField path="compounds" type="Array<Record<string, any>>">
+  Compound variant rules
+</ParamField>
+
+<ParamField path="defaults" type="Record<string, any>">
+  Default variant values
+</ParamField>
+
+<ParamField path="attachments" type="Attachment[]">
+  Svelte attachments to apply
+</ParamField>
+
+### Preset
+
+Complete preset configuration mapping component names to preset entries.
+
+```typescript
+type Preset = Record<PresetModuleName, PresetEntry>
+```
+
+---
+
+## Advanced Usage
+
+### Global Theme Configuration
+
+```svelte
+<!-- App.svelte -->
+<script>
+  import { setPreset } from '@svelte-atoms/core/context';
+
+  setPreset({
+    // Button presets
+    button: () => ({
+      class: 'transition-colors duration-200 font-medium',
+      variants: {
+        variant: {
+          primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
+          secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+          outline: 'border border-input bg-background hover:bg-accent',
+          ghost: 'hover:bg-accent hover:text-accent-foreground'
+        },
+        size: {
+          sm: 'h-8 px-3 text-xs',
+          md: 'h-10 px-4 py-2',
+          lg: 'h-12 px-6 text-lg',
+          icon: 'h-10 w-10'
+        }
+      },
+      compounds: [
+        {
+          variant: 'outline',
+          size: 'sm',
+          class: 'border-2'
+        }
+      ],
+      defaults: {
+        variant: 'primary',
+        size: 'md'
+      }
+    }),
+
+    // Input presets
+    input: () => ({
+      class: 'flex w-full rounded-md border bg-background px-3 py-2',
+      variants: {
+        size: {
+          sm: 'h-8 text-sm',
+          md: 'h-10',
+          lg: 'h-12 text-lg'
+        },
+        error: {
+          true: 'border-destructive focus-visible:ring-destructive',
+          false: 'border-input focus-visible:ring-ring'
+        }
+      },
+      defaults: {
+        size: 'md',
+        error: false
+      }
+    }),
+
+    // DataGrid presets
+    datagrid: () => ({
+      class: 'w-full border rounded-lg overflow-hidden'
+    }),
+    'datagrid.th': () => ({
+      class: 'bg-muted/50 font-semibold text-left px-4 py-3'
+    }),
+    'datagrid.td': () => ({
+      class: 'px-4 py-3 border-t'
+    })
+  });
+</script>
+
+<slot />
+```
+
+### Dynamic Presets with Bond
+
+```svelte
+<script>
+  import { setPreset } from '@svelte-atoms/core/context';
+
+  setPreset({
+    dropdown: (bond) => {
+      const isOpen = bond?.state.open ?? false;
+      
+      return {
+        class: [
+          'dropdown-root',
+          isOpen && 'dropdown-open'
+        ],
+        variants: {
+          placement: {
+            top: 'dropdown-top',
+            bottom: 'dropdown-bottom',
+            left: 'dropdown-left',
+            right: 'dropdown-right'
+          }
+        }
+      };
+    }
+  });
+</script>
+```
+
+### Conditional Attachments
+
+```svelte
+<script>
+  import { setPreset } from '@svelte-atoms/core/context';
+  import { clickout, resizeObserver } from '@svelte-atoms/core/attachments';
+
+  setPreset({
+    dialog: (bond) => ({
+      attachments: [
+        clickout((ev) => bond?.close()),
+        resizeObserver((entries) => {
+          // Handle resize
+        })
+      ]
+    })
+  });
+</script>
+```
+
+### Nested Preset Configuration
+
+```svelte
+<script>
+  import { setPreset } from '@svelte-atoms/core/context';
+
+  // Set global presets
+  setPreset({
+    button: () => ({ class: 'global-button' })
+  });
+</script>
+
+<!-- Component tree -->
+<div>
+  <Button>Uses global preset</Button>
+
+  <SpecialSection>
+    <script>
+      // Override presets for this section
+      setPreset({
+        button: () => ({ class: 'special-button' })
+      });
+    </script>
+
+    <Button>Uses special preset</Button>
+  </SpecialSection>
+</div>
+```
+
+## Available Components
+
+Presets are available for all Svelte Atoms components:
+
+### Layout Components
+- `accordion`, `accordion.item`, `accordion.item.body`, `accordion.item.header`
+- `card`, `card.header`, `card.body`, `card.footer`
+- `tabs`, `tab`, `tab.header`, `tab.body`
+- `dialog`, `drawer`, `popover`
+
+### Form Components
+- `button`, `input`, `checkbox`, `radio`
+- `dropdown`, `combobox`, `field`
+- `label`, `form`
+
+### Data Components
+- `datagrid`, `datagrid.header`, `datagrid.body`, `datagrid.footer`
+- `datagrid.tr`, `datagrid.th`, `datagrid.td`
+- `list`, `list.item`, `tree`
+
+### Feedback Components
+- `alert`, `badge`, `icon`
+- `divider`, `breadcrumb`
+
+### Utility Components
+- `portal`, `layer`, `scrollable`
+- `stepper`, `calendar`, `datepicker`
+
+See [PresetModuleName](#presetmodulename) for the complete list.
+
+## Best Practices
+
+### 1. Set Presets at Root Level
+
+```svelte
+<!-- +layout.svelte -->
+<script>
+  import { setPreset } from '@svelte-atoms/core/context';
+  import { presets } from './presets';
+
+  setPreset(presets);
+</script>
+
+<slot />
+```
+
+### 2. Organize Presets in Separate File
+
+```typescript
+// presets.ts
+import type { Preset } from '@svelte-atoms/core/context';
+
+export const presets: Partial<Preset> = {
+  button: () => ({ /* ... */ }),
+  input: () => ({ /* ... */ }),
+  // ...
+};
+```
+
+### 3. Use TypeScript for Type Safety
+
+```typescript
+import type { PresetEntry } from '@svelte-atoms/core/context';
+
+const buttonPreset: PresetEntry = (bond) => ({
+  class: 'btn',
+  variants: {
+    // TypeScript ensures correct structure
+  }
+});
+```
+
+### 4. Merge with Existing Presets
+
+```svelte
+<script>
+  import { getPreset, setPreset } from '@svelte-atoms/core/context';
+
+  const existing = getPreset();
+  
+  setPreset({
+    ...existing,
+    button: () => ({
+      // Your custom button preset
+    })
+  });
+</script>
+```
+
+## Performance Considerations
+
+- Preset functions are called during component rendering
+- Keep preset functions lightweight
+- Use derived values instead of expensive computations
+- Presets are merged, not replaced, allowing incremental customization
+
+## Related
+
+- [Shared](/api/shared) - Bond system and base classes
+- [TypeScript Types](/api/typescript-types) - Type utilities
+- [Components](/components/datagrid) - Component documentation

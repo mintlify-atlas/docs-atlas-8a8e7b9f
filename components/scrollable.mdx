@@ -1,0 +1,311 @@
+---
+title: "Scrollable"
+description: "A custom scrollable area with styled scrollbars, drag-to-scroll support, and programmatic scroll control"
+---
+
+## Overview
+
+The Scrollable component provides a fully-featured scrollable container with custom scrollbars. It supports both horizontal and vertical scrolling, drag-to-scroll functionality, and programmatic scroll control.
+
+## Anatomy
+
+```svelte
+<Scrollable.Root>
+  {#snippet children({ scrollable })}
+    <Scrollable.Container>
+      <Scrollable.Content>
+        <!-- Your scrollable content -->
+      </Scrollable.Content>
+    </Scrollable.Container>
+    
+    <Scrollable.Track orientation="vertical">
+      <Scrollable.Thumb orientation="vertical" />
+    </Scrollable.Track>
+    
+    <Scrollable.Track orientation="horizontal">
+      <Scrollable.Thumb orientation="horizontal" />
+    </Scrollable.Track>
+  {/snippet}
+</Scrollable.Root>
+```
+
+## Subcomponents
+
+### Scrollable.Root
+
+The root container that manages scroll state and provides context to child components.
+
+<ParamField path="factory" type="Factory<ScrollableBond>">
+  Factory function for customizing the scrollable bond instance
+</ParamField>
+
+<ParamField path="scrollX" type="number" default="0">
+  Current horizontal scroll position in pixels (bindable)
+</ParamField>
+
+<ParamField path="scrollY" type="number" default="0">
+  Current vertical scroll position in pixels (bindable)
+</ParamField>
+
+<ParamField path="scrollWidth" type="number">
+  Total scrollable width of content in pixels (bindable)
+</ParamField>
+
+<ParamField path="scrollHeight" type="number">
+  Total scrollable height of content in pixels (bindable)
+</ParamField>
+
+<ParamField path="clientWidth" type="number">
+  Visible width of the scrollable area in pixels (bindable)
+</ParamField>
+
+<ParamField path="clientHeight" type="number">
+  Visible height of the scrollable area in pixels (bindable)
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Whether scrolling is disabled
+</ParamField>
+
+<ParamField path="open" type="boolean" default="false">
+  Whether custom scrollbars should be visible (useful for hover effects)
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ scrollable: ScrollableBond }]>">
+  Children render function with access to scrollable bond instance
+</ParamField>
+
+### Scrollable.Container
+
+The container that handles native scroll events.
+
+Inherits all standard HTML attributes for a `div` element. This is the element that actually scrolls.
+
+### Scrollable.Content
+
+The content wrapper that defines the scrollable bounds.
+
+Inherits all standard HTML attributes for a `div` element.
+
+### Scrollable.Track
+
+The scrollbar track element.
+
+<ParamField path="orientation" type="'horizontal' | 'vertical'" required>
+  The orientation of the scrollbar track
+</ParamField>
+
+<ParamField path="initial" type="(node: HTMLElement) => void">
+  Transition function for initial state
+</ParamField>
+
+<ParamField path="enter" type="(node: HTMLElement) => { duration: number }">
+  Transition function when scrollbar becomes visible
+</ParamField>
+
+<ParamField path="exit" type="(node: HTMLElement) => { duration: number }">
+  Transition function when scrollbar becomes hidden
+</ParamField>
+
+Inherits all standard HTML attributes for a `div` element.
+
+### Scrollable.Thumb
+
+The draggable scrollbar thumb element.
+
+<ParamField path="orientation" type="'horizontal' | 'vertical'" required>
+  The orientation of the scrollbar thumb
+</ParamField>
+
+Inherits all standard HTML attributes for a `div` element. The thumb's position and size are automatically calculated based on scroll state.
+
+## Bond Methods
+
+The ScrollableBond instance provides these methods:
+
+<ParamField path="scrollTo" type="(x: number, y: number) => void">
+  Scrolls to an absolute position
+</ParamField>
+
+<ParamField path="scrollBy" type="(x: number, y: number) => void">
+  Scrolls by a relative amount from the current position
+</ParamField>
+
+<ParamField path="scrollIntoView" type="(element: Element, options?: ScrollIntoViewOptions) => void">
+  Scrolls an element into view within the scrollable area
+</ParamField>
+
+<ParamField path="canScrollX" type="boolean">
+  Whether horizontal scrolling is possible (content width exceeds container width)
+</ParamField>
+
+<ParamField path="canScrollY" type="boolean">
+  Whether vertical scrolling is possible (content height exceeds container height)
+</ParamField>
+
+## Examples
+
+### Basic Scrollable
+
+```svelte
+<script>
+  import { Scrollable } from '$lib/components/scrollable';
+</script>
+
+<Scrollable.Root class="h-96 w-full rounded-lg border">
+  {#snippet children({ scrollable })}
+    <Scrollable.Container class="max-h-full">
+      <Scrollable.Content>
+        <div class="p-4">
+          <!-- Your long content here -->
+          {#each Array(50) as _, i}
+            <p>Line {i + 1}</p>
+          {/each}
+        </div>
+      </Scrollable.Content>
+    </Scrollable.Container>
+    
+    <Scrollable.Track orientation="vertical" class="absolute right-2 top-2 bottom-2 w-2">
+      <Scrollable.Thumb orientation="vertical" class="rounded bg-gray-400 hover:bg-gray-600" />
+    </Scrollable.Track>
+  {/snippet}
+</Scrollable.Root>
+```
+
+### Scrollable with Hover Effect
+
+```svelte
+<script>
+  import { Scrollable, ScrollableBond } from '$lib/components/scrollable';
+  import { on } from '$svelte-atoms/core/attachments/event.svelte';
+  import { animate } from 'motion';
+</script>
+
+<Scrollable.Root
+  class="h-96 w-full rounded-lg border"
+  open={false}
+  {@attach (node) => {
+    const scrollable = ScrollableBond.get();
+    if (!scrollable) return;
+    
+    const enter = on('pointerenter', () => {
+      scrollable.state.props.open = true;
+    })(node);
+    
+    const leave = on('pointerleave', () => {
+      scrollable.state.props.open = false;
+    })(node);
+    
+    return () => {
+      enter();
+      leave();
+    };
+  }}
+>
+  {#snippet children({ scrollable })}
+    <Scrollable.Container class="max-h-full">
+      <Scrollable.Content>
+        <!-- Your content -->
+      </Scrollable.Content>
+    </Scrollable.Container>
+    
+    <Scrollable.Track
+      orientation="vertical"
+      class="inset-y-0 right-0 w-[2px]"
+      initial={(node) => {
+        animate(node, { opacity: 0, right: 0 }, { duration: 0 });
+      }}
+      enter={(node) => {
+        animate(node, { opacity: 1, right: 8 }, { duration: 0.3 });
+        return { duration: 300 };
+      }}
+      exit={(node) => {
+        animate(node, { opacity: 0, right: 0 }, { duration: 0.3 });
+        return { duration: 300 };
+      }}
+    >
+      <Scrollable.Thumb orientation="vertical" class="w-2 rounded bg-gray-400" />
+    </Scrollable.Track>
+  {/snippet}
+</Scrollable.Root>
+```
+
+### Programmatic Scrolling
+
+```svelte
+<script>
+  import { Scrollable } from '$lib/components/scrollable';
+</script>
+
+<Scrollable.Root class="h-96 w-full rounded-lg border">
+  {#snippet children({ scrollable })}
+    <Scrollable.Container class="max-h-full">
+      <Scrollable.Content>
+        <div class="p-4">
+          <!-- Long content -->
+          
+          <div class="mt-4 flex gap-2">
+            <button
+              class="rounded bg-blue-500 px-3 py-2 text-white"
+              onclick={() => scrollable.scrollTo(0, 0)}
+            >
+              Scroll to Top
+            </button>
+            <button
+              class="rounded bg-green-500 px-3 py-2 text-white"
+              onclick={() => scrollable.scrollBy(0, 100)}
+            >
+              Scroll Down 100px
+            </button>
+          </div>
+        </div>
+      </Scrollable.Content>
+    </Scrollable.Container>
+    
+    <Scrollable.Track orientation="vertical" class="absolute right-2 top-2 bottom-2 w-2">
+      <Scrollable.Thumb orientation="vertical" class="rounded bg-gray-400" />
+    </Scrollable.Track>
+  {/snippet}
+</Scrollable.Root>
+```
+
+### Horizontal Scrolling
+
+```svelte
+<Scrollable.Root class="w-full rounded-lg border">
+  {#snippet children({ scrollable })}
+    <Scrollable.Container class="max-w-full">
+      <Scrollable.Content>
+        <div class="flex gap-4 p-4">
+          {#each Array(20) as _, i}
+            <div class="min-w-[200px] rounded border p-4">
+              Card {i + 1}
+            </div>
+          {/each}
+        </div>
+      </Scrollable.Content>
+    </Scrollable.Container>
+    
+    <Scrollable.Track orientation="horizontal" class="absolute bottom-2 left-2 right-2 h-2">
+      <Scrollable.Thumb orientation="horizontal" class="rounded bg-gray-400" />
+    </Scrollable.Track>
+  {/snippet}
+</Scrollable.Root>
+```
+
+## Features
+
+- **Custom Scrollbars**: Fully styled scrollbars that match your design system
+- **Drag to Scroll**: Click and drag the thumb to scroll precisely
+- **Click to Jump**: Click on the track to jump to that position
+- **Programmatic Control**: Use bond methods to control scrolling from code
+- **Hover Effects**: Show/hide scrollbars on hover with smooth transitions
+- **Scroll State**: Reactive scroll position and dimensions
+- **Both Axes**: Support for both horizontal and vertical scrolling
+
+## Accessibility
+
+- The scrollable container maintains native scroll behavior for keyboard navigation
+- Mouse wheel scrolling works as expected
+- Drag interactions use proper event handling with cleanup
+- The `disabled` prop prevents all scrolling interactions

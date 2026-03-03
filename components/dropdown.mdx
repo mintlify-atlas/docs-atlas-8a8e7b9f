@@ -1,0 +1,331 @@
+---
+title: "Dropdown"
+description: "A menu that allows users to select one or multiple items from a list"
+---
+
+## Overview
+
+The Dropdown component provides a rich selection interface with support for single and multi-select, search/filtering, and custom rendering. Built on top of the Popover and Menu components.
+
+## Installation
+
+```bash
+import { Dropdown } from '@svelte-atoms/core';
+import { filterDropdownData } from '@svelte-atoms/core';
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Dropdown } from '@svelte-atoms/core';
+  
+  const data = [
+    { id: 1, value: 'apple', label: 'Apple' },
+    { id: 2, value: 'banana', label: 'Banana' },
+    { id: 3, value: 'cherry', label: 'Cherry' }
+  ];
+</script>
+
+<Dropdown.Root keys={data.map(item => item.value)}>
+  {#snippet children({ dropdown })}
+    <Dropdown.Trigger class="min-w-sm">
+      <Dropdown.Selections />
+    </Dropdown.Trigger>
+    
+    <Dropdown.Content>
+      {#each data as item (item.id)}
+        <Dropdown.Item value={item.value}>{item.label}</Dropdown.Item>
+      {/each}
+    </Dropdown.Content>
+  {/snippet}
+</Dropdown.Root>
+```
+
+## Dropdown.Root Props
+
+<ParamField path="open" type="boolean" optional>
+  Controls whether the dropdown is open
+</ParamField>
+
+<ParamField path="value" type="any" optional>
+  The selected value (single-select mode)
+</ParamField>
+
+<ParamField path="values" type="any[]" optional>
+  Array of selected values (multi-select mode)
+</ParamField>
+
+<ParamField path="label" type="string" optional>
+  Label for the selected item
+</ParamField>
+
+<ParamField path="labels" type="string[]" optional>
+  Labels for selected items
+</ParamField>
+
+<ParamField path="multiple" type="boolean" default="false">
+  Enable multi-select mode
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  Disable the dropdown
+</ParamField>
+
+<ParamField path="placement" type="string" default="bottom-start">
+  Popover placement position
+</ParamField>
+
+<ParamField path="placements" type="string[]" default="['bottom-start', 'bottom-end', 'top-start', 'top-end']">
+  Allowed placement positions
+</ParamField>
+
+<ParamField path="offset" type="number" default="1">
+  Offset distance from the trigger
+</ParamField>
+
+<ParamField path="keys" type="string[]" optional>
+  Array of all possible item keys for selection tracking
+</ParamField>
+
+<ParamField path="factory" type="Factory<DropdownBond>" optional>
+  Custom factory function for creating dropdown bond
+</ParamField>
+
+<ParamField path="onquerychange" type="(query: string) => void" optional>
+  Callback fired when search query changes
+</ParamField>
+
+## Dropdown.Item Props
+
+<ParamField path="value" type="string" default="nanoid()">
+  Unique identifier for this item
+</ParamField>
+
+<ParamField path="data" type="T" optional>
+  Custom data associated with this item
+</ParamField>
+
+<ParamField path="preset" type="string" default="dropdown.item">
+  Preset key for styling
+</ParamField>
+
+<ParamField path="factory" type="() => DropdownItemController<T>" optional>
+  Custom factory for creating item controller
+</ParamField>
+
+Extends MenuItem props.
+
+## Dropdown.Trigger Props
+
+Extends PopoverTrigger props and all HtmlAtomProps.
+
+## Dropdown.Selections Props
+
+<ParamField path="class" type="ClassValue" optional>
+  CSS classes for styling the selections container
+</ParamField>
+
+<ParamField path="Selection" type="Component" optional>
+  Custom component for rendering each selection
+</ParamField>
+
+<ParamField path="getSelections" type="<T extends DropdownBond>(bond: T) => DropdownSelection[]" optional>
+  Custom function to get selections from bond
+</ParamField>
+
+## Dropdown.Selection Props
+
+<ParamField path="selection" type="DropdownSelection" required>
+  The selection object to render
+</ParamField>
+
+<ParamField path="onclose" type="(event: Event) => void" optional>
+  Callback when selection is removed
+</ParamField>
+
+Extends all HtmlAtomProps.
+
+## Subcomponents
+
+### Dropdown.Root
+
+Root container managing dropdown state.
+
+### Dropdown.Trigger
+
+Trigger button that opens the dropdown.
+
+### Dropdown.Content
+
+Popover content container for dropdown items.
+
+### Dropdown.Item
+
+Individual selectable item.
+
+### Dropdown.Selections
+
+Container that displays selected items.
+
+### Dropdown.Selection
+
+Individual selected item with remove button.
+
+### Dropdown.Placeholder
+
+Placeholder text when no items are selected.
+
+### Dropdown.Indicator
+
+Visual indicator (arrow/icon) for the dropdown state.
+
+### Dropdown.Arrow
+
+Arrow pointing to the trigger.
+
+### Dropdown.List
+
+Scrollable list container for items.
+
+### Dropdown.Group
+
+Group container for related items.
+
+### Dropdown.Title
+
+Title for a group of items.
+
+### Dropdown.Divider
+
+Visual divider between items or groups.
+
+## Examples
+
+### Multi-select with Search
+
+```svelte
+<script>
+  import { Dropdown, filterDropdownData } from '@svelte-atoms/core';
+  import { Input } from '@svelte-atoms/core';
+  import { flip } from 'svelte/animate';
+  
+  const data = [
+    { id: 1, value: 'apple', label: 'Apple' },
+    { id: 2, value: 'banana', label: 'Banana' },
+    { id: 3, value: 'cherry', label: 'Cherry' },
+    { id: 4, value: 'date', label: 'Date' },
+    { id: 5, value: 'elderberry', label: 'Elderberry' }
+  ];
+  
+  const filtered = filterDropdownData(
+    () => data,
+    (query, item) => item.label.toLowerCase().includes(query.toLowerCase())
+  );
+</script>
+
+<Dropdown.Root keys={data.map(item => item.value)} multiple>
+  {#snippet children({ dropdown })}
+    <Dropdown.Trigger
+      base={Input.Root}
+      class="flex h-auto min-h-12 max-w-sm flex-col items-start gap-1 px-4"
+      onclick={(ev) => {
+        ev.preventDefault();
+        dropdown.state.open();
+      }}
+    >
+      <input
+        class="w-full flex-1 px-1 outline-none"
+        placeholder="Search for fruits..."
+        bind:value={filtered.query}
+      />
+      
+      <Dropdown.Selections class="flex flex-wrap gap-1">
+        {#snippet children({ selections })}
+          {#each selections as selection (selection.id)}
+            <div animate:flip={{ duration: 200 }}>
+              <Dropdown.Selection {selection} />
+            </div>
+          {/each}
+        {/snippet}
+      </Dropdown.Selections>
+    </Dropdown.Trigger>
+    
+    <Dropdown.Content>
+      {#each filtered.current as item (item.id)}
+        <div animate:flip={{ duration: 200 }}>
+          <Dropdown.Item value={item.value}>{item.label}</Dropdown.Item>
+        </div>
+      {/each}
+    </Dropdown.Content>
+  {/snippet}
+</Dropdown.Root>
+```
+
+### Single Select with Search in Content
+
+```svelte
+<script>
+  import { Dropdown, filterDropdownData } from '@svelte-atoms/core';
+  import { Input } from '@svelte-atoms/core';
+  
+  const data = [
+    { id: 1, value: 'apple', label: 'Apple' },
+    { id: 2, value: 'banana', label: 'Banana' },
+    { id: 3, value: 'cherry', label: 'Cherry' }
+  ];
+  
+  const filtered = filterDropdownData(
+    () => data,
+    (query, item) => item.label.toLowerCase().includes(query.toLowerCase())
+  );
+</script>
+
+<Dropdown.Root keys={data.map(item => item.value)}>
+  {#snippet children({ dropdown })}
+    <Dropdown.Trigger base={Input.Root} class="min-w-sm px-4">
+      <Dropdown.Selections class="flex flex-wrap gap-1" />
+    </Dropdown.Trigger>
+    
+    <Dropdown.Content>
+      <input
+        bind:value={filtered.query}
+        class="border-b border-border px-4 py-3"
+        placeholder="Search for fruits..."
+      />
+      
+      {#each filtered.current as item (item.id)}
+        <Dropdown.Item value={item.value}>{item.label}</Dropdown.Item>
+      {/each}
+    </Dropdown.Content>
+  {/snippet}
+</Dropdown.Root>
+```
+
+## Filtering Utility
+
+The `filterDropdownData` utility helps create reactive filtered lists:
+
+```svelte
+<script>
+  import { filterDropdownData } from '@svelte-atoms/core';
+  
+  const data = $state([...]);
+  
+  const filtered = filterDropdownData(
+    () => data,
+    (query, item) => item.label.toLowerCase().includes(query.toLowerCase())
+  );
+  
+  // Use filtered.query to bind to input
+  // Use filtered.current to get filtered results
+</script>
+```
+
+## Accessibility
+
+- Keyboard navigation with arrow keys
+- Enter/Space to select items
+- Escape to close
+- Screen reader support with ARIA attributes
+- Focus management

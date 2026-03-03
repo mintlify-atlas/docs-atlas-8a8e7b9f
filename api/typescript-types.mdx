@@ -1,0 +1,496 @@
+---
+title: 'TypeScript Types'
+description: 'Core TypeScript type utilities and definitions'
+icon: 'code'
+---
+
+## Overview
+
+Svelte Atoms provides a comprehensive set of TypeScript utilities and type definitions to ensure type safety and excellent developer experience. These utilities help with type manipulation, component props, and ensuring correct usage patterns.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Import
+
+```typescript
+import type { 
+  Override, 
+  PartialOverride, 
+  DeepOverride, 
+  Factory 
+} from '@svelte-atoms/core/types';
+```
+
+## API Reference
+
+### Override
+
+Deeply merges type `U` into `T`, overriding conflicting properties. Provides better IntelliSense and handles edge cases.
+
+#### Type Definition
+
+```typescript
+type Override<T, U> = Omit<T, keyof U> & U
+```
+
+#### Parameters
+
+<ParamField path="T" type="type">
+  Base type
+</ParamField>
+
+<ParamField path="U" type="type">
+  Override type - properties from U will replace properties in T
+</ParamField>
+
+#### Example
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+
+interface BaseProps {
+  id: string;
+  name: string;
+  value: number;
+  onClick?: () => void;
+}
+
+interface CustomProps {
+  value: string; // Override number with string
+  onClick: (ev: MouseEvent) => void; // Make required and add parameter
+  disabled: boolean; // Add new property
+}
+
+// Result: { id: string; name: string; value: string; onClick: (ev: MouseEvent) => void; disabled: boolean }
+type MergedProps = Override<BaseProps, CustomProps>;
+```
+
+#### Use Cases
+
+- Overriding component prop types
+- Customizing third-party library types
+- Creating specialized versions of generic interfaces
+- Type-safe prop inheritance
+
+---
+
+### PartialOverride
+
+Partial override that maintains optional properties. Useful when you want to override some properties while keeping others optional.
+
+#### Type Definition
+
+```typescript
+type PartialOverride<T, U extends Partial<T>> = Omit<T, keyof U> & U
+```
+
+#### Parameters
+
+<ParamField path="T" type="type">
+  Base type
+</ParamField>
+
+<ParamField path="U" type="type">
+  Partial override type - must be a partial subset of T
+</ParamField>
+
+#### Example
+
+```typescript
+import type { PartialOverride } from '@svelte-atoms/core/types';
+
+interface FormConfig {
+  method: 'GET' | 'POST';
+  action: string;
+  enctype: string;
+  target: string;
+}
+
+interface CustomFormConfig {
+  method?: 'PUT' | 'DELETE'; // Optionally override
+  action?: string; // Keep optional
+}
+
+// Partially override while maintaining structure
+type MergedConfig = PartialOverride<FormConfig, CustomFormConfig>;
+```
+
+---
+
+### DeepOverride
+
+Deep override for nested objects. Recursively merges nested properties.
+
+#### Type Definition
+
+```typescript
+type DeepOverride<T, U> = U extends object
+  ? T extends object
+    ? {
+        [K in keyof T | keyof U]: K extends keyof U 
+          ? U[K] 
+          : K extends keyof T 
+            ? T[K] 
+            : never;
+      }
+    : U
+  : U
+```
+
+#### Parameters
+
+<ParamField path="T" type="type">
+  Base type with nested objects
+</ParamField>
+
+<ParamField path="U" type="type">
+  Override type with nested objects
+</ParamField>
+
+#### Example
+
+```typescript
+import type { DeepOverride } from '@svelte-atoms/core/types';
+
+interface BaseTheme {
+  colors: {
+    primary: string;
+    secondary: string;
+    background: string;
+  };
+  spacing: {
+    sm: number;
+    md: number;
+    lg: number;
+  };
+}
+
+interface CustomTheme {
+  colors: {
+    primary: string; // Override
+    accent: string; // Add new
+  };
+  typography: {
+    fontSize: number; // Add new nested object
+  };
+}
+
+type MergedTheme = DeepOverride<BaseTheme, CustomTheme>;
+// Result includes all nested properties from both types
+```
+
+---
+
+### Factory
+
+Type for factory functions that create Bond instances.
+
+#### Type Definition
+
+```typescript
+type Factory<T extends Bond> = (props?: BondStateProps) => T
+```
+
+#### Parameters
+
+<ParamField path="T" type="type">
+  Bond type that the factory creates
+</ParamField>
+
+#### Example
+
+```typescript
+import type { Factory } from '@svelte-atoms/core/types';
+import { Bond, BondState, type BondStateProps } from '@svelte-atoms/core/shared';
+
+interface DropdownProps extends BondStateProps {
+  open: boolean;
+  placement: 'top' | 'bottom';
+}
+
+class DropdownBond extends Bond<DropdownProps, DropdownState> {
+  // Implementation
+}
+
+// Type-safe factory function
+const createDropdown: Factory<DropdownBond> = (props) => {
+  const state = new DropdownState(() => props!);
+  return new DropdownBond(state);
+};
+```
+
+---
+
+## Component Type Utilities
+
+### HtmlAtomProps
+
+Base props for HTML Atom components.
+
+```typescript
+import type { HtmlAtomProps } from '@svelte-atoms/core/components/atom';
+
+interface HtmlAtomProps<
+  E extends HtmlElementTagName = HtmlElementTagName,
+  B extends Base<any> = Base
+> extends HtmlElementProps<E> {
+  bond?: Bond;
+  base?: B | undefined;
+  preset?: PresetModuleName | (string & {});
+  variants?: Variants;
+}
+```
+
+### Base
+
+Union type for component or snippet base.
+
+```typescript
+type Base<Args = any> = 
+  Args extends Record<string, any> 
+    ? ComponentBase 
+    : Args extends unknown[] 
+      ? SnippetBase 
+      : never;
+```
+
+---
+
+## Advanced Patterns
+
+### Extending Component Props
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+import type { ButtonProps } from '@svelte-atoms/core/components/button';
+
+// Add custom props to existing component
+interface CustomButtonProps extends Override<
+  ButtonProps,
+  {
+    variant?: 'primary' | 'secondary' | 'danger' | 'custom';
+    icon?: Component;
+    loading?: boolean;
+  }
+> {}
+
+// Use in component
+let buttonProps: CustomButtonProps = {
+  variant: 'custom',
+  icon: MyIcon,
+  loading: true
+};
+```
+
+### Type-Safe Variant System
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+
+type Variant = 'primary' | 'secondary' | 'outline';
+type Size = 'sm' | 'md' | 'lg';
+
+interface VariantProps {
+  variant?: Variant;
+  size?: Size;
+}
+
+type VariantClasses = Record<Variant, string> & Record<Size, string>;
+
+const variantClasses: VariantClasses = {
+  primary: 'bg-blue-500 text-white',
+  secondary: 'bg-gray-200 text-gray-800',
+  outline: 'border border-gray-300',
+  sm: 'px-2 py-1 text-sm',
+  md: 'px-4 py-2',
+  lg: 'px-6 py-3 text-lg'
+};
+```
+
+### Generic Component Props
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+import type { Snippet } from 'svelte';
+
+interface ListProps<T> {
+  items: T[];
+  children: Snippet<[{ item: T; index: number }]>;
+}
+
+interface CustomListProps<T> extends Override<
+  ListProps<T>,
+  {
+    onItemClick?: (item: T) => void;
+    renderEmpty?: Snippet;
+  }
+> {}
+
+// Usage
+interface User {
+  id: string;
+  name: string;
+}
+
+const userListProps: CustomListProps<User> = {
+  items: [{ id: '1', name: 'John' }],
+  children: ({ item }) => {/* ... */},
+  onItemClick: (user) => console.log(user.name)
+};
+```
+
+### Conditional Types
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+
+type ConditionalProps<T extends { variant: string }> = 
+  T['variant'] extends 'custom'
+    ? Override<T, { customRenderer: () => void }>
+    : T;
+
+interface ButtonProps {
+  variant: 'default' | 'custom';
+  onClick: () => void;
+}
+
+// When variant is 'custom', customRenderer is required
+type TypedButtonProps = ConditionalProps<ButtonProps>;
+```
+
+---
+
+## Utility Type Patterns
+
+### Making Props Optional
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+
+interface RequiredProps {
+  id: string;
+  name: string;
+  value: number;
+}
+
+// Make specific props optional
+type OptionalProps = Override<
+  RequiredProps,
+  {
+    name?: string;
+    value?: number;
+  }
+>;
+```
+
+### Adding Discriminated Unions
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+
+type ButtonType = 
+  | { type: 'button'; onClick: () => void }
+  | { type: 'submit'; form: string }
+  | { type: 'reset'; confirm?: boolean };
+
+interface BaseButtonProps {
+  class?: string;
+  disabled?: boolean;
+}
+
+type TypedButtonProps = Override<BaseButtonProps, ButtonType>;
+```
+
+### Recursive Type Merging
+
+```typescript
+import type { DeepOverride } from '@svelte-atoms/core/types';
+
+interface DeepConfig {
+  ui: {
+    theme: {
+      colors: { primary: string };
+      spacing: { unit: number };
+    };
+  };
+  api: {
+    endpoint: string;
+  };
+}
+
+interface DeepCustomConfig {
+  ui: {
+    theme: {
+      colors: { secondary: string };
+    };
+  };
+}
+
+type MergedDeepConfig = DeepOverride<DeepConfig, DeepCustomConfig>;
+```
+
+---
+
+## Best Practices
+
+### 1. Use Override for Prop Customization
+
+```typescript
+// Good: Clear intent, type-safe
+type CustomProps = Override<BaseProps, { value: string }>;
+
+// Avoid: Loses base type information
+type CustomProps = BaseProps & { value: string };
+```
+
+### 2. Leverage Generics
+
+```typescript
+import type { Override } from '@svelte-atoms/core/types';
+
+function createComponent<T, U>(
+  base: T,
+  override: U
+): Override<T, U> {
+  return { ...base, ...override } as Override<T, U>;
+}
+```
+
+### 3. Document Complex Types
+
+```typescript
+/**
+ * Props for DataGrid component
+ * @template T - Type of data items
+ * @example
+ * type UserGridProps = DataGridProps<User>
+ */
+export interface DataGridProps<T> {
+  items: T[];
+  columns: Column<T>[];
+}
+```
+
+### 4. Use Type Inference
+
+```typescript
+// Let TypeScript infer when possible
+const config = {
+  theme: { primary: '#000' },
+  spacing: { sm: 8 }
+} as const;
+
+type Config = typeof config;
+```
+
+---
+
+## Related
+
+- [Shared](/api/shared) - Bond system and base classes
+- [Context](/api/context) - Context and presets
+- [Runes](/api/runes) - Reactive utilities

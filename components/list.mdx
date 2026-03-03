@@ -1,0 +1,199 @@
+---
+title: "List"
+description: "A component for displaying structured lists of items with optional dividers, groups, and titles"
+---
+
+## Overview
+
+The List component provides a semantic and flexible way to display lists of items. It supports grouping, dividers, and custom styling for each list item.
+
+## Anatomy
+
+```svelte
+<List.Root>
+  <List.Title>List Title</List.Title>
+  <List.Group>
+    <List.Item>Item 1</List.Item>
+    <List.Item>Item 2</List.Item>
+    <List.Divider />
+    <List.Item>Item 3</List.Item>
+  </List.Group>
+</List.Root>
+```
+
+## Subcomponents
+
+### List.Root
+
+The root container for the list.
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'ul'">
+  The HTML element to render as (typically `ul` or `ol`)
+</ParamField>
+
+<ParamField path="preset" type="string" default="'list.root'">
+  Preset styling identifier for the root element
+</ParamField>
+
+Inherits all standard HTML attributes for the element type specified.
+
+### List.Item
+
+An individual list item.
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'li'">
+  The HTML element to render as
+</ParamField>
+
+<ParamField path="preset" type="string" default="'list.item'">
+  Preset styling identifier for the item
+</ParamField>
+
+Inherits all standard HTML attributes for the element type specified. Default styling includes padding and flexbox layout.
+
+### List.Group
+
+A container for grouping related list items.
+
+Inherits all standard HTML attributes for a `div` element.
+
+### List.Title
+
+Displays a title for the list or list group.
+
+Inherits all standard HTML attributes for a heading element.
+
+### List.Divider
+
+A visual separator between list items.
+
+Inherits all standard HTML attributes for a `div` element.
+
+## Examples
+
+### Basic List
+
+```svelte
+<script>
+  import { List } from '$lib/components/list';
+</script>
+
+<List.Root>
+  <List.Item>First item</List.Item>
+  <List.Item>Second item</List.Item>
+  <List.Item>Third item</List.Item>
+</List.Root>
+```
+
+### List with Title
+
+```svelte
+<List.Root>
+  <List.Title>My Tasks</List.Title>
+  <List.Item>Complete documentation</List.Item>
+  <List.Item>Review pull requests</List.Item>
+  <List.Item>Update dependencies</List.Item>
+</List.Root>
+```
+
+### List with Dividers
+
+```svelte
+<List.Root>
+  <List.Item>Item 1</List.Item>
+  <List.Item>Item 2</List.Item>
+  <List.Divider />
+  <List.Item>Item 3</List.Item>
+  <List.Item>Item 4</List.Item>
+  <List.Divider />
+  <List.Item>Item 5</List.Item>
+</List.Root>
+```
+
+### Grouped List
+
+```svelte
+<List.Root>
+  <List.Title>Settings</List.Title>
+  
+  <List.Group>
+    <List.Title>Account</List.Title>
+    <List.Item>Profile</List.Item>
+    <List.Item>Privacy</List.Item>
+    <List.Item>Security</List.Item>
+  </List.Group>
+  
+  <List.Divider />
+  
+  <List.Group>
+    <List.Title>Preferences</List.Title>
+    <List.Item>Appearance</List.Item>
+    <List.Item>Notifications</List.Item>
+    <List.Item>Language</List.Item>
+  </List.Group>
+</List.Root>
+```
+
+### Interactive List
+
+```svelte
+<List.Root>
+  <List.Item class="cursor-pointer hover:bg-gray-100">
+    <button class="w-full text-left">
+      Clickable Item 1
+    </button>
+  </List.Item>
+  <List.Item class="cursor-pointer hover:bg-gray-100">
+    <button class="w-full text-left">
+      Clickable Item 2
+    </button>
+  </List.Item>
+  <List.Item class="cursor-pointer hover:bg-gray-100">
+    <button class="w-full text-left">
+      Clickable Item 3
+    </button>
+  </List.Item>
+</List.Root>
+```
+
+### Ordered List
+
+```svelte
+<List.Root as="ol">
+  <List.Item as="li">First step</List.Item>
+  <List.Item as="li">Second step</List.Item>
+  <List.Item as="li">Third step</List.Item>
+</List.Root>
+```
+
+### Custom Styled List
+
+```svelte
+<List.Root class="rounded-lg border border-gray-200 shadow-sm">
+  <List.Item class="flex items-center justify-between border-b px-6 py-4">
+    <span>Item with custom styling</span>
+    <span class="text-sm text-gray-500">Details</span>
+  </List.Item>
+  <List.Item class="flex items-center justify-between border-b px-6 py-4">
+    <span>Another item</span>
+    <span class="text-sm text-gray-500">More info</span>
+  </List.Item>
+  <List.Item class="flex items-center justify-between px-6 py-4">
+    <span>Final item</span>
+    <span class="text-sm text-gray-500">Extra</span>
+  </List.Item>
+</List.Root>
+```
+
+## Accessibility
+
+- Use semantic HTML elements (`ul`, `ol`, `li`) for proper screen reader support
+- List items have default flexbox layout with `gap-2` spacing for content arrangement
+- Ensure interactive list items have proper focus states and keyboard navigation
+
+## Default Styling
+
+- **List.Root**: `flex flex-col` with border styling utilities
+- **List.Item**: `flex w-full gap-2 px-4 py-1` with border utilities
+
+These default styles can be overridden by passing custom classes through the `class` prop.

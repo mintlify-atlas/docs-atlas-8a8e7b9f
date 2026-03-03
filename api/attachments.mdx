@@ -1,0 +1,444 @@
+---
+title: 'Attachments'
+description: 'DOM element attachment utilities for Svelte 5'
+icon: 'paperclip'
+---
+
+## Overview
+
+Attachments are utilities that attach behavior to DOM elements using Svelte 5's attachment system. They provide clean, reusable patterns for common DOM interactions like click-outside detection, event handling, portal rendering, and resize observation.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Import
+
+```typescript
+import { clickout, on, portal, resizeObserver } from '@svelte-atoms/core/attachments';
+```
+
+## API Reference
+
+### clickout
+
+Detects clicks outside of an element. Useful for closing dropdowns, modals, and popovers.
+
+#### Signature
+
+```typescript
+function clickout<T extends Element>(
+  onclick?: (ev: PointerEvent, node?: T) => void,
+  options?: AddEventListenerOptions
+): (node: T) => () => void
+```
+
+#### Parameters
+
+<ParamField path="onclick" type="Function">
+  Callback function invoked when a click occurs outside the element
+  
+  <ParamField path="ev" type="PointerEvent">
+    The pointer event
+  </ParamField>
+  
+  <ParamField path="node" type="T extends Element">
+    The attached element
+  </ParamField>
+</ParamField>
+
+<ParamField path="options" type="AddEventListenerOptions">
+  Standard event listener options (capture, passive, once, signal)
+</ParamField>
+
+#### Returns
+
+Returns an attachment function that can be used with Svelte's `{@attach}` directive.
+
+#### Example
+
+```svelte
+<script>
+  import { clickout } from '@svelte-atoms/core/attachments';
+
+  let isOpen = $state(false);
+
+  function handleClickOut(ev, node) {
+    console.log('Clicked outside', node);
+    isOpen = false;
+  }
+</script>
+
+{#if isOpen}
+  <div {@attach clickout(handleClickOut)}>
+    <p>Click outside to close</p>
+  </div>
+{/if}
+```
+
+#### Use Cases
+
+- Closing dropdowns when clicking outside
+- Dismissing modals on backdrop click
+- Hiding tooltips on outside interaction
+- Context menu management
+
+---
+
+### on
+
+Generic event handler attachment utility. Provides a clean way to attach event listeners to elements.
+
+#### Signature
+
+```typescript
+function on<E extends Event = Event, T extends EventTarget = Element>(
+  type: keyof HTMLElementEventMap,
+  handler: (ev: E & { currentTarget: EventTarget & T }) => void,
+  options?: boolean | AddEventListenerOptions
+): (node: T) => () => void
+```
+
+#### Parameters
+
+<ParamField path="type" type="keyof HTMLElementEventMap">
+  The event type (e.g., 'click', 'mouseover', 'keydown')
+</ParamField>
+
+<ParamField path="handler" type="Function">
+  Event handler function with properly typed event and currentTarget
+  
+  <ParamField path="ev" type="E & { currentTarget: EventTarget & T }">
+    Event object with typed currentTarget
+  </ParamField>
+</ParamField>
+
+<ParamField path="options" type="boolean | AddEventListenerOptions">
+  Event listener options or useCapture boolean
+</ParamField>
+
+#### Returns
+
+Returns an attachment function for use with `{@attach}`.
+
+#### Example
+
+```svelte
+<script>
+  import { on } from '@svelte-atoms/core/attachments';
+
+  function handleMouseEnter(ev) {
+    console.log('Mouse entered', ev.currentTarget);
+  }
+
+  const mouseEnterAttachment = on('mouseenter', handleMouseEnter);
+</script>
+
+<div {@attach mouseEnterAttachment}>
+  Hover over me
+</div>
+```
+
+#### Multiple Events
+
+```svelte
+<script>
+  import { on } from '@svelte-atoms/core/attachments';
+
+  const clickHandler = on('click', (ev) => console.log('Clicked'));
+  const mouseHandler = on('mouseenter', (ev) => console.log('Mouse enter'));
+</script>
+
+<div {@attach clickHandler} {@attach mouseHandler}>
+  Interactive element
+</div>
+```
+
+---
+
+### portal
+
+Moves an element to a different location in the DOM tree. Essential for modals, dropdowns, and overlays.
+
+#### Signature
+
+```typescript
+function portal(target?: HTMLElement): (node: HTMLElement) => () => void
+```
+
+#### Parameters
+
+<ParamField path="target" type="HTMLElement" default="document.body">
+  The target element where the node should be moved
+</ParamField>
+
+#### Returns
+
+Returns an attachment function that moves the element to the target.
+
+#### Example
+
+```svelte
+<script>
+  import { portal } from '@svelte-atoms/core/attachments';
+
+  let showModal = $state(false);
+</script>
+
+{#if showModal}
+  <div {@attach portal()}>
+    <div class="modal">
+      <h2>Modal Content</h2>
+      <p>This is rendered in document.body</p>
+    </div>
+  </div>
+{/if}
+```
+
+#### Custom Target
+
+```svelte
+<script>
+  import { portal } from '@svelte-atoms/core/attachments';
+
+  let portalTarget;
+</script>
+
+<div bind:this={portalTarget} id="portal-container"></div>
+
+<!-- This will be moved to portalTarget -->
+<div {@attach portal(portalTarget)}>
+  Portaled content
+</div>
+```
+
+#### Use Cases
+
+- Modal dialogs that need to escape overflow:hidden
+- Dropdown menus positioned relative to body
+- Toast notifications
+- Tooltips that need to overlay everything
+
+#### Implementation Details
+
+- Checks if element is already in target before moving
+- Hides element during move to prevent flicker
+- Removes element from DOM on cleanup
+- Throws error if target is undefined
+
+---
+
+### resizeObserver
+
+Observes size changes of an element using ResizeObserver API.
+
+#### Signature
+
+```typescript
+function resizeObserver(
+  callback: ResizeObserverCallback,
+  options?: ResizeObserverOptions
+): (element: Element) => () => void
+```
+
+#### Parameters
+
+<ParamField path="callback" type="ResizeObserverCallback">
+  Callback invoked when element resizes
+  
+  ```typescript
+  type ResizeObserverCallback = (
+    entries: ResizeObserverEntry[],
+    observer: ResizeObserver
+  ) => void
+  ```
+</ParamField>
+
+<ParamField path="options" type="ResizeObserverOptions">
+  ResizeObserver options
+  
+  <ParamField path="box" type="'content-box' | 'border-box' | 'device-pixel-content-box'">
+    Which box model to observe
+  </ParamField>
+</ParamField>
+
+#### Returns
+
+Returns an attachment function for observing element size changes.
+
+#### Example
+
+```svelte
+<script>
+  import { resizeObserver } from '@svelte-atoms/core/attachments';
+
+  let dimensions = $state({ width: 0, height: 0 });
+
+  function handleResize(entries) {
+    for (const entry of entries) {
+      const { width, height } = entry.contentRect;
+      dimensions = { width, height };
+    }
+  }
+
+  const observe = resizeObserver(handleResize);
+</script>
+
+<div {@attach observe}>
+  <p>Width: {dimensions.width}px</p>
+  <p>Height: {dimensions.height}px</p>
+</div>
+```
+
+#### Advanced Usage
+
+```svelte
+<script>
+  import { resizeObserver } from '@svelte-atoms/core/attachments';
+
+  let size = $state({ width: 0, height: 0 });
+
+  const observe = resizeObserver(
+    (entries) => {
+      const entry = entries[0];
+      
+      // Access different box sizes
+      console.log('Content box:', entry.contentBoxSize);
+      console.log('Border box:', entry.borderBoxSize);
+      console.log('Device pixel:', entry.devicePixelContentBoxSize);
+
+      size = {
+        width: entry.contentRect.width,
+        height: entry.contentRect.height
+      };
+    },
+    { box: 'border-box' }
+  );
+</script>
+
+<textarea {@attach observe}>
+  Resize me
+</textarea>
+```
+
+---
+
+## Advanced Patterns
+
+### Combining Attachments
+
+```svelte
+<script>
+  import { clickout, on, resizeObserver } from '@svelte-atoms/core/attachments';
+
+  let isOpen = $state(false);
+  let size = $state({ width: 0, height: 0 });
+
+  const handleClickOut = clickout(() => isOpen = false);
+  const handleClick = on('click', () => console.log('Clicked'));
+  const handleResize = resizeObserver((entries) => {
+    size = {
+      width: entries[0].contentRect.width,
+      height: entries[0].contentRect.height
+    };
+  });
+</script>
+
+<div 
+  {@attach handleClickOut}
+  {@attach handleClick}
+  {@attach handleResize}>
+  Multi-attachment element
+</div>
+```
+
+### Creating Custom Attachments
+
+Follow this pattern to create your own attachments:
+
+```typescript
+export function customAttachment(options) {
+  return (node: HTMLElement) => {
+    // Setup logic
+    const cleanup = setupLogic(node, options);
+
+    // Return cleanup function
+    return () => {
+      cleanup();
+    };
+  };
+}
+```
+
+Example:
+
+```typescript
+import { on } from 'svelte/events';
+
+export function longpress(duration = 500) {
+  return (node: HTMLElement) => {
+    let timer: ReturnType<typeof setTimeout>;
+
+    const handleMouseDown = () => {
+      timer = setTimeout(() => {
+        node.dispatchEvent(new CustomEvent('longpress'));
+      }, duration);
+    };
+
+    const handleMouseUp = () => clearTimeout(timer);
+
+    const cleanup1 = on(node, 'mousedown', handleMouseDown);
+    const cleanup2 = on(node, 'mouseup', handleMouseUp);
+
+    return () => {
+      cleanup1();
+      cleanup2();
+      clearTimeout(timer);
+    };
+  };
+}
+```
+
+## Type Safety
+
+All attachments are fully typed with TypeScript:
+
+```typescript
+// Type-safe event handler
+const handleClick = on<MouseEvent, HTMLButtonElement>(
+  'click',
+  (ev) => {
+    // ev.currentTarget is typed as HTMLButtonElement
+    ev.currentTarget.disabled = true;
+  }
+);
+
+// Type-safe clickout
+const handleClickOut = clickout<HTMLDivElement>(
+  (ev, node) => {
+    // node is typed as HTMLDivElement
+    console.log(node.className);
+  }
+);
+```
+
+## Browser Compatibility
+
+- **clickout**: All modern browsers
+- **on**: All browsers
+- **portal**: All browsers
+- **resizeObserver**: ResizeObserver API required (polyfill available for older browsers)
+
+## Performance
+
+- Event listeners are automatically cleaned up when elements unmount
+- ResizeObserver efficiently batches updates
+- Portal operations are optimized to minimize reflows
+
+## Related
+
+- [Runes](/api/runes) - Reactive utilities
+- [Shared](/api/shared) - Shared utilities
+- [Context](/api/context) - Context management

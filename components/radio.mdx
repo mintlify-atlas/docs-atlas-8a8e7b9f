@@ -1,0 +1,435 @@
+---
+title: Radio
+description: Radio button component with group support for mutually exclusive selections
+icon: circle-dot
+---
+
+## Overview
+
+The Radio component provides an accessible radio button implementation with support for radio groups. It enables mutually exclusive selections where only one option can be selected at a time.
+
+## Installation
+
+```bash
+npm install @svelte-atoms/core
+```
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Radio, RadioGroup } from '@svelte-atoms/core/components/radio';
+  
+  let selected = $state('option1');
+</script>
+
+<RadioGroup bind:value={selected}>
+  <Radio value="option1">Option 1</Radio>
+  <Radio value="option2">Option 2</Radio>
+  <Radio value="option3">Option 3</Radio>
+</RadioGroup>
+```
+
+## Subcomponents
+
+- **Radio** - Individual radio button
+- **RadioGroup** - Container for grouping radio buttons
+
+## Examples
+
+### Radio Group
+
+```svelte
+<script>
+  import { Radio, RadioGroup } from '@svelte-atoms/core/components/radio';
+  
+  let color = $state('blue');
+</script>
+
+<RadioGroup bind:value={color}>
+  <div class="flex items-center gap-2">
+    <Radio value="red" />
+    <label>Red</label>
+  </div>
+  <div class="flex items-center gap-2">
+    <Radio value="blue" />
+    <label>Blue</label>
+  </div>
+  <div class="flex items-center gap-2">
+    <Radio value="green" />
+    <label>Green</label>
+  </div>
+</RadioGroup>
+
+<p>Selected color: {color}</p>
+```
+
+### Standalone Radio
+
+```svelte
+<script>
+  let currentValue = $state('option1');
+</script>
+
+<Radio value="option1" bind:group={currentValue}>Option 1</Radio>
+<Radio value="option2" bind:group={currentValue}>Option 2</Radio>
+```
+
+### Radio with Labels
+
+```svelte
+<script>
+  import { Label } from '@svelte-atoms/core/components/label';
+  
+  let plan = $state('basic');
+</script>
+
+<RadioGroup bind:value={plan}>
+  <div class="flex flex-col gap-3">
+    <div class="flex items-center gap-2">
+      <Radio id="basic" value="basic" />
+      <Label for="basic">Basic Plan - $9/mo</Label>
+    </div>
+    <div class="flex items-center gap-2">
+      <Radio id="pro" value="pro" />
+      <Label for="pro">Pro Plan - $29/mo</Label>
+    </div>
+    <div class="flex items-center gap-2">
+      <Radio id="enterprise" value="enterprise" />
+      <Label for="enterprise">Enterprise Plan - Custom</Label>
+    </div>
+  </div>
+</RadioGroup>
+```
+
+### Custom Checked Content
+
+```svelte
+<script>
+  import CustomDot from './CustomDot.svelte';
+  
+  let value = $state('a');
+</script>
+
+<RadioGroup bind:value>
+  <Radio value="a" checkedContent={CustomDot}>Custom A</Radio>
+  <Radio value="b" checkedContent={CustomDot}>Custom B</Radio>
+</RadioGroup>
+```
+
+### Disabled Radio Buttons
+
+```svelte
+<RadioGroup value="option1">
+  <Radio value="option1" disabled>Disabled Selected</Radio>
+  <Radio value="option2" disabled>Disabled Unselected</Radio>
+</RadioGroup>
+```
+
+### Disabled Group
+
+```svelte
+<RadioGroup disabled value="option1">
+  <Radio value="option1">Option 1</Radio>
+  <Radio value="option2">Option 2</Radio>
+  <!-- All radios in the group are disabled -->
+</RadioGroup>
+```
+
+## Radio Props
+
+<ParamField path="value" type="T" required>
+  The value associated with this radio button. Used to determine which radio is selected.
+</ParamField>
+
+<ParamField path="group" type="T">
+  The currently selected value for standalone radios. Bindable.
+</ParamField>
+
+<ParamField path="id" type="string">
+  The ID attribute for associating with labels.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The name attribute for the radio input. Inherited from RadioGroup if not specified.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, the radio button is disabled. Can be set individually or inherited from RadioGroup.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  When true, the radio button is required. Can be inherited from RadioGroup.
+</ParamField>
+
+<ParamField path="readonly" type="boolean" default="false">
+  When true, the radio button is readonly. Can be inherited from RadioGroup.
+</ParamField>
+
+<ParamField path="checkedContent" type="Component | Snippet">
+  Custom content to display when the radio is checked.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'radio'">
+  The preset key used for styling.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the radio element.
+</ParamField>
+
+## Radio Event Handlers
+
+<ParamField path="onchange" type="(ev: Event, options?: { checked: boolean; value: boolean; type: 'boolean' }) => void">
+  Change event handler called when the radio state changes.
+</ParamField>
+
+<ParamField path="oninput" type="(ev: Event, options?: { checked: boolean; value: boolean; type: 'boolean' }) => void">
+  Input event handler called when the radio value changes.
+</ParamField>
+
+## RadioGroup Props
+
+<ParamField path="value" type="T">
+  The currently selected value in the group. Bindable for two-way data binding.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, all radio buttons in the group are disabled.
+</ParamField>
+
+<ParamField path="required" type="boolean" default="false">
+  When true, all radio buttons in the group are required.
+</ParamField>
+
+<ParamField path="readonly" type="boolean" default="false">
+  When true, all radio buttons in the group are readonly.
+</ParamField>
+
+<ParamField path="name" type="string">
+  The shared name attribute for all radio buttons in the group.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'radio.group'">
+  The preset key used for styling the group.
+</ParamField>
+
+<ParamField path="class" type="string" default="''">
+  Additional CSS classes to apply to the group container.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[]>">
+  Child content, typically Radio components.
+</ParamField>
+
+## RadioGroup Event Handlers
+
+<ParamField path="oninput" type="(ev: CustomEvent, options?: { value: T }) => void">
+  Input event handler triggered when the selected value changes.
+</ParamField>
+
+## Default Styling
+
+### Radio
+```css
+text-foreground
+bg-input
+box-border
+inline-flex
+aspect-square
+size-4
+max-h-fit
+max-w-fit
+cursor-pointer
+place-items-center
+rounded-full
+border
+p-0
+
+/* When disabled */
+pointer-events-none
+opacity-50
+
+/* Checked indicator */
+rounded-inherit
+pointer-events-none
+size-full
+scale-50
+bg-current
+```
+
+### RadioGroup
+```css
+flex
+flex-col
+gap-1
+```
+
+## TypeScript Support
+
+```typescript
+interface RadioProps<T = string> extends HtmlAtomProps<'label'>, RadioExtendProps {
+  value?: T;
+  group?: T;
+  id?: string;
+  name?: string;
+  disabled?: boolean;
+  required?: boolean;
+  readonly?: boolean;
+  checkedContent?: Component | Snippet;
+  children?: Snippet<[]>;
+  onchange?: (ev: Event, options?: { checked: boolean; value: boolean; type: 'boolean' }) => void;
+  oninput?: (ev: Event, options?: { checked: boolean; value: boolean; type: 'boolean' }) => void;
+}
+
+interface RadioGroupProps<T = string> extends HtmlAtomProps<'div'>, RadioGroupExtendProps {
+  value?: T;
+  disabled?: boolean;
+  required?: boolean;
+  readonly?: boolean;
+  name?: string;
+  children?: Snippet<[]>;
+  oninput?: (ev: CustomEvent, options?: { value: T }) => void;
+}
+```
+
+### Generic Type Support
+
+```svelte
+<script lang="ts">
+  type PlanType = 'basic' | 'pro' | 'enterprise';
+  let plan = $state<PlanType>('basic');
+</script>
+
+<RadioGroup<PlanType> bind:value={plan}>
+  <Radio value="basic">Basic</Radio>
+  <Radio value="pro">Pro</Radio>
+  <Radio value="enterprise">Enterprise</Radio>
+</RadioGroup>
+```
+
+### Extending Radio Props
+
+```typescript
+declare module '@svelte-atoms/core/components/radio' {
+  interface RadioExtendProps {
+    size?: 'sm' | 'md' | 'lg';
+  }
+  
+  interface RadioGroupExtendProps {
+    orientation?: 'horizontal' | 'vertical';
+  }
+}
+```
+
+## Context System
+
+The RadioGroup uses Svelte context to communicate with child Radio components:
+
+- Group properties (disabled, required, readonly, name) are inherited by child radios
+- Selected value is synchronized through context
+- Individual Radio props can override group settings
+
+## Integration with Forms
+
+```svelte
+<script>
+  import { Form } from '@svelte-atoms/core/components/form';
+  import { Radio, RadioGroup } from '@svelte-atoms/core/components/radio';
+  import { z } from 'zod';
+  
+  const colorSchema = z.enum(['red', 'blue', 'green']);
+</script>
+
+<Form.Root>
+  <Form.Field name="color" schema={colorSchema}>
+    <Form.Field.Label>Choose a color</Form.Field.Label>
+    <Form.Field.Control class="flex flex-col items-start text-sm" base={RadioGroup}>
+      <div class="flex items-center gap-2">
+        <Radio value="red" />
+        <div>Red</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <Radio value="blue" />
+        <div>Blue</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <Radio value="green" />
+        <div>Green</div>
+      </div>
+    </Form.Field.Control>
+  </Form.Field>
+</Form.Root>
+```
+
+## Accessibility
+
+- Uses semantic radio input elements
+- Proper keyboard navigation (Arrow keys to move between options, Tab to move between groups)
+- Native form support with name attribute
+- Supports ARIA attributes
+- Works with labels via `id` attribute
+- Proper focus management
+- Hidden native input for form compatibility
+
+## Behavior
+
+- Only one radio can be selected in a group
+- Clicking a selected radio does not deselect it
+- Arrow keys navigate between radios in a group
+- Space key selects the focused radio
+- Disabled radios are skipped during keyboard navigation
+
+## Best Practices
+
+1. **Always use RadioGroup**: Group related radios together using RadioGroup component
+2. **Provide clear labels**: Each radio should have descriptive text or a label
+3. **Use appropriate values**: Choose meaningful values that represent the options
+4. **Set a default**: Always provide an initial selected value for better UX
+5. **Use name attribute**: Ensures proper form submission
+6. **Group semantically related options**: Only options that are mutually exclusive should be in the same group
+7. **Consider using Checkbox**: If multiple selections are needed, use Checkbox instead
+
+## Common Patterns
+
+### Radio Cards
+
+```svelte
+<script>
+  let plan = $state('basic');
+</script>
+
+<RadioGroup bind:value={plan} class="grid grid-cols-3 gap-4">
+  <label class="border rounded-lg p-4 cursor-pointer" class:border-primary={plan === 'basic'}>
+    <Radio value="basic" class="sr-only" />
+    <div class="font-bold">Basic</div>
+    <div class="text-sm text-muted-foreground">$9/month</div>
+  </label>
+  <label class="border rounded-lg p-4 cursor-pointer" class:border-primary={plan === 'pro'}>
+    <Radio value="pro" class="sr-only" />
+    <div class="font-bold">Pro</div>
+    <div class="text-sm text-muted-foreground">$29/month</div>
+  </label>
+  <label class="border rounded-lg p-4 cursor-pointer" class:border-primary={plan === 'enterprise'}>
+    <Radio value="enterprise" class="sr-only" />
+    <div class="font-bold">Enterprise</div>
+    <div class="text-sm text-muted-foreground">Custom</div>
+  </label>
+</RadioGroup>
+```
+
+### Horizontal Radio Group
+
+```svelte
+<RadioGroup bind:value class="flex flex-row gap-4">
+  <Radio value="yes">Yes</Radio>
+  <Radio value="no">No</Radio>
+  <Radio value="maybe">Maybe</Radio>
+</RadioGroup>
+```
+
+## Related Components
+
+- [Checkbox](/components/checkbox) - For multiple selections
+- [Form](/components/form) - For form management
+- [Label](/components/label) - For radio labels

@@ -1,0 +1,420 @@
+---
+title: QRCode
+description: Generate and display customizable QR codes with various styling options.
+---
+
+The QRCode component generates scannable QR codes with extensive customization options including colors, gradients, shapes, and logo embedding.
+
+## Import
+
+```svelte
+import { QRCode } from '@svelte-atoms/core';
+```
+
+## Usage
+
+### Basic QR Code
+
+```svelte
+<QRCode value="Hello World" class="size-64" />
+```
+
+### URL QR Code
+
+```svelte
+<QRCode 
+  value="https://example.com" 
+  class="size-64 rounded-lg"
+/>
+```
+
+### Contact Information
+
+```svelte
+<script>
+  const vCard = `BEGIN:VCARD
+VERSION:3.0
+FN:John Doe
+TEL:+1234567890
+EMAIL:john@example.com
+END:VCARD`;
+</script>
+
+<QRCode value={vCard} class="size-80" />
+```
+
+### WiFi Credentials
+
+```svelte
+<script>
+  const wifiConfig = `WIFI:T:WPA;S:MyNetwork;P:MyPassword;;`;
+</script>
+
+<QRCode 
+  value={wifiConfig} 
+  class="size-64 p-4 bg-white rounded-xl"
+/>
+```
+
+### Custom Styling
+
+```svelte
+<!-- With custom colors -->
+<QRCode 
+  value="https://example.com"
+  class="size-64 text-blue-600 bg-blue-50 rounded-2xl p-4"
+/>
+
+<!-- Dark mode -->
+<QRCode 
+  value="https://example.com"
+  class="size-64 text-white bg-gray-900 rounded-xl p-4"
+/>
+
+<!-- Branded -->
+<QRCode 
+  value="https://example.com"
+  class="size-64 text-purple-600 bg-purple-100 rounded-2xl p-4 shadow-lg"
+/>
+```
+
+### Custom Finder Pattern
+
+```svelte
+<QRCode 
+  value="Hello World"
+  class="size-64"
+  finder={{ round: 0.8 }}
+/>
+
+<!-- Square finder pattern -->
+<QRCode 
+  value="Hello World"
+  class="size-64"
+  finder={{ round: 0 }}
+/>
+```
+
+### Custom Dot Style
+
+```svelte
+<!-- Rounded dots -->
+<QRCode 
+  value="Hello World"
+  class="size-64"
+  dots={{ scale: 0.8, round: 1 }}
+/>
+
+<!-- Square dots -->
+<QRCode 
+  value="Hello World"
+  class="size-64"
+  dots={{ scale: 1, round: 0 }}
+/>
+
+<!-- Small rounded dots -->
+<QRCode 
+  value="Hello World"
+  class="size-64"
+  dots={{ scale: 0.6, round: 1 }}
+/>
+```
+
+### With Gradient
+
+```svelte
+<QRCode 
+  value="https://example.com"
+  class="size-64 p-4 bg-white rounded-xl"
+  gradient={{
+    type: 'linear',
+    rotation: 45,
+    colorStops: [
+      { offset: 0, color: '#FF6B6B' },
+      { offset: 1, color: '#4ECDC4' }
+    ]
+  }}
+/>
+```
+
+### Different Draw Functions
+
+```svelte
+<!-- Telegram style (default) -->
+<QRCode 
+  value="Hello World"
+  class="size-64"
+  drawFunction="telegram"
+/>
+
+<!-- Square style -->
+<QRCode 
+  value="Hello World"
+  class="size-64"
+  drawFunction="square"
+/>
+
+<!-- Dots style -->
+<QRCode 
+  value="Hello World"
+  class="size-64"
+  drawFunction="dots"
+/>
+```
+
+### With Logo
+
+```svelte
+<QRCode 
+  value="https://example.com"
+  class="size-80 p-4 bg-white rounded-xl"
+  logo={{
+    src: 'https://example.com/logo.png',
+    width: 80,
+    height: 80
+  }}
+/>
+```
+
+### With Margin
+
+```svelte
+<QRCode 
+  value="Hello World"
+  class="size-64 bg-white"
+  margin={20}
+/>
+```
+
+## API Reference
+
+### QRCode
+
+<ParamField path="value" type="string" required>
+  The data to encode in the QR code. Can be a URL, text, vCard, WiFi config, or any other string data.
+</ParamField>
+
+<ParamField path="class" type="string">
+  CSS classes to apply to the QR code container. The `color` CSS property determines the QR code color.
+</ParamField>
+
+<ParamField path="finder" type="object" default="{ round: 0.5 }">
+  Configuration for the finder patterns (the three corner squares).
+  
+  Properties:
+  - `round`: Number between 0 (square) and 1 (fully rounded)
+</ParamField>
+
+<ParamField path="dots" type="object" default="{ scale: 0.75, round: 1 }">
+  Configuration for the QR code dots/modules.
+  
+  Properties:
+  - `scale`: Size of the dots (0-1)
+  - `round`: Roundness of the dots (0-1)
+</ParamField>
+
+<ParamField path="drawFunction" type="string" default="'telegram'">
+  The drawing style for the QR code. Options include:
+  - `'telegram'`: Rounded, modern style
+  - `'square'`: Classic square blocks
+  - `'dots'`: Circular dots
+  - Other styles supported by @qrcode-js/browser
+</ParamField>
+
+<ParamField path="gradient" type="object">
+  Gradient configuration for the QR code color.
+  
+  Properties:
+  - `type`: 'linear' or 'radial'
+  - `rotation`: Angle in degrees (for linear)
+  - `colorStops`: Array of objects with offset (number) and color (string)
+</ParamField>
+
+<ParamField path="logo" type="object">
+  Logo/image to display in the center of the QR code.
+  
+  Properties:
+  - `src`: Image URL
+  - `width`: Logo width in pixels
+  - `height`: Logo height in pixels
+</ParamField>
+
+<ParamField path="margin" type="number">
+  Margin around the QR code in pixels.
+</ParamField>
+
+<ParamField path="qr" type="object">
+  Advanced QR code generation options passed to the underlying library.
+</ParamField>
+
+## Behavior
+
+### Dynamic Sizing
+
+The QRCode component automatically adapts to its container size. Set the size using the `class` prop:
+
+```svelte
+<QRCode value="Hello" class="size-32" />  <!-- 128x128px -->
+<QRCode value="Hello" class="size-64" />  <!-- 256x256px -->
+<QRCode value="Hello" class="w-full h-full" />  <!-- Full container -->
+```
+
+### Color Inheritance
+
+The QR code color is determined by the CSS `color` property:
+
+```svelte
+<QRCode value="Hello" class="size-64 text-blue-600" />
+<QRCode value="Hello" class="size-64 text-red-500" />
+```
+
+### Reactive Updates
+
+The QR code automatically regenerates when the `value` prop or any configuration changes.
+
+## Styling
+
+The QRCode component renders inside an HtmlAtom wrapper, allowing full styling control:
+
+```svelte
+<!-- With background and padding -->
+<QRCode 
+  value="Hello World"
+  class="size-64 bg-white p-4 rounded-xl shadow-lg"
+/>
+
+<!-- With border -->
+<QRCode 
+  value="Hello World"
+  class="size-64 border-4 border-blue-500 rounded-lg"
+/>
+
+<!-- Responsive sizing -->
+<QRCode 
+  value="Hello World"
+  class="w-full max-w-xs aspect-square"
+/>
+```
+
+## Common Use Cases
+
+### Event Ticket
+
+```svelte
+<script>
+  const ticketData = JSON.stringify({
+    event: 'Concert 2024',
+    seat: 'A-12',
+    date: '2024-06-15',
+    id: '123456'
+  });
+</script>
+
+<div class="max-w-sm mx-auto p-6 bg-white rounded-xl shadow-lg">
+  <h2 class="text-xl font-bold mb-4">Event Ticket</h2>
+  <QRCode 
+    value={ticketData}
+    class="size-64 mx-auto mb-4"
+  />
+  <p class="text-center text-sm text-gray-600">
+    Scan at entrance
+  </p>
+</div>
+```
+
+### Product Link
+
+```svelte
+<script>
+  const productUrl = 'https://example.com/products/12345';
+</script>
+
+<div class="flex items-center gap-4">
+  <QRCode 
+    value={productUrl}
+    class="size-32 bg-gray-50 p-2 rounded-lg"
+  />
+  <div>
+    <h3 class="font-semibold">Product Details</h3>
+    <p class="text-sm text-gray-600">Scan to view online</p>
+  </div>
+</div>
+```
+
+### Downloadable QR Code
+
+```svelte
+<script>
+  let qrElement;
+  
+  function downloadQRCode() {
+    const canvas = qrElement.querySelector('canvas');
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = 'qrcode.png';
+    link.href = url;
+    link.click();
+  }
+</script>
+
+<div bind:this={qrElement}>
+  <QRCode value="https://example.com" class="size-64" />
+</div>
+<button onclick={downloadQRCode}>Download QR Code</button>
+```
+
+### Payment QR Code
+
+```svelte
+<script>
+  const paymentData = `upi://pay?pa=merchant@upi&pn=Merchant&am=100&cu=INR`;
+</script>
+
+<div class="max-w-sm mx-auto p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl">
+  <h3 class="text-lg font-semibold text-center mb-4">Scan to Pay</h3>
+  <QRCode 
+    value={paymentData}
+    class="size-64 mx-auto bg-white p-4 rounded-xl shadow"
+  />
+  <p class="text-center mt-4 text-sm text-gray-600">
+    Amount: $100.00
+  </p>
+</div>
+```
+
+## Accessibility
+
+- QR codes should have alternative access methods
+- Provide text versions of important information
+- Include instructions for scanning
+- Consider users who cannot scan QR codes
+
+### Accessible Example
+
+```svelte
+<div>
+  <h3 id="qr-label">Website Link</h3>
+  <QRCode 
+    value="https://example.com"
+    class="size-64"
+    aria-labelledby="qr-label"
+  />
+  <p class="mt-2 text-sm">
+    Scan the QR code or visit: 
+    <a href="https://example.com" class="text-blue-600">https://example.com</a>
+  </p>
+</div>
+```
+
+## Performance
+
+The QRCode component:
+- Lazy loads the QR code generation library
+- Only regenerates when props change
+- Uses canvas for efficient rendering
+- Automatically handles sizing and scaling
+
+## Related Components
+
+- [Button](/components/button) - For QR code actions (download, share)
+- [Card](/components/card) - For displaying QR codes in cards

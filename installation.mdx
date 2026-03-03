@@ -1,0 +1,214 @@
+---
+title: Installation
+description: Install Svelte Atoms Core and configure your project
+---
+
+# Installation
+
+Get started with Svelte Atoms Core by installing the package in your Svelte 5 project.
+
+## Prerequisites
+
+Before installing Svelte Atoms Core, make sure you have:
+
+- **Node.js** 18.x or higher
+- **Svelte** 5.46.4 or higher
+- A Svelte or SvelteKit project set up
+
+<Note>
+  Svelte Atoms Core is built specifically for Svelte 5 and uses runes extensively. It is not compatible with Svelte 4 or earlier versions.
+</Note>
+
+## Install the Package
+
+Choose your preferred package manager to install `@svelte-atoms/core`:
+
+<CodeGroup>
+
+```bash npm
+npm install @svelte-atoms/core
+```
+
+```bash yarn
+yarn add @svelte-atoms/core
+```
+
+```bash pnpm
+pnpm add @svelte-atoms/core
+```
+
+```bash bun
+bun add @svelte-atoms/core
+```
+
+</CodeGroup>
+
+## Package Information
+
+<Info>
+  **Current Version:** 1.0.0-alpha.41  
+  **License:** MIT  
+  **Peer Dependency:** svelte ^5.46.4
+</Info>
+
+## Optional: Import Styles
+
+Svelte Atoms Core is headless by default, but provides optional Tailwind CSS presets for quick styling.
+
+### Using Tailwind CSS
+
+If you're using Tailwind CSS, you can import the base styles:
+
+```javascript
+// In your main app file or layout
+import '@svelte-atoms/core/tw';
+// or
+import '@svelte-atoms/core/styles/root';
+```
+
+<Tip>
+  The library uses Tailwind CSS v4 and integrates seamlessly with the `@tailwindcss/vite` plugin.
+</Tip>
+
+## TypeScript Configuration
+
+Svelte Atoms Core is written in TypeScript and includes comprehensive type definitions. No additional configuration is needed - types are automatically available when you import components.
+
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "module": "ESNext"
+  }
+}
+```
+
+## Verify Installation
+
+Create a simple test component to verify your installation:
+
+```svelte +page.svelte
+<script lang="ts">
+  import { Button } from '@svelte-atoms/core';
+</script>
+
+<Button onclick={() => alert('Svelte Atoms Core is working!')}>Click Me</Button>
+```
+
+If the button renders and responds to clicks, you're all set!
+
+## Importing Components
+
+Svelte Atoms Core uses a modular architecture. You can import from the main package or from specific component paths:
+
+### Main Package Import
+
+```typescript
+import { Button, Dialog, Input, Dropdown } from '@svelte-atoms/core';
+```
+
+### Specific Component Import
+
+```typescript
+import { Button } from '@svelte-atoms/core/button';
+import { Dialog } from '@svelte-atoms/core/dialog';
+import { Input } from '@svelte-atoms/core/input';
+```
+
+### Utility Imports
+
+```typescript
+import { defineVariants } from '@svelte-atoms/core/utils';
+import { filter } from '@svelte-atoms/core/dropdown';
+```
+
+<Note>
+  Component-specific imports can help with tree-shaking and reduce bundle size in larger applications.
+</Note>
+
+## Available Components
+
+Svelte Atoms Core includes over 30 components:
+
+<CardGroup cols={3}>
+  <Card title="Accordion" icon="list">
+    Collapsible content sections
+  </Card>
+  <Card title="Alert" icon="bell">
+    Alert and notification messages
+  </Card>
+  <Card title="Avatar" icon="user">
+    User profile images
+  </Card>
+  <Card title="Badge" icon="tag">
+    Status and label badges
+  </Card>
+  <Card title="Button" icon="hand-pointer">
+    Interactive buttons
+  </Card>
+  <Card title="Calendar" icon="calendar">
+    Date selection
+  </Card>
+  <Card title="Card" icon="square">
+    Container component
+  </Card>
+  <Card title="Checkbox" icon="check-square">
+    Checkbox inputs
+  </Card>
+  <Card title="Combobox" icon="search">
+    Searchable select
+  </Card>
+  <Card title="Dialog" icon="window">
+    Modal dialogs
+  </Card>
+  <Card title="Dropdown" icon="chevron-down">
+    Dropdown menus
+  </Card>
+  <Card title="Input" icon="edit">
+    Text inputs
+  </Card>
+  <Card title="Menu" icon="menu">
+    Navigation menus
+  </Card>
+  <Card title="Popover" icon="message-square">
+    Floating content
+  </Card>
+  <Card title="Tabs" icon="folder">
+    Tabbed interfaces
+  </Card>
+  <Card title="Toast" icon="message-circle">
+    Toast notifications
+  </Card>
+</CardGroup>
+
+## Dependencies
+
+Svelte Atoms Core includes the following dependencies:
+
+- `@floating-ui/dom` - Positioning engine for floating elements
+- `@qrcode-js/browser` - QR code generation
+- `clsx` - Conditional class names
+- `date-fns` - Date utilities
+- `es-toolkit` - Modern utility library
+- `motion` - Animation library
+- `nanoid` - Unique ID generation
+- `tailwind-merge` - Merge Tailwind classes
+
+<Info>
+  These dependencies are bundled with the library and installed automatically.
+</Info>
+
+## Next Steps
+
+Now that you have Svelte Atoms Core installed, you're ready to start building!
+
+<CardGroup cols={2}>
+  <Card title="Quick Start Guide" icon="rocket" href="/quickstart">
+    Build your first component with a complete example
+  </Card>
+  <Card title="Component Library" icon="grid" href="/components/button">
+    Explore all available components
+  </Card>
+</CardGroup>

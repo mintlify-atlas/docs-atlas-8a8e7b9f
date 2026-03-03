@@ -1,0 +1,322 @@
+---
+title: Using Components
+description: Learn how to use Svelte Atoms Core components with real-world examples
+---
+
+## Overview
+
+Svelte Atoms Core components are built with composability at their core. Components are organized into namespaces (like `Dialog`, `Input`, `Dropdown`) and use a compositional pattern where you combine multiple sub-components to build complex UIs.
+
+## Basic Component Usage
+
+### Simple Button
+
+The simplest component to start with is the Button:
+
+```svelte
+<script lang="ts">
+  import { Button } from '@svelte-atoms/core';
+</script>
+
+<Button onclick={() => console.log('clicked')}>Click me</Button>
+<Button variant="primary">Primary Button</Button>
+<Button size="sm">Small Button</Button>
+```
+
+### Dialog Example
+
+Dialogs follow a compositional pattern with multiple sub-components:
+
+```svelte
+<script lang="ts">
+  import { Button, Dialog, Input } from '@svelte-atoms/core';
+
+  let dialogOpen = $state(false);
+  let inputValue = '';
+</script>
+
+<Button onclick={() => (dialogOpen = true)}>Open Dialog</Button>
+
+<Dialog.Root bind:open={dialogOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Enter your name</Dialog.Title>
+    </Dialog.Header>
+    <Dialog.Body>
+      <Input.Root>
+        <Input.Control bind:value={inputValue} placeholder="Your name..." />
+      </Input.Root>
+    </Dialog.Body>
+    <Dialog.Footer>
+      <Button onclick={() => (dialogOpen = false)}>Cancel</Button>
+      <Button variant="primary" onclick={() => (dialogOpen = false)}>Confirm</Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+## Composable Components
+
+### Dropdown with Search
+
+Combine Dropdown and Input components to create a searchable dropdown:
+
+```svelte
+<script lang="ts">
+  import { Dropdown, Input, filterDropdownData } from '@svelte-atoms/core';
+  import { flip } from 'svelte/animate';
+
+  let data = [
+    { id: 1, value: 'apple', text: 'Apple' },
+    { id: 2, value: 'banana', text: 'Banana' },
+    { id: 3, value: 'cherry', text: 'Cherry' }
+  ];
+
+  let open = $state(false);
+  const dd = filterDropdownData(
+    () => data,
+    (query, item) => item.text.toLowerCase().includes(query.toLowerCase())
+  );
+</script>
+
+<Dropdown.Root
+  bind:open
+  multiple
+  keys={data.map((item) => item.value)}
+  onquerychange={(q) => (dd.query = q)}
+>
+  {#snippet children({ dropdown })}
+    <Dropdown.Trigger
+      base={Input.Root}
+      onclick={(ev) => {
+        ev.preventDefault();
+        dropdown.state.open();
+      }}
+    >
+      {#each dropdown?.state?.selectedItems ?? [] as item (item.id)}
+        <div animate:flip={{ duration: 200 }}>
+          <Dropdown.Value value={item.value}>{item.text}</Dropdown.Value>
+        </div>
+      {/each}
+      <Dropdown.Query placeholder="Search..." />
+    </Dropdown.Trigger>
+
+    <Dropdown.Content>
+      {#each dd.current as item (item.id)}
+        <div animate:flip={{ duration: 200 }}>
+          <Dropdown.Item value={item.value}>{item.text}</Dropdown.Item>
+        </div>
+      {/each}
+    </Dropdown.Content>
+  {/snippet}
+</Dropdown.Root>
+```
+
+<Note>
+The `filterDropdownData` utility helps you filter dropdown items based on user input. It returns a reactive object with `query` and `current` properties.
+</Note>
+
+## Component Extensibility
+
+### Using `base` Props
+
+Transform components by wrapping them with other components using the `base` prop:
+
+```svelte
+<script lang="ts">
+  import { Button, Popover, Input } from '@svelte-atoms/core';
+</script>
+
+<!-- Use Button as Popover trigger -->
+<Popover.Root>
+  <Popover.Trigger base={Button} variant="outline">Open Popover</Popover.Trigger>
+  <Popover.Content class="p-4">
+    <h4 class="font-semibold">Settings</h4>
+    <p class="text-sm">Configure your preferences here.</p>
+  </Popover.Content>
+</Popover.Root>
+
+<!-- Use Input.Root as Popover trigger -->
+<Popover.Root>
+  <Popover.Trigger base={Input.Root}>
+    <Input.Control placeholder="Click to open popover..." readonly />
+  </Popover.Trigger>
+  <Popover.Content class="p-4">
+    <p class="text-sm">Popover triggered by an input field</p>
+  </Popover.Content>
+</Popover.Root>
+```
+
+<Tip>
+The `base` prop allows you to use any component as the base element, enabling powerful composition patterns.
+</Tip>
+
+## Working with Animations
+
+### Svelte Animations
+
+Seamlessly integrate with Svelte's animation system:
+
+```svelte
+<script lang="ts">
+  import { List, Button } from '@svelte-atoms/core';
+  import { flip } from 'svelte/animate';
+  import { slide } from 'svelte/transition';
+
+  let items = $state([
+    { id: 1, text: 'Task 1' },
+    { id: 2, text: 'Task 2' },
+    { id: 3, text: 'Task 3' }
+  ]);
+
+  function removeItem(id: number) {
+    items = items.filter((item) => item.id !== id);
+  }
+</script>
+
+<List.Root>
+  {#each items as item (item.id)}
+    <div animate:flip={{ duration: 300 }}>
+      <List.Item>
+        <span>{item.text}</span>
+        <Button size="sm" onclick={() => removeItem(item.id)}>Remove</Button>
+      </List.Item>
+    </div>
+  {/each}
+</List.Root>
+```
+
+### Advanced Animations with Motion
+
+Use lifecycle hooks for advanced animations:
+
+```svelte
+<script lang="ts">
+  import { Dialog, Button } from '@svelte-atoms/core';
+  import { animate } from 'motion';
+
+  let open = $state(false);
+</script>
+
+<Button onclick={() => (open = true)}>Open Dialog</Button>
+
+<Dialog.Root bind:open>
+  <Dialog.Overlay
+    initial={(node) => {
+      node.style.opacity = '0';
+    }}
+    enter={(node) => {
+      const duration = 0.2;
+      const animation = animate(node, { opacity: 1 }, { duration });
+      return { duration };
+    }}
+    exit={(node) => {
+      const duration = 0.1;
+      const animation = animate(node, { opacity: 0 }, { duration: 0.1 });
+      return { duration };
+    }}
+  />
+  <Dialog.Content
+    initial={(node) => {
+      node.style.opacity = '0';
+      node.style.scale = '0.95';
+    }}
+    enter={(node) => {
+      const duration = 0.3;
+      const animation = animate(
+        node, 
+        { opacity: 1, scale: 1 }, 
+        { duration, easing: 'ease-out' }
+      );
+      return { duration };
+    }}
+    exit={(node) => {
+      const duration = 0.2;
+      const animation = animate(
+        node, 
+        { opacity: 0, scale: 0.95 }, 
+        { duration, easing: 'ease-in' }
+      );
+      return { duration };
+    }}
+  >
+    <Dialog.Header>
+      <Dialog.Title>Animated Dialog</Dialog.Title>
+    </Dialog.Header>
+    <Dialog.Body>
+      <p>This dialog animates with custom Motion transitions using lifecycle hooks.</p>
+    </Dialog.Body>
+    <Dialog.Footer>
+      <Button onclick={() => (open = false)}>Close</Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+## Component Patterns
+
+<Tabs>
+  <Tab title="Root Component">
+    Root components manage the overall state and context for a component group.
+
+    ```svelte
+    <Dialog.Root bind:open={dialogOpen}>
+      <!-- Child components -->
+    </Dialog.Root>
+    ```
+
+    **Common Root Props:**
+    - `open` - Control visibility
+    - `disabled` - Disable interactions
+    - `factory` - Custom bond factory
+  </Tab>
+
+  <Tab title="Trigger Components">
+    Trigger components initiate interactions like opening dialogs or dropdowns.
+
+    ```svelte
+    <Popover.Trigger base={Button} variant="outline">
+      Open
+    </Popover.Trigger>
+    ```
+
+    **Common Props:**
+    - `base` - Base component to wrap
+    - Event handlers (`onclick`, `onkeydown`, etc.)
+  </Tab>
+
+  <Tab title="Content Components">
+    Content components display the main UI elements.
+
+    ```svelte
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Title</Dialog.Title>
+      </Dialog.Header>
+      <Dialog.Body>
+        <!-- Content -->
+      </Dialog.Body>
+      <Dialog.Footer>
+        <!-- Actions -->
+      </Dialog.Footer>
+    </Dialog.Content>
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="State Management" icon="circle-nodes" href="/guides/state-management">
+    Learn about bonds and Svelte 5 runes for state management
+  </Card>
+  <Card title="Customization" icon="paintbrush" href="/guides/customization">
+    Discover how to customize components with variants and props
+  </Card>
+  <Card title="TypeScript" icon="code" href="/guides/typescript">
+    Explore TypeScript support and type definitions
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/runes">
+    Browse the complete API documentation
+  </Card>
+</CardGroup>

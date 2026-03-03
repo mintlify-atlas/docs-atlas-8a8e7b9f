@@ -1,0 +1,285 @@
+---
+title: 'Popover'
+description: 'A floating content container anchored to a trigger element'
+---
+
+## Overview
+
+The Popover component displays floating content positioned relative to a trigger element. It uses Floating UI for intelligent positioning and automatically adjusts placement to stay visible within the viewport.
+
+## Components
+
+The Popover is composed of multiple subcomponents:
+
+- **Popover.Root** - The main container that manages popover state
+- **Popover.Trigger** - The element that triggers the popover
+- **Popover.Content** - The floating content container
+- **Popover.Arrow** - Optional arrow pointing to the trigger
+- **Popover.Indicator** - Visual indicator on the trigger (e.g., chevron)
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Popover } from '$svelte-atoms/core/components/popover';
+  
+  let open = $state(false);
+</script>
+
+<Popover.Root bind:open>
+  <Popover.Trigger>
+    <div>Open Popover</div>
+    <Popover.Indicator />
+  </Popover.Trigger>
+  
+  <Popover.Content>
+    <div>Popover content goes here</div>
+    <Popover.Arrow />
+  </Popover.Content>
+</Popover.Root>
+```
+
+## Popover.Root Props
+
+<ParamField path="open" type="boolean" default="false">
+  Controls the open/closed state of the popover. Can be bound with `bind:open`.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, disables popover interactions.
+</ParamField>
+
+<ParamField path="placement" type="Placement" default="'bottom-start'">
+  Preferred placement of the popover relative to the trigger. Options: `'top'`, `'top-start'`, `'top-end'`, `'bottom'`, `'bottom-start'`, `'bottom-end'`, `'left'`, `'left-start'`, `'left-end'`, `'right'`, `'right-start'`, `'right-end'`.
+</ParamField>
+
+<ParamField path="placements" type="Placement[]" default="['bottom-start', 'bottom-end', 'top-start', 'top-end']">
+  Array of fallback placements if the preferred placement doesn't fit.
+</ParamField>
+
+<ParamField path="offset" type="number" default="1">
+  Distance in pixels between the popover and the trigger element.
+</ParamField>
+
+<ParamField path="portal" type="string | PortalBond">
+  Portal destination for rendering the popover.
+</ParamField>
+
+<ParamField path="factory" type="Factory<PopoverBond>">
+  Optional factory function to customize popover bond creation.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ popover: PopoverBond }]>">
+  Render function that receives the popover bond instance.
+</ParamField>
+
+## Popover.Trigger Props
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'button'">
+  HTML element type for the trigger.
+</ParamField>
+
+<ParamField path="preset" type="string" default="'popover.trigger'">
+  Preset styling identifier.
+</ParamField>
+
+Extends standard HTML button attributes when `as="button"` (default).
+
+## Popover.Content Props
+
+<ParamField path="animate" type="(node: HTMLElement) => void">
+  Animation function for the content. Default uses `animatePopoverContent()`.
+</ParamField>
+
+Extends standard HTML div attributes.
+
+## Popover.Arrow Props
+
+Extends standard HTML div attributes. Automatically positions and rotates based on popover placement.
+
+## Popover.Indicator Props
+
+Extends standard HTML div attributes. Shows a visual indicator (typically a chevron) on the trigger that rotates based on open state.
+
+## Animation Hooks
+
+### animatePopoverContent
+
+Animates the popover content with scale, opacity, and position transitions based on placement.
+
+```svelte
+import { animatePopoverContent } from '$svelte-atoms/core/components/popover/motion';
+
+<Popover.Content animate={animatePopoverContent({ duration: 0.2, ease: 'easeInOut' })}>
+  <!-- content -->
+</Popover.Content>
+```
+
+**Parameters:**
+- `duration` (number): Animation duration in seconds. Default: `DURATION.quick / 1000`
+- `delay` (number): Animation delay in seconds. Default: `0`
+- `ease` (string): Easing function. Default: `'easeInOut'`
+
+The animation automatically adjusts based on the popover's placement:
+- Scales from 0.9 to 1.0
+- Moves in the direction opposite to the placement
+- Uses the appropriate transform origin
+
+## Examples
+
+### With Custom Styling
+
+```svelte
+<Popover.Root bind:open offset={8}>
+  <Popover.Trigger 
+    base={Button}
+    class="items-center gap-4"
+  >
+    <div>Options</div>
+    <Popover.Indicator />
+  </Popover.Trigger>
+  
+  <Popover.Content class="bg-card shadow-lg">
+    <div class="p-4">
+      <h3>Menu Options</h3>
+      <ul>
+        <li>Option 1</li>
+        <li>Option 2</li>
+        <li>Option 3</li>
+      </ul>
+    </div>
+    <Popover.Arrow />
+  </Popover.Content>
+</Popover.Root>
+```
+
+### Different Placements
+
+```svelte
+<!-- Top placement -->
+<Popover.Root placement="top" placements={['top', 'top-start', 'top-end']}>
+  <Popover.Trigger>Hover me</Popover.Trigger>
+  <Popover.Content>
+    <div>Content above</div>
+  </Popover.Content>
+</Popover.Root>
+
+<!-- Right placement -->
+<Popover.Root placement="right">
+  <Popover.Trigger>Hover me</Popover.Trigger>
+  <Popover.Content>
+    <div>Content to the right</div>
+  </Popover.Content>
+</Popover.Root>
+```
+
+### Without Arrow
+
+```svelte
+<Popover.Root bind:open>
+  <Popover.Trigger>Open Popover</Popover.Trigger>
+  
+  <Popover.Content>
+    <div>Simple popover without arrow</div>
+  </Popover.Content>
+</Popover.Root>
+```
+
+### Custom Arrow
+
+```svelte
+<Popover.Content>
+  <div>Content</div>
+  
+  <Popover.Arrow>
+    {#snippet children({ popover })}
+      <svg width="16" height="8" viewBox="0 0 16 8">
+        <path d="M0 8C2 8 6 4 8 0C10 4 14 8 16 8H0Z" fill="currentColor" />
+      </svg>
+    {/snippet}
+  </Popover.Arrow>
+</Popover.Content>
+```
+
+### Auto-close on Click Outside
+
+```svelte
+import { clickoutPopover } from '$svelte-atoms/core/components/popover';
+
+<Popover.Content 
+  autoClose
+  {@attach clickoutPopover((_, bond) => {
+    bond?.state?.close();
+  })}
+>
+  <!-- content -->
+</Popover.Content>
+```
+
+## Attachment Hooks
+
+Popover provides utility functions for common interactions:
+
+### clickoutPopover
+
+Executes a callback when clicking outside the popover.
+
+```svelte
+import { clickoutPopover } from '$svelte-atoms/core/components/popover';
+
+<Popover.Content
+  {@attach clickoutPopover((node, bond) => {
+    bond?.state?.close();
+  })}
+>
+  <!-- content -->
+</Popover.Content>
+```
+
+### popover
+
+Provides access to the popover bond instance.
+
+```svelte
+import { popover } from '$svelte-atoms/core/components/popover';
+
+<div {@attach popover((node, bond) => {
+  console.log('Popover bond:', bond);
+})}>
+  <!-- content -->
+</div>
+```
+
+## Positioning
+
+The Popover uses Floating UI for intelligent positioning:
+
+- Automatically flips to stay in viewport
+- Falls back through placement options
+- Adjusts for scroll and resize
+- Accounts for arrow size in positioning
+
+## Accessibility
+
+- Trigger has appropriate `aria-*` attributes
+- Content is portaled to appropriate layer
+- Keyboard navigation supported
+- Focus management when opening/closing
+
+## Extension Points
+
+You can extend prop types for customization:
+
+```typescript
+declare module '$svelte-atoms/core/components/popover' {
+  interface PopoverRootExtendProps {
+    customProp?: string;
+  }
+}
+```
+
+## Related Components
+
+- [Tooltip](/components/tooltip) - Hover-triggered informational popup
+- [Dropdown](/components/dropdown) - Selection menu
+- [Dialog](/components/dialog) - Modal overlay

@@ -1,0 +1,415 @@
+---
+title: 'Atoms and Bonds'
+description: 'Understanding the foundational architecture of Svelte Atoms Core'
+---
+
+## Overview
+
+Svelte Atoms Core is inspired by chemistry concepts, providing two fundamental building blocks that form the foundation of all UI components: **Atoms** and **Bonds**.
+
+<Note>
+  The chemistry metaphor reflects how components are structured: atoms are the smallest functional units, while bonds connect and coordinate multiple atoms together.
+</Note>
+
+## Atoms
+
+### What is an Atom?
+
+An **Atom** is the smallest, reusable UI component with a single responsibility. Each atom represents a fundamental unit of UI functionality and focuses on doing one thing exceptionally well.
+
+**Key Characteristics:**
+
+- **Single Responsibility**: Each atom has one clear purpose
+- **Composable**: Atoms can be combined to create complex components
+- **Consistent Base**: All atoms inherit from the base `atom.svelte` component
+- **Headless by Default**: No opinionated styling, bring your own CSS
+
+**Examples of Atoms:**
+
+- Button
+- Input
+- Badge
+- Avatar
+- Label
+- Icon
+
+### Atom Variants
+
+All atoms are rendered internally using the base `atom.svelte` component, which provides three rendering variants:
+
+<Tabs>
+  <Tab title="Html">
+    Renders HTML elements using the `HtmlAtom` component. This is the most common variant for building standard UI components.
+
+    ```svelte
+    <script>
+      import { HtmlAtom } from '@svelte-atoms/core';
+    </script>
+
+    <HtmlAtom as="div" class="container">
+      Content here
+    </HtmlAtom>
+    ```
+  </Tab>
+  <Tab title="Svg">
+    Renders SVG elements using the `SvgAtom` component. Used for icons, graphics, and vector-based UI elements.
+
+    ```svelte
+    <script>
+      import { SvgAtom } from '@svelte-atoms/core';
+    </script>
+
+    <SvgAtom as="svg" viewBox="0 0 24 24">
+      <SvgAtom as="path" d="M12 2L2 7l10 5 10-5-10-5z" />
+    </SvgAtom>
+    ```
+  </Tab>
+  <Tab title="MathML">
+    Renders MathML elements using the `MathmlAtom` component. Used for mathematical notation and formulas.
+
+    ```svelte
+    <script>
+      import { MathmlAtom } from '@svelte-atoms/core';
+    </script>
+
+    <MathmlAtom as="math">
+      <MathmlAtom as="mi">x</MathmlAtom>
+    </MathmlAtom>
+    ```
+  </Tab>
+</Tabs>
+
+### Core Atom Props
+
+Every atom inherits these core props from the base atom component:
+
+#### Element Control
+
+```typescript
+interface AtomProps {
+  // Change the underlying HTML element
+  as?: string; // e.g., 'button', 'div', 'span'
+  
+  // CSS classes (supports arrays and objects)
+  class?: ClassValue | ClassValue[];
+  
+  // Base component or preset configuration
+  base?: Component | Snippet;
+  
+  // Preset system integration
+  preset?: string;
+  
+  // Bond connection for state management
+  bond?: Bond;
+}
+```
+
+#### Lifecycle Hooks
+
+```typescript
+interface LifecycleProps {
+  // Called when component mounts to the DOM
+  onmount?: (node: Element) => void | (() => void);
+  
+  // Called when component is removed from the DOM
+  ondestroy?: (node: Element) => void;
+}
+```
+
+#### Animation Hooks
+
+```typescript
+interface AnimationProps {
+  // Set initial state before component enters
+  initial?: (node: Element) => void;
+  
+  // Define enter transition
+  enter?: (node: Element) => TransitionConfig;
+  
+  // Define exit transition
+  exit?: (node: Element) => TransitionConfig;
+  
+  // Animate in response to data changes
+  animate?: (node: Element) => void;
+}
+```
+
+### Using the `as` Prop
+
+The `as` prop enables dynamic element transformation, allowing you to render any HTML element while maintaining the atom's behavior:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+</script>
+
+<!-- Render as a button -->
+<HtmlAtom as="button" class="btn" onclick={() => console.log('clicked')}>
+  Click me
+</HtmlAtom>
+
+<!-- Render as a link -->
+<HtmlAtom as="a" href="/home" class="nav-link">
+  Home
+</HtmlAtom>
+
+<!-- Render as a section -->
+<HtmlAtom as="section" class="container">
+  <HtmlAtom as="h1">Title</HtmlAtom>
+  <HtmlAtom as="p">Paragraph content</HtmlAtom>
+</HtmlAtom>
+```
+
+<Tip>
+  Use the `as` prop to ensure semantic HTML while reusing atom behavior and styling patterns.
+</Tip>
+
+### Using the `base` Prop
+
+The `base` prop enables powerful component composition patterns:
+
+```svelte
+<script>
+  import { HtmlAtom } from '@svelte-atoms/core';
+  import CustomButton from './CustomButton.svelte';
+</script>
+
+<!-- Use another component as base -->
+<HtmlAtom base={CustomButton} class="additional-classes">
+  Button with custom base
+</HtmlAtom>
+```
+
+## Bonds
+
+### What is a Bond?
+
+A **Bond** is a communication mechanism that connects multiple atoms together. Bonds manage shared state and enable coordination between connected atoms and their descendant components.
+
+**Key Characteristics:**
+
+- **State Management**: Maintains internal state accessible to all bonded atoms
+- **Communication**: Enables atoms to communicate and coordinate behavior
+- **Scoped Access**: Bond state is accessible to bonded atoms and their descendants
+- **Context-Based**: Uses Svelte context for state sharing
+
+### Bond Architecture
+
+Bonds are implemented using a two-class pattern:
+
+```typescript
+// BondState: Manages the internal state
+export abstract class BondState<S extends BondStateProps = BondStateProps> {
+  #id: string;
+  #props: () => S;
+
+  constructor(props: () => S, id: string = nanoid(8)) {
+    this.#props = props;
+    this.#id = id;
+  }
+
+  get id() {
+    return this.props?.id ?? this.#id;
+  }
+
+  get props() {
+    return this.#props();
+  }
+}
+
+// Bond: Connects atoms and provides state access
+export abstract class Bond<
+  Props extends BondStateProps = BondStateProps,
+  State extends BondState<Props> = BondState<Props>,
+  Elements extends BondElements = BondElements
+> {
+  #elements: Elements = $state({} as Elements);
+  #state: State;
+
+  constructor(state: State) {
+    this.#state = state;
+  }
+
+  get elements() {
+    return this.#elements;
+  }
+
+  get state() {
+    return this.#state;
+  }
+
+  abstract share(): this;
+}
+```
+
+### Bond Implementation Pattern
+
+Bonds are typically created in `*-root.svelte` components:
+
+```svelte
+<!-- accordion-root.svelte -->
+<script lang="ts">
+  import { AccordionBond, AccordionState } from './accordion-bond';
+  
+  let { values = $bindable([]), multiple = false, ...restProps } = $props();
+  
+  // Create state and bond
+  const state = new AccordionState(() => ({ values, multiple }));
+  const bond = new AccordionBond(state);
+  
+  // Share bond via context
+  bond.share();
+</script>
+
+<HtmlAtom {bond} {...restProps}>
+  {@render children?.({ accordion: bond })}
+</HtmlAtom>
+```
+
+### Accessing Bond State
+
+Descendant components can access the bond through context:
+
+```svelte
+<!-- accordion-item.svelte -->
+<script lang="ts">
+  import { AccordionBond } from './accordion-bond';
+  
+  // Get the bond from context
+  const accordion = AccordionBond.get();
+  
+  let { value, ...restProps } = $props();
+  
+  // Access bond state
+  const isOpen = $derived(accordion.state.props.values.includes(value));
+  
+  function toggle() {
+    // Modify bond state
+    accordion.toggle(value);
+  }
+</script>
+
+<HtmlAtom onclick={toggle} {...restProps}>
+  {#if isOpen}
+    <div class="content">Open content</div>
+  {/if}
+</HtmlAtom>
+```
+
+### Real-World Example: Accordion
+
+Here's how atoms and bonds work together in the Accordion component:
+
+```svelte
+<script>
+  import { Accordion, AccordionItem } from '@svelte-atoms/core';
+  
+  let openItems = $state(['item-1']);
+</script>
+
+<!-- Bond: Manages which items are open -->
+<Accordion bind:values={openItems} multiple={true} collapsible={true}>
+  <!-- Atoms: Individual accordion items connected via bond -->
+  <AccordionItem.Root value="item-1">
+    <AccordionItem.Header>
+      First Item
+      <AccordionItem.Indicator />
+    </AccordionItem.Header>
+    <AccordionItem.Body>
+      Content of first item
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+  
+  <AccordionItem.Root value="item-2">
+    <AccordionItem.Header>
+      Second Item
+      <AccordionItem.Indicator />
+    </AccordionItem.Header>
+    <AccordionItem.Body>
+      Content of second item
+    </AccordionItem.Body>
+  </AccordionItem.Root>
+</Accordion>
+```
+
+<Accordion title="How the Accordion Bond Works">
+  1. **Root Component**: Creates `AccordionBond` and shares it via context
+  2. **Item Components**: Access the bond to check if they're open
+  3. **Header Components**: Use bond methods to toggle item state
+  4. **Indicator Components**: React to bond state to show open/closed
+  5. **State Synchronization**: All components stay in sync through the bond
+</Accordion>
+
+## Benefits of Atoms and Bonds
+
+### Flexibility
+
+<CardGroup cols={2}>
+  <Card title="Atoms" icon="atom">
+    Mix and match atoms to create custom component combinations without modifying core code
+  </Card>
+  <Card title="Bonds" icon="link">
+    Connect any atoms together with shared state management for coordinated behavior
+  </Card>
+</CardGroup>
+
+### Reusability
+
+Use the same atoms in different contexts and compositions:
+
+```svelte
+<!-- Button as dropdown trigger -->
+<Dropdown.Root>
+  <Dropdown.Trigger>
+    <Button.Root>Open Menu</Button.Root>
+  </Dropdown.Trigger>
+</Dropdown.Root>
+
+<!-- Button as modal trigger -->
+<Dialog.Root>
+  <Dialog.Trigger>
+    <Button.Root>Open Dialog</Button.Root>
+  </Dialog.Trigger>
+</Dialog.Root>
+
+<!-- Button as form submit -->
+<Form.Root>
+  <Button.Root type="submit">Submit Form</Button.Root>
+</Form.Root>
+```
+
+### Consistency
+
+Shared base ensures uniform behavior across all composed components:
+
+```svelte
+<!-- All these components share the same base atom behavior -->
+<Button.Root>Button</Button.Root>
+<Badge.Root>Badge</Badge.Root>
+<Avatar.Root src="/avatar.jpg" />
+<Input.Root placeholder="Input" />
+```
+
+Each inherits:
+- Lifecycle hooks (`onmount`, `ondestroy`)
+- Animation hooks (`initial`, `enter`, `exit`, `animate`)
+- Element transformation (`as` prop)
+- TailwindCSS integration
+- Base composition (`base` prop)
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Composition Patterns" icon="shapes" href="/concepts/composition">
+    Learn how to compose atoms into powerful UI components
+  </Card>
+  <Card title="Styling" icon="palette" href="/concepts/styling">
+    Explore styling approaches and TailwindCSS integration
+  </Card>
+  <Card title="Accessibility" icon="universal-access" href="/concepts/accessibility">
+    Discover built-in accessibility features
+  </Card>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/concepts/animations">
+    Master animation lifecycle hooks
+  </Card>
+</CardGroup>

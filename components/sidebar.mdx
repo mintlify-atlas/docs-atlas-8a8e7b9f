@@ -1,0 +1,326 @@
+---
+title: Sidebar
+description: A collapsible sidebar component for navigation and content layout.
+---
+
+The Sidebar component provides a toggleable side panel that can contain navigation, settings, or other content. It supports smooth animations and flexible width configuration.
+
+## Structure
+
+The Sidebar component consists of two main subcomponents:
+
+- `Sidebar.Root` - The root container that manages sidebar state
+- `Sidebar.Content` - The visible sidebar panel
+
+## Import
+
+```svelte
+import { Sidebar } from '@svelte-atoms/core';
+```
+
+## Usage
+
+### Basic Sidebar
+
+```svelte
+<script>
+  import { Sidebar } from '@svelte-atoms/core';
+  let isOpen = $state(false);
+</script>
+
+<Sidebar.Root bind:open={isOpen}>
+  {#snippet children({ sidebar })}
+    <div class="flex size-full">
+      <Sidebar.Content class="flex min-w-32 flex-col border-r px-6 py-10" width="300px">
+        <button onclick={() => sidebar.state.toggle()}>
+          {isOpen ? 'Close' : 'Open'}
+        </button>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
+        </nav>
+      </Sidebar.Content>
+      
+      <main class="flex-1 p-8">
+        <h1>Main Content</h1>
+        <p>Your page content goes here.</p>
+      </main>
+    </div>
+  {/snippet}
+</Sidebar.Root>
+```
+
+### Controlled Sidebar
+
+```svelte
+<script>
+  import { Sidebar } from '@svelte-atoms/core';
+  let sidebarOpen = $state(true);
+  
+  function toggleSidebar() {
+    sidebarOpen = !sidebarOpen;
+  }
+</script>
+
+<Sidebar.Root bind:open={sidebarOpen}>
+  {#snippet children({ sidebar })}
+    <div class="flex h-screen">
+      <Sidebar.Content width="250px" class="border-r">
+        <div class="p-4">
+          <h2>Navigation</h2>
+          <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/team">Team</a></li>
+          </ul>
+        </div>
+      </Sidebar.Content>
+      
+      <main class="flex-1">
+        <header class="border-b p-4">
+          <button onclick={toggleSidebar}>Toggle Sidebar</button>
+        </header>
+        <div class="p-8">
+          <h1>Dashboard</h1>
+        </div>
+      </main>
+    </div>
+  {/snippet}
+</Sidebar.Root>
+```
+
+### Disabled Sidebar
+
+```svelte
+<Sidebar.Root disabled>
+  {#snippet children({ sidebar })}
+    <div class="flex size-full">
+      <Sidebar.Content width="200px">
+        <p>This sidebar is disabled and won't toggle.</p>
+      </Sidebar.Content>
+      <main class="flex-1 p-8">
+        <p>Main content</p>
+      </main>
+    </div>
+  {/snippet}
+</Sidebar.Root>
+```
+
+### Custom Width
+
+```svelte
+<Sidebar.Root>
+  {#snippet children({ sidebar })}
+    <div class="flex size-full">
+      <!-- Wider sidebar -->
+      <Sidebar.Content width="400px" class="border-r">
+        <div class="p-6">
+          <h2>Wide Sidebar</h2>
+          <p>More space for content</p>
+        </div>
+      </Sidebar.Content>
+      <main class="flex-1 p-8">
+        <p>Main content</p>
+      </main>
+    </div>
+  {/snippet}
+</Sidebar.Root>
+```
+
+### With Custom Animation
+
+```svelte
+<script>
+  import { Sidebar, animateSidebarContent } from '@svelte-atoms/core';
+</script>
+
+<Sidebar.Root>
+  {#snippet children({ sidebar })}
+    <div class="flex size-full">
+      <Sidebar.Content 
+        width="300px"
+        animate={animateSidebarContent({ '0': '0px', '1': 'auto', duration: 300 })}
+      >
+        <p>Sidebar with custom animation timing</p>
+      </Sidebar.Content>
+      <main class="flex-1 p-8">
+        <p>Main content</p>
+      </main>
+    </div>
+  {/snippet}
+</Sidebar.Root>
+```
+
+## API Reference
+
+### Sidebar.Root
+
+The root container component that manages the sidebar's state.
+
+<ParamField path="open" type="boolean" default="false">
+  Controls whether the sidebar is open or closed. Use `bind:open` for two-way binding.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, the sidebar cannot be toggled.
+</ParamField>
+
+<ParamField path="width" type="string | number">
+  The width of the sidebar when open. Can be a CSS value like `'300px'` or `'20rem'`.
+</ParamField>
+
+<ParamField path="factory" type="Factory<SidebarBond>">
+  Optional factory function to create a custom SidebarBond instance for advanced use cases.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ sidebar: SidebarBond }]>">
+  Render prop that receives the sidebar bond instance for controlling sidebar state.
+</ParamField>
+
+### Sidebar.Content
+
+The visible sidebar panel that slides in and out.
+
+<ParamField path="class" type="string">
+  Additional CSS classes to apply to the sidebar content.
+</ParamField>
+
+<ParamField path="width" type="string | number">
+  The width of the sidebar. Overrides the width set on `Sidebar.Root`.
+</ParamField>
+
+<ParamField path="onmount" type="(this: SidebarBondState) => void">
+  Callback function called when the sidebar content is mounted.
+</ParamField>
+
+<ParamField path="ondestroy" type="(this: SidebarBondState) => void">
+  Callback function called when the sidebar content is destroyed.
+</ParamField>
+
+<ParamField path="animate" type="(this: SidebarBondState) => any">
+  Animation configuration for the sidebar. Defaults to `animateSidebarContent({ '0': '0px', '1': 'auto' })`.
+</ParamField>
+
+<ParamField path="enter" type="(this: SidebarBondState) => any">
+  Custom enter animation configuration.
+</ParamField>
+
+<ParamField path="exit" type="(this: SidebarBondState) => any">
+  Custom exit animation configuration.
+</ParamField>
+
+<ParamField path="initial" type="(this: SidebarBondState) => any">
+  Initial animation state. Defaults to `animateSidebarContent({ '0': '0px', '1': 'auto', duration: 0 })`.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ sidebar: SidebarBond }]>">
+  The content to display inside the sidebar.
+</ParamField>
+
+## Sidebar Bond API
+
+The sidebar bond instance is passed to the `children` snippet and provides methods to control the sidebar:
+
+### Methods
+
+- `sidebar.state.toggle()` - Toggles the sidebar open/closed
+- `sidebar.state.open()` - Opens the sidebar
+- `sidebar.state.close()` - Closes the sidebar
+
+### State
+
+- `sidebar.state.open` - Boolean indicating if the sidebar is open
+- `sidebar.state.disabled` - Boolean indicating if the sidebar is disabled
+
+## Styling
+
+The Sidebar component uses the following preset key for styling:
+
+- `sidebar.content` - Applied to the sidebar content panel
+
+Default styles include:
+- Background color from theme (`bg-card`)
+- Border styling (`border-border`)
+
+You can customize the appearance by:
+
+1. Using the `class` prop to add custom classes
+2. Defining custom styles for the `sidebar.content` preset in your theme
+3. Applying utility classes directly to the component
+
+## Animation
+
+The Sidebar component includes built-in animations using the `animateSidebarContent` function. This function creates smooth width transitions when the sidebar opens and closes.
+
+### Custom Animation Example
+
+```svelte
+<script>
+  import { Sidebar, animateSidebarContent } from '@svelte-atoms/core';
+  
+  // Fast animation
+  const fastAnimation = animateSidebarContent({ 
+    '0': '0px', 
+    '1': 'auto', 
+    duration: 150 
+  });
+  
+  // Slow animation
+  const slowAnimation = animateSidebarContent({ 
+    '0': '0px', 
+    '1': 'auto', 
+    duration: 500 
+  });
+</script>
+```
+
+## Accessibility
+
+- The sidebar should include proper ARIA attributes for screen readers
+- Toggle buttons should have descriptive labels
+- Keyboard navigation should be supported (Escape key to close)
+- Focus management when opening/closing the sidebar
+
+### Accessible Example
+
+```svelte
+<Sidebar.Root bind:open={isOpen}>
+  {#snippet children({ sidebar })}
+    <div class="flex size-full">
+      <Sidebar.Content 
+        width="300px" 
+        role="navigation" 
+        aria-label="Main navigation"
+      >
+        <button 
+          onclick={() => sidebar.state.close()}
+          aria-label="Close sidebar"
+        >
+          Close
+        </button>
+        <nav>
+          <!-- Navigation links -->
+        </nav>
+      </Sidebar.Content>
+      
+      <main class="flex-1">
+        <button 
+          onclick={() => sidebar.state.toggle()}
+          aria-label="Toggle sidebar"
+          aria-expanded={isOpen}
+        >
+          Menu
+        </button>
+      </main>
+    </div>
+  {/snippet}
+</Sidebar.Root>
+```
+
+## Related Components
+
+- [Drawer](/components/drawer) - Similar slide-out panel with overlay
+- [Dialog](/components/dialog) - Modal dialog component
+- [Accordion](/components/accordion) - Collapsible content sections
+- [Menu](/components/menu) - Navigation menus

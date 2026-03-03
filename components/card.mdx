@@ -1,0 +1,194 @@
+---
+title: "Card"
+description: "A flexible card component for displaying grouped content with headers, bodies, media, and footers"
+---
+
+## Overview
+
+The Card component provides a structured container for organizing content into visually distinct sections. It supports multiple subcomponents for headers, titles, descriptions, media, body content, and footers.
+
+## Anatomy
+
+```svelte
+<Card.Root>
+  <Card.Header>
+    <Card.Title>Title</Card.Title>
+    <Card.Subtitle>Subtitle</Card.Subtitle>
+    <Card.Description>Description</Card.Description>
+  </Card.Header>
+  <Card.Media>...</Card.Media>
+  <Card.Body>Content</Card.Body>
+  <Card.Footer>Actions</Card.Footer>
+</Card.Root>
+```
+
+## Subcomponents
+
+### Card.Root
+
+The root container for the card component.
+
+<ParamField path="disabled" type="boolean" default="false">
+  Whether the card is disabled and cannot be interacted with
+</ParamField>
+
+<ParamField path="onclick" type="(event: MouseEvent) => void">
+  Click handler for the card (makes card clickable)
+</ParamField>
+
+<ParamField path="onkeydown" type="(event: KeyboardEvent) => void">
+  Keyboard event handler for the card
+</ParamField>
+
+<ParamField path="factory" type="Factory<CardBond>">
+  Factory function for customizing the card bond instance
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ card: CardBond }]>">
+  Children render function with access to card bond
+</ParamField>
+
+### Card.Header
+
+Container for card header content (typically titles and descriptions).
+
+Inherits all standard HTML attributes for a `div` element.
+
+### Card.Title
+
+Displays the main title of the card.
+
+Inherits all standard HTML attributes for an `h3` element.
+
+### Card.Subtitle
+
+Displays a subtitle below the title.
+
+Inherits all standard HTML attributes for a `p` element.
+
+### Card.Description
+
+Displays descriptive text in the header.
+
+Inherits all standard HTML attributes for a `p` element.
+
+### Card.Body
+
+The main content area of the card.
+
+Inherits all standard HTML attributes for a `div` element.
+
+### Card.Media
+
+Container for media content (images, videos, etc.).
+
+Inherits all standard HTML attributes for a `div` element.
+
+### Card.Footer
+
+Container for footer content (typically actions or metadata).
+
+Inherits all standard HTML attributes for a `div` element.
+
+## Examples
+
+### Basic Card
+
+```svelte
+<script>
+  import { Card } from '$lib/components/card';
+</script>
+
+<Card.Root class="max-w-sm">
+  <Card.Header>
+    <Card.Title>Card Title</Card.Title>
+    <Card.Description>
+      This is a card description that provides additional context.
+    </Card.Description>
+  </Card.Header>
+  <Card.Body>
+    <p>
+      This is the main content area of the card. You can put any content here
+      including text, images, or other components.
+    </p>
+  </Card.Body>
+  <Card.Footer>
+    <button class="rounded bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600">
+      Action
+    </button>
+    <button class="rounded border px-3 py-1 text-sm">
+      Cancel
+    </button>
+  </Card.Footer>
+</Card.Root>
+```
+
+### Card with Media
+
+```svelte
+<Card.Root class="max-w-sm">
+  <Card.Media>
+    <img
+      src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=200&fit=crop"
+      alt="Beautiful landscape"
+      class="h-48 w-full object-cover"
+    />
+  </Card.Media>
+  <Card.Header>
+    <Card.Title>Beautiful Landscape</Card.Title>
+    <Card.Subtitle>Photography</Card.Subtitle>
+  </Card.Header>
+  <Card.Body>
+    <p>A stunning landscape photograph capturing the beauty of nature.</p>
+  </Card.Body>
+  <Card.Footer>
+    <span class="text-sm text-gray-500">Posted 2 hours ago</span>
+  </Card.Footer>
+</Card.Root>
+```
+
+### Clickable Card
+
+```svelte
+<Card.Root
+  class="max-w-sm cursor-pointer hover:bg-card/90"
+  onclick={() => console.log('Card clicked!')}
+>
+  <Card.Header>
+    <Card.Title>Clickable Card</Card.Title>
+    <Card.Description>
+      This card is clickable and will show an alert when clicked.
+    </Card.Description>
+  </Card.Header>
+  <Card.Body>
+    <p>Click anywhere on this card to trigger the action.</p>
+  </Card.Body>
+</Card.Root>
+```
+
+### Disabled Card
+
+```svelte
+<Card.Root class="max-w-sm opacity-50" disabled>
+  <Card.Header>
+    <Card.Title>Disabled Card</Card.Title>
+    <Card.Description>
+      This card is disabled and cannot be interacted with.
+    </Card.Description>
+  </Card.Header>
+  <Card.Body>
+    <p>The card appears dimmed and is not clickable.</p>
+  </Card.Body>
+</Card.Root>
+```
+
+## Accessibility
+
+- When `onclick` is provided, the card automatically receives `role="button"` and `tabindex="0"`
+- The title is linked to the card via `aria-labelledby`
+- The description is linked via `aria-describedby`
+- Disabled state is communicated via `aria-disabled`
+
+## Styling
+
+All Card subcomponents accept standard HTML class attributes and can be styled with Tailwind CSS or custom CSS classes.

@@ -1,0 +1,147 @@
+---
+title: Introduction
+description: A modern, modular, and accessible Svelte 5 UI component library built with composability at its core
+---
+
+# Welcome to Svelte Atoms Core
+
+A modern, modular, and accessible Svelte 5 UI component library built with composability at its core. Build beautiful, accessible user interfaces with the power of Svelte 5 runes and a flexible component architecture.
+
+## Why Svelte Atoms Core?
+
+Svelte Atoms Core is designed from the ground up to provide maximum flexibility while maintaining accessibility and type safety. Whether you're building a simple form or a complex data grid, our components adapt to your needs.
+
+<CardGroup cols={2}>
+  <Card title="Get Started" icon="rocket" href="/installation">
+    Install Svelte Atoms Core and set up your first project in minutes
+  </Card>
+  <Card title="Quick Start" icon="bolt" href="/quickstart">
+    Build your first component with a complete working example
+  </Card>
+  <Card title="Components" icon="grid" href="/components/button">
+    Explore our comprehensive collection of UI components
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/runes">
+    Deep dive into component APIs and advanced usage patterns
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<CardGroup cols={3}>
+  <Card title="Bond Architecture" icon="link">
+    Self-contained state management with context-based communication enables complex component interactions while maintaining clean APIs
+  </Card>
+  
+  <Card title="Accessible by Default" icon="universal-access">
+    ARIA attributes, keyboard navigation, and focus management are built into every component out of the box
+  </Card>
+  
+  <Card title="Type Safe" icon="shield-check">
+    Full TypeScript support with comprehensive type definitions ensures you catch errors at compile time
+  </Card>
+  
+  <Card title="Headless Design" icon="palette">
+    Complete styling control with sensible defaults - bring your own CSS or use our presets
+  </Card>
+  
+  <Card title="Composable" icon="puzzle-piece">
+    Build complex UIs by combining simple, reusable components with the `base` and `as` props
+  </Card>
+  
+  <Card title="Svelte 5 Runes" icon="sparkles">
+    Leverages Svelte 5's optimized reactivity system for peak performance and clean component code
+  </Card>
+</CardGroup>
+
+## What Makes It Different?
+
+### Flexible Composition
+
+Use the `base` prop to transform any component into another, enabling powerful composition patterns:
+
+```svelte
+<!-- Use Button as Popover trigger -->
+<Popover.Trigger base={Button} variant="outline">
+  Open Settings
+</Popover.Trigger>
+
+<!-- Use Input as Dropdown trigger -->
+<Dropdown.Trigger base={Input.Root}>
+  <Input.Control placeholder="Select option..." />
+</Dropdown.Trigger>
+```
+
+### Built for Svelte 5
+
+Take advantage of Svelte 5's powerful runes for reactive, performant components:
+
+```svelte
+<script lang="ts">
+  import { Button, Dialog } from '@svelte-atoms/core';
+  
+  let dialogOpen = $state(false);
+  let inputValue = $state('');
+</script>
+
+<Button onclick={() => (dialogOpen = true)}>Open Dialog</Button>
+
+<Dialog.Root bind:open={dialogOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Welcome</Dialog.Title>
+    </Dialog.Header>
+    <Dialog.Body>
+      <p>This dialog uses Svelte 5 runes for reactive state management.</p>
+    </Dialog.Body>
+  </Dialog.Content>
+</Dialog.Root>
+```
+
+### Seamless Animation Support
+
+Integrate with Svelte's animation system or use Motion for advanced transitions:
+
+```svelte
+<script lang="ts">
+  import { List, Button } from '@svelte-atoms/core';
+  import { flip } from 'svelte/animate';
+  
+  let items = $state([
+    { id: 1, text: 'Task 1' },
+    { id: 2, text: 'Task 2' },
+    { id: 3, text: 'Task 3' }
+  ]);
+</script>
+
+<List.Root>
+  {#each items as item (item.id)}
+    <div animate:flip={{ duration: 300 }}>
+      <List.Item>{item.text}</List.Item>
+    </div>
+  {/each}
+</List.Root>
+```
+
+## Community and Support
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="https://sacore.netlify.app/">
+    Complete guides, API references, and examples
+  </Card>
+  <Card title="Storybook" icon="book-open" href="https://statuesque-boba-0fb888.netlify.app/">
+    Interactive component playground and live examples
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/svelte-atoms/core">
+    View source code, report issues, and contribute
+  </Card>
+  <Card title="npm" icon="npm" href="https://www.npmjs.com/package/@svelte-atoms/core">
+    View package details and version history
+  </Card>
+</CardGroup>
+
+## Ready to Get Started?
+
+<Card title="Installation Guide" icon="download" href="/installation">
+  Follow our installation guide to add Svelte Atoms Core to your project
+</Card>

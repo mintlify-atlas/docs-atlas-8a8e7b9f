@@ -1,0 +1,427 @@
+---
+title: 'Toast'
+description: 'A notification component for displaying temporary messages'
+---
+
+## Overview
+
+The Toast component displays temporary notification messages to users. It's typically used for success confirmations, error messages, or informational updates that don't require user interaction.
+
+## Components
+
+The Toast is composed of multiple subcomponents:
+
+- **Toast.Root** - The main container that manages toast state
+- **Toast.Title** - Toast title/heading
+- **Toast.Description** - Toast description/body text
+
+## Basic Usage
+
+```svelte
+<script>
+  import { Toast } from '$svelte-atoms/core/components/toast';
+  
+  let open = $state(false);
+  
+  function showToast() {
+    open = true;
+  }
+</script>
+
+<button onclick={showToast}>Show Toast</button>
+
+<Toast.Root bind:open>
+  <Toast.Title>Success</Toast.Title>
+  <Toast.Description>
+    Your changes have been saved.
+  </Toast.Description>
+</Toast.Root>
+```
+
+## Toast.Root Props
+
+<ParamField path="open" type="boolean" default="false">
+  Controls the visible state of the toast. Can be bound with `bind:open`.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, disables toast interactions.
+</ParamField>
+
+<ParamField path="dismissible" type="boolean" default="true">
+  When true, allows the toast to be dismissed by clicking or swiping.
+</ParamField>
+
+<ParamField path="duration" type="number" default="5000">
+  Duration in milliseconds before the toast automatically closes. Set to `0` to disable auto-dismiss.
+</ParamField>
+
+<ParamField path="onclose" type="() => void">
+  Callback fired when the toast closes.
+</ParamField>
+
+<ParamField path="factory" type="Factory<ToastBond>">
+  Optional factory function to customize toast bond creation.
+</ParamField>
+
+<ParamField path="onmount" type="(node: HTMLElement) => void">
+  Mount lifecycle callback.
+</ParamField>
+
+<ParamField path="ondestroy" type="() => void">
+  Destroy lifecycle callback.
+</ParamField>
+
+<ParamField path="animate" type="(node: HTMLElement) => void">
+  Animation function for the toast.
+</ParamField>
+
+<ParamField path="enter" type="(node: HTMLElement) => void">
+  Animation function when toast enters.
+</ParamField>
+
+<ParamField path="exit" type="(node: HTMLElement) => void">
+  Animation function when toast exits.
+</ParamField>
+
+<ParamField path="initial" type="(node: HTMLElement) => void">
+  Initial animation state.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ toast: ToastBond }]>">
+  Render function that receives the toast bond instance.
+</ParamField>
+
+## Toast.Title Props
+
+Extends standard HTML div attributes.
+
+<ParamField path="children" type="Snippet<[{ toast: ToastBond }]>">
+  Render function that receives the toast bond instance.
+</ParamField>
+
+## Toast.Description Props
+
+<ParamField path="as" type="keyof HTMLElementTagNameMap" default="'p'">
+  HTML element type for the description.
+</ParamField>
+
+<ParamField path="children" type="Snippet<[{ toast: ToastBond }]>">
+  Render function that receives the toast bond instance.
+</ParamField>
+
+Extends standard HTML paragraph attributes.
+
+## Examples
+
+### Success Toast
+
+```svelte
+<script>
+  import { Toast } from '$svelte-atoms/core/components/toast';
+  
+  let successOpen = $state(false);
+</script>
+
+<button onclick={() => (successOpen = true)}>Save</button>
+
+<Toast.Root bind:open={successOpen} duration={3000}>
+  <div class="flex items-center gap-3 bg-green-500 text-white p-4 rounded-lg">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+    </svg>
+    <div>
+      <Toast.Title class="font-semibold">Success</Toast.Title>
+      <Toast.Description class="text-sm">
+        Your changes have been saved successfully.
+      </Toast.Description>
+    </div>
+  </div>
+</Toast.Root>
+```
+
+### Error Toast
+
+```svelte
+<script>
+  let errorOpen = $state(false);
+</script>
+
+<button onclick={() => (errorOpen = true)}>Trigger Error</button>
+
+<Toast.Root bind:open={errorOpen} duration={5000}>
+  <div class="flex items-center gap-3 bg-red-500 text-white p-4 rounded-lg">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
+    </svg>
+    <div>
+      <Toast.Title class="font-semibold">Error</Toast.Title>
+      <Toast.Description class="text-sm">
+        Failed to save changes. Please try again.
+      </Toast.Description>
+    </div>
+  </div>
+</Toast.Root>
+```
+
+### Info Toast
+
+```svelte
+<Toast.Root bind:open={infoOpen}>
+  <div class="flex items-center gap-3 bg-blue-500 text-white p-4 rounded-lg">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" />
+    </svg>
+    <div>
+      <Toast.Title class="font-semibold">Information</Toast.Title>
+      <Toast.Description class="text-sm">
+        New features have been added to your account.
+      </Toast.Description>
+    </div>
+  </div>
+</Toast.Root>
+```
+
+### Warning Toast
+
+```svelte
+<Toast.Root bind:open={warningOpen} duration={4000}>
+  <div class="flex items-center gap-3 bg-yellow-500 text-black p-4 rounded-lg">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" />
+    </svg>
+    <div>
+      <Toast.Title class="font-semibold">Warning</Toast.Title>
+      <Toast.Description class="text-sm">
+        Your session will expire in 5 minutes.
+      </Toast.Description>
+    </div>
+  </div>
+</Toast.Root>
+```
+
+### Simple Toast
+
+```svelte
+<Toast.Root bind:open={simpleOpen} duration={2000}>
+  <div class="bg-neutral-800 text-white px-4 py-3 rounded-md">
+    <Toast.Description>Copied to clipboard</Toast.Description>
+  </div>
+</Toast.Root>
+```
+
+### Dismissible Toast
+
+```svelte
+<Toast.Root bind:open={dismissOpen} dismissible>
+  <div class="bg-card border border-border p-4 rounded-lg shadow-lg">
+    <div class="flex items-start justify-between">
+      <div class="flex-1">
+        <Toast.Title class="font-semibold mb-1">Update Available</Toast.Title>
+        <Toast.Description class="text-sm text-neutral-600">
+          A new version is available. Refresh to update.
+        </Toast.Description>
+      </div>
+      <button 
+        onclick={() => (dismissOpen = false)}
+        class="ml-4 text-neutral-400 hover:text-neutral-600"
+      >
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</Toast.Root>
+```
+
+### Toast with Action
+
+```svelte
+<script>
+  let actionOpen = $state(false);
+  
+  function handleUndo() {
+    console.log('Undo action');
+    actionOpen = false;
+  }
+</script>
+
+<Toast.Root bind:open={actionOpen} duration={5000}>
+  <div class="bg-neutral-800 text-white p-4 rounded-lg shadow-lg">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <Toast.Title class="font-semibold mb-1">Item Deleted</Toast.Title>
+        <Toast.Description class="text-sm text-neutral-300">
+          The item has been removed from your list.
+        </Toast.Description>
+      </div>
+      <button 
+        onclick={handleUndo}
+        class="px-3 py-1 bg-white text-neutral-800 rounded hover:bg-neutral-100 font-medium text-sm"
+      >
+        Undo
+      </button>
+    </div>
+  </div>
+</Toast.Root>
+```
+
+### Persistent Toast
+
+```svelte
+<!-- Set duration to 0 to prevent auto-dismiss -->
+<Toast.Root bind:open={persistentOpen} duration={0}>
+  <div class="bg-card border border-border p-4 rounded-lg">
+    <Toast.Title class="font-semibold mb-2">Important Message</Toast.Title>
+    <Toast.Description class="mb-3">
+      This message will stay until you dismiss it.
+    </Toast.Description>
+    <button 
+      onclick={() => (persistentOpen = false)}
+      class="px-4 py-2 bg-primary text-white rounded"
+    >
+      Got it
+    </button>
+  </div>
+</Toast.Root>
+```
+
+## Animation
+
+Add custom animations using the animation props:
+
+```svelte
+<script>
+  import { animate } from 'motion';
+  
+  function slideIn(node: HTMLElement) {
+    animate(node, 
+      { x: [100, 0], opacity: [0, 1] },
+      { duration: 0.3, easing: 'ease-out' }
+    );
+  }
+  
+  function slideOut(node: HTMLElement) {
+    animate(node,
+      { x: [0, 100], opacity: [1, 0] },
+      { duration: 0.2, easing: 'ease-in' }
+    );
+  }
+</script>
+
+<Toast.Root 
+  bind:open={animatedOpen}
+  enter={slideIn}
+  exit={slideOut}
+>
+  <!-- content -->
+</Toast.Root>
+```
+
+## Toast Queue Pattern
+
+Implement a toast queue system:
+
+```svelte
+<script>
+  type ToastMessage = {
+    id: string;
+    title: string;
+    description: string;
+    type: 'success' | 'error' | 'info';
+  };
+  
+  let toasts = $state<ToastMessage[]>([]);
+  
+  function addToast(toast: Omit<ToastMessage, 'id'>) {
+    const id = crypto.randomUUID();
+    toasts = [...toasts, { ...toast, id }];
+  }
+  
+  function removeToast(id: string) {
+    toasts = toasts.filter(t => t.id !== id);
+  }
+</script>
+
+<div class="fixed bottom-4 right-4 space-y-2 z-50">
+  {#each toasts as toast (toast.id)}
+    <Toast.Root 
+      open={true}
+      duration={3000}
+      onclose={() => removeToast(toast.id)}
+    >
+      <div class="bg-card border p-4 rounded-lg shadow-lg">
+        <Toast.Title>{toast.title}</Toast.Title>
+        <Toast.Description>{toast.description}</Toast.Description>
+      </div>
+    </Toast.Root>
+  {/each}
+</div>
+```
+
+## Positioning
+
+Toasts are typically positioned in a corner of the viewport:
+
+```svelte
+<!-- Bottom right -->
+<div class="fixed bottom-4 right-4 z-50">
+  <Toast.Root bind:open={open}>
+    <!-- content -->
+  </Toast.Root>
+</div>
+
+<!-- Top right -->
+<div class="fixed top-4 right-4 z-50">
+  <Toast.Root bind:open={open}>
+    <!-- content -->
+  </Toast.Root>
+</div>
+
+<!-- Bottom left -->
+<div class="fixed bottom-4 left-4 z-50">
+  <Toast.Root bind:open={open}>
+    <!-- content -->
+  </Toast.Root>
+</div>
+
+<!-- Top center -->
+<div class="fixed top-4 left-1/2 -translate-x-1/2 z-50">
+  <Toast.Root bind:open={open}>
+    <!-- content -->
+  </Toast.Root>
+</div>
+```
+
+## Accessibility
+
+- Uses semantic HTML
+- Announces to screen readers when shown
+- Can be dismissed with keyboard interaction
+- Respects reduced motion preferences
+
+**Best Practices:**
+- Keep messages concise and actionable
+- Use appropriate duration based on content length
+- Provide clear success/error indicators
+- Don't rely solely on color for meaning
+- Include close buttons for important messages
+
+## Extension Points
+
+You can extend prop types for customization:
+
+```typescript
+declare module '$svelte-atoms/core/components/toast' {
+  interface ToastRootExtendProps {
+    variant?: 'success' | 'error' | 'info' | 'warning';
+  }
+}
+```
+
+## Related Components
+
+- [Dialog](/components/dialog) - Modal overlay for important actions
+- [Popover](/components/popover) - Contextual popup
+- [Alert](/components/alert) - Inline notification messages
